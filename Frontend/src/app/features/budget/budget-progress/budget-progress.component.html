@@ -1,0 +1,101 @@
+<!-- ================================================================
+              Coded by Mohamed Dhaoui for Alpha Vault
+================================================================ -->
+
+<section 
+  class="elite-budget-progress"
+  [class.animate-in]="isVisible"
+  [class.interactive]="isInteractive"
+  role="region"
+  aria-label="Budget Progress Overview"
+>
+  <header class="progress-header">
+    <h2 class="widget-title">
+      <svg class="title-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+      </svg>
+      Monthly Budget Progress
+    </h2>
+    <div class="status-indicator" [class]="currentStatus.type">
+      <svg class="status-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" [attr.d]="currentStatus.icon"/>
+      </svg>
+      <span class="status-text">{{ currentStatus.message }}</span>
+    </div>
+  </header>
+
+  <div class="progress-content">
+    <div class="budget-overview">
+      <div class="budget-card total-budget">
+        <div class="card-header">
+          <svg class="card-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1"/>
+          </svg>
+          <span class="card-label">Total Budget</span>
+        </div>
+        <div class="card-value">${{ totalBudget | number : "1.2-2" }}</div>
+      </div>
+
+      <div class="budget-card remaining-budget">
+        <div class="card-header">
+          <svg class="card-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+          </svg>
+          <span class="card-label">Remaining</span>
+        </div>
+        <div class="card-value">${{ totalRemaining | number : "1.2-2" }}</div>
+      </div>
+
+      <div class="budget-card spent-budget">
+        <div class="card-header">
+          <svg class="card-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"/>
+          </svg>
+          <span class="card-label">Spent</span>
+        </div>
+        <div class="card-value">${{ getSpentAmount() | number : "1.2-2" }}</div>
+      </div>
+    </div>
+
+    <div class="progress-section">
+      <div class="progress-header">
+        <h3 class="progress-title">Usage Progress</h3>
+        <div class="progress-percentage">
+          <span class="percentage-value">{{ progressPercent | number : "1.0-0" }}%</span>
+          <span class="percentage-label">used</span>
+        </div>
+      </div>
+
+      <div class="progress-bar-container">
+        <div class="progress-track">
+          <div 
+            class="progress-fill"
+            [class]="currentStatus.type"
+            [style.width.%]="progressPercent"
+            [style.background]="currentStatus.gradient"
+          ></div>
+          <div class="progress-glow" [style.width.%]="progressPercent"></div>
+        </div>
+        
+        <div class="progress-markers">
+          <div class="marker" [class.reached]="progressPercent >= 25">
+            <span class="marker-dot"></span>
+            <span class="marker-label">25%</span>
+          </div>
+          <div class="marker" [class.reached]="progressPercent >= 50">
+            <span class="marker-dot"></span>
+            <span class="marker-label">50%</span>
+          </div>
+          <div class="marker" [class.reached]="progressPercent >= 75">
+            <span class="marker-dot"></span>
+            <span class="marker-label">75%</span>
+          </div>
+          <div class="marker" [class.reached]="progressPercent >= 90">
+            <span class="marker-dot"></span>
+            <span class="marker-label">90%</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section> 

@@ -1,0 +1,242 @@
+.debt-table-container {
+  background: white;
+  border-radius: 12px;
+  padding: 24px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+
+  .table-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid #e0e0e0;
+
+    h3 {
+      margin: 0;
+      color: #333;
+      font-size: 1.5rem;
+      font-weight: 600;
+    }
+
+    .add-btn {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 12px 20px;
+      background-color: #007bff;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-size: 1rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: background-color 0.2s;
+
+      &:hover {
+        background-color: #0056b3;
+      }
+
+      svg {
+        width: 20px;
+        height: 20px;
+      }
+    }
+  }
+
+  .table-responsive {
+    overflow-x: auto;
+    border-radius: 8px;
+    border: 1px solid #e0e0e0;
+
+    .debt-table {
+      width: 100%;
+      border-collapse: collapse;
+      background: white;
+
+      th, td {
+        padding: 16px 12px;
+        text-align: left;
+        border-bottom: 1px solid #e0e0e0;
+      }
+
+      th {
+        background-color: #f8f9fa;
+        font-weight: 600;
+        color: #495057;
+        font-size: 0.9rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+      }
+
+      td {
+        color: #333;
+        font-size: 0.95rem;
+      }
+
+      .debt-row {
+        transition: background-color 0.2s;
+
+        &:hover {
+          background-color: #f8f9fa;
+        }
+
+        &.overdue {
+          background-color: #fff5f5;
+          border-left: 4px solid #dc3545;
+        }
+      }
+
+      .creditor-name {
+        font-weight: 500;
+        color: #007bff;
+      }
+
+      .amount {
+        font-family: 'Courier New', monospace;
+        font-weight: 600;
+
+        &.total {
+          color: #495057;
+        }
+
+        &.remaining {
+          color: #dc3545;
+        }
+      }
+
+      .interest-rate {
+        text-align: center;
+        color: #6c757d;
+      }
+
+      .due-date {
+        text-align: center;
+        font-weight: 500;
+
+        &.overdue {
+          color: #dc3545;
+          font-weight: 600;
+        }
+      }
+
+      .min-payment {
+        text-align: right;
+        font-family: 'Courier New', monospace;
+        color: #28a745;
+        font-weight: 600;
+      }
+
+      .actions {
+        text-align: center;
+        white-space: nowrap;
+
+        .btn {
+          margin: 0 4px;
+          padding: 6px 8px;
+          border-radius: 6px;
+          font-size: 0.8rem;
+
+          &.btn-outline-primary {
+            color: #007bff;
+            border: 1px solid #007bff;
+            background: transparent;
+
+            &:hover {
+              background-color: #007bff;
+              color: white;
+            }
+          }
+
+          &.btn-outline-danger {
+            color: #dc3545;
+            border: 1px solid #dc3545;
+            background: transparent;
+
+            &:hover {
+              background-color: #dc3545;
+              color: white;
+            }
+          }
+        }
+      }
+    }
+  }
+
+  .table-footer {
+    margin-top: 32px;
+    text-align: center;
+
+    .empty-state {
+      padding: 48px 24px;
+      color: #6c757d;
+
+      svg {
+        color: #dee2e6;
+        margin-bottom: 16px;
+      }
+
+      h4 {
+        margin: 0 0 8px 0;
+        color: #495057;
+        font-size: 1.25rem;
+        font-weight: 600;
+      }
+
+      p {
+        margin: 0 0 24px 0;
+        font-size: 1rem;
+        line-height: 1.5;
+      }
+
+      .btn {
+        padding: 12px 24px;
+        background-color: #007bff;
+        color: white;
+        border: none;
+        border-radius: 8px;
+        font-size: 1rem;
+        font-weight: 500;
+        cursor: pointer;
+        transition: background-color 0.2s;
+
+        &:hover {
+          background-color: #0056b3;
+        }
+      }
+    }
+  }
+}
+
+// Responsive design
+@media (max-width: 768px) {
+  .debt-table-container {
+    padding: 16px;
+
+    .table-header {
+      flex-direction: column;
+      gap: 16px;
+      align-items: stretch;
+
+      .add-btn {
+        justify-content: center;
+      }
+    }
+
+    .table-responsive {
+      .debt-table {
+        th, td {
+          padding: 12px 8px;
+          font-size: 0.85rem;
+        }
+
+        .actions {
+          .btn {
+            padding: 4px 6px;
+            margin: 0 2px;
+          }
+        }
+      }
+    }
+  }
+}

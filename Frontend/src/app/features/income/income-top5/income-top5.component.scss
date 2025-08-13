@@ -1,0 +1,203 @@
+/* ===================================================================
+   Coded by Mohamed Dhaoui for Alpha Vault
+=================================================================== */
+
+:host {
+  display: block;
+  width: 100%;
+  height: 100%;
+
+  --primary-color: #6366f1;
+  --primary-light: rgba(99, 102, 241, 0.1);
+  --text-dark: #1e293b;
+  --text-light: #64748b;
+  --bg-white: #ffffff;
+
+  --radius: 12px;
+  --transition: all 0.3s ease;
+  --shadow: 0 4px 6px rgba(0, 0, 0, 0.08);
+}
+
+.top5-box {
+  background-color: var(--bg-white);
+  padding: 1.25rem;
+  border-radius: var(--radius);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  transition: var(--transition);
+  animation: fadeIn 0.5s ease-out;
+
+  &:hover {
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12);
+    transform: translateY(-2px);
+  }
+}
+
+.top5-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.25rem;
+}
+
+.top5-title {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--text-dark);
+  margin: 0;
+}
+
+.top5-badge {
+  background-color: var(--primary-light);
+  color: var(--primary-color);
+  font-size: 0.75rem;
+  font-weight: 500;
+  padding: 0.25rem 0.75rem;
+  border-radius: 12px;
+  animation: fadeIn 0.8s ease-out;
+}
+
+.top5-table-wrapper {
+  overflow-x: auto;
+  flex: 1;
+}
+
+.top5-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+
+  thead {
+    position: sticky;
+    top: 0;
+    z-index: 1;
+
+    th {
+      background-color: var(--primary-color);
+      color: #ffffff;
+      font-weight: 600;
+      padding: 0.75rem 1rem;
+      text-align: left;
+      border-bottom: 1px solid #dee2e6;
+
+      &:first-child {
+        border-top-left-radius: 8px;
+      }
+
+      &:last-child {
+        border-top-right-radius: 8px;
+      }
+
+      &.text-end {
+        text-align: right;
+      }
+    }
+  }
+
+  tbody {
+    tr {
+      transition: background-color 0.2s ease, transform 0.2s ease;
+      animation: slideIn 0.5s ease-out forwards;
+      opacity: 0;
+
+      @for $i from 1 through 5 {
+        &[data-index="#{$i - 1}"] {
+          animation-delay: #{$i * 0.1}s;
+        }
+      }
+
+      &:hover {
+        background-color: var(--primary-light);
+        transform: translateX(4px);
+      }
+
+      td {
+        padding: 0.85rem 1rem;
+        font-size: 0.95rem;
+        color: var(--text-dark);
+        border-bottom: 1px solid #e9ecef;
+
+        &.text-end {
+          text-align: right;
+          font-weight: 500;
+        }
+
+        &.pulse {
+          animation: pulse 1s ease-in-out;
+        }
+      }
+    }
+  }
+}
+
+.category-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.category-indicator {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.no-data-message {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+  text-align: center;
+  color: var(--text-light);
+  animation: fadeIn 0.8s ease-out;
+
+  .no-data-icon {
+    font-size: 2.5rem;
+    margin-bottom: 1rem;
+    opacity: 0.7;
+  }
+
+  p {
+    margin-bottom: 0.5rem;
+    font-size: 1rem;
+  }
+
+  .no-data-hint {
+    font-size: 0.85rem;
+    opacity: 0.7;
+  }
+}
+
+@keyframes fadeIn {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+@keyframes slideIn {
+  0% {
+    opacity: 0;
+    transform: translateX(-10px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes pulse {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+    color: var(--primary-color);
+  }
+  100% {
+    transform: scale(1);
+  }
+}

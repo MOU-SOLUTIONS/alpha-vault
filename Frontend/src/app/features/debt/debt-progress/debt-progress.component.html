@@ -1,0 +1,98 @@
+<!-- ================================================================
+               Coded by Mohamed Dhaoui for Alpha Vault
+=============================================================== -->
+
+<!-- Section: Debt Progress Dashboard -->
+<section class="debt-progress-container" role="region" aria-labelledby="debt-progress-heading">
+  <header class="progress-header">
+    <div class="header-content">
+      <h2 id="debt-progress-heading" class="progress-title">
+        <span class="title-icon">📊</span>
+        Debt Repayment Progress
+      </h2>
+    </div>
+    
+    <div class="progress-stats">
+      <div class="stat-card total-debt">
+        <div class="stat-icon">💰</div>
+        <div class="stat-content">
+          <div class="stat-label">Total Debt</div>
+          <div class="stat-value">${{ totalDebt | number:'1.0-2' }}</div>
+        </div>
+      </div>
+      
+      <div class="stat-card total-paid">
+        <div class="stat-icon">✅</div>
+        <div class="stat-content">
+          <div class="stat-label">Amount Paid</div>
+          <div class="stat-value">${{ totalPaid | number:'1.0-2' }}</div>
+        </div>
+      </div>
+      
+      <div class="stat-card remaining">
+        <div class="stat-icon">🎯</div>
+        <div class="stat-content">
+          <div class="stat-label">Remaining</div>
+          <div class="stat-value">${{ getRemainingAmount() | number:'1.0-2' }}</div>
+        </div>
+      </div>
+    </div>
+  </header>
+  
+  <div class="progress-visualization">
+    <div class="progress-bar-container">
+      <div class="progress-bar">
+        <div 
+          class="progress-fill" 
+          [style.width.%]="getProgressPercentage()"
+          [style.background]="getProgressColor()"
+          [class.complete]="getProgressPercentage() >= 100"
+        ></div>
+        <div class="progress-glow" [style.width.%]="getProgressPercentage()"></div>
+      </div>
+      
+      <div class="progress-labels">
+        <span class="progress-percentage">{{ getProgressPercentage() | number:'1.0-1' }}%</span>
+        <span class="progress-text">Complete</span>
+      </div>
+    </div>
+    
+    <div class="progress-milestones">
+      <div class="milestone" [class.active]="getProgressPercentage() >= 25">
+        <div class="milestone-dot"></div>
+        <span class="milestone-label">25%</span>
+      </div>
+      <div class="milestone" [class.active]="getProgressPercentage() >= 50">
+        <div class="milestone-dot"></div>
+        <span class="milestone-label">50%</span>
+      </div>
+      <div class="milestone" [class.active]="getProgressPercentage() >= 75">
+        <div class="milestone-dot"></div>
+        <span class="milestone-label">75%</span>
+      </div>
+      <div class="milestone" [class.active]="getProgressPercentage() >= 100">
+        <div class="milestone-dot"></div>
+        <span class="milestone-label">100%</span>
+      </div>
+    </div>
+  </div>
+  
+  <div class="progress-insights">
+    <div class="insight-card">
+      <div class="insight-header">
+        <span class="insight-icon">💡</span>
+        <h3 class="insight-title">Progress Insights</h3>
+      </div>
+      <div class="insight-content">
+        <p class="insight-text">
+          <strong>{{ getProgressStatus() }}</strong> - 
+          <span *ngIf="getProgressPercentage() === 0">Start your debt-free journey today!</span>
+          <span *ngIf="getProgressPercentage() > 0 && getProgressPercentage() < 50">You're building momentum! Keep up the great work.</span>
+          <span *ngIf="getProgressPercentage() >= 50 && getProgressPercentage() < 75">Halfway there! You're doing amazing.</span>
+          <span *ngIf="getProgressPercentage() >= 75 && getProgressPercentage() < 100">Almost there! The finish line is in sight.</span>
+          <span *ngIf="getProgressPercentage() >= 100">Congratulations! You've achieved debt freedom! 🎉</span>
+        </p>
+      </div>
+    </div>
+  </div>
+</section>

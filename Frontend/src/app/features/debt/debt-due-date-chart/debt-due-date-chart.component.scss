@@ -1,0 +1,218 @@
+/* ===================================================================
+   Coded by Mohamed Dhaoui for Alpha Vault
+================================================================== */
+
+.due-date-chart-container {
+  background: white;
+  border-radius: 12px;
+  padding: 24px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  height: 100%;
+
+  .chart-header {
+    margin-bottom: 24px;
+    text-align: center;
+
+    h3 {
+      margin: 0 0 8px 0;
+      font-size: 20px;
+      font-weight: 600;
+      color: #1f2937;
+    }
+
+    .chart-subtitle {
+      color: #6b7280;
+      font-size: 14px;
+    }
+  }
+
+  .chart-content {
+    margin-bottom: 24px;
+
+    .no-data {
+      text-align: center;
+      padding: 40px 20px;
+      color: #6b7280;
+
+      .no-data-icon {
+        margin-bottom: 16px;
+        color: #9ca3af;
+
+        svg {
+          width: 48px;
+          height: 48px;
+        }
+      }
+
+      p {
+        margin: 0;
+        font-size: 16px;
+      }
+    }
+
+    .due-date-list {
+      .due-date-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 16px;
+        border-radius: 8px;
+        margin-bottom: 12px;
+        border: 1px solid #e5e7eb;
+        transition: all 0.2s ease;
+
+        &:hover {
+          box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        &.overdue {
+          border-color: #ef4444;
+          background-color: #fef2f2;
+
+          .status-badge {
+            background-color: #ef4444;
+            color: white;
+          }
+        }
+
+        &.urgent {
+          border-color: #f59e0b;
+          background-color: #fffbeb;
+
+          .status-badge {
+            background-color: #f59e0b;
+            color: white;
+          }
+        }
+
+        &.warning {
+          border-color: #10b981;
+          background-color: #f0fdf4;
+
+          .status-badge {
+            background-color: #10b981;
+            color: white;
+          }
+        }
+
+        .due-date-info {
+          flex: 1;
+
+          .creditor-name {
+            font-weight: 600;
+            color: #1f2937;
+            margin-bottom: 4px;
+          }
+
+          .due-date {
+            font-size: 14px;
+            color: #6b7280;
+          }
+        }
+
+        .debt-amount {
+          font-weight: 600;
+          color: #1f2937;
+          margin: 0 16px;
+          min-width: 80px;
+          text-align: right;
+        }
+
+        .status-badge {
+          padding: 4px 12px;
+          border-radius: 16px;
+          font-size: 12px;
+          font-weight: 500;
+          text-transform: uppercase;
+          letter-spacing: 0.5px;
+          min-width: 80px;
+          text-align: center;
+        }
+      }
+    }
+  }
+
+  .chart-summary {
+    display: flex;
+    justify-content: space-around;
+    padding: 20px 0;
+    border-top: 1px solid #e5e7eb;
+
+    .summary-item {
+      text-align: center;
+
+      .summary-label {
+        display: block;
+        font-size: 12px;
+        color: #6b7280;
+        margin-bottom: 4px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+      }
+
+      .summary-value {
+        display: block;
+        font-size: 24px;
+        font-weight: 700;
+        color: #1f2937;
+
+        &.overdue {
+          color: #ef4444;
+        }
+
+        &.urgent {
+          color: #f59e0b;
+        }
+
+        &.upcoming {
+          color: #10b981;
+        }
+      }
+    }
+  }
+}
+
+@media (max-width: 768px) {
+  .due-date-chart-container {
+    padding: 16px;
+
+    .chart-content {
+      .due-date-list {
+        .due-date-item {
+          flex-direction: column;
+          align-items: flex-start;
+          gap: 12px;
+
+          .debt-amount {
+            margin: 0;
+            text-align: left;
+            min-width: auto;
+          }
+
+          .status-badge {
+            align-self: flex-end;
+          }
+        }
+      }
+    }
+
+    .chart-summary {
+      flex-direction: column;
+      gap: 16px;
+
+      .summary-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+
+        .summary-label {
+          margin-bottom: 0;
+        }
+
+        .summary-value {
+          font-size: 20px;
+        }
+      }
+    }
+  }
+}

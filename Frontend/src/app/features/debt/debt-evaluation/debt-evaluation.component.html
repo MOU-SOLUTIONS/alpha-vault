@@ -1,0 +1,134 @@
+<div class="debt-evaluation-container">
+  <div class="evaluation-header">
+    <h3>Debt Health Evaluation</h3>
+    <div class="health-score" [class]="getHealthScoreClass()">
+      <span class="score">{{ getHealthScore() }}</span>
+      <span class="label">{{ getHealthScoreLabel() }}</span>
+    </div>
+  </div>
+
+  <div class="evaluation-grid">
+    <!-- Debt-to-Income Analysis -->
+    <div class="evaluation-card">
+      <div class="card-header">
+        <h4>Debt Overview</h4>
+        <div class="card-icon">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M12 2L2 7L12 12L22 7L12 2Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M2 17L12 22L22 17" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M2 12L12 17L22 12" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+      </div>
+      <div class="card-content">
+        <div class="metric">
+          <span class="label">Total Debt:</span>
+          <span class="value">${{ totalDebt | number:'1.0-2' }}</span>
+        </div>
+        <div class="metric">
+          <span class="label">Amount Paid:</span>
+          <span class="value paid">${{ totalPaid | number:'1.0-2' }}</span>
+        </div>
+        <div class="metric">
+          <span class="label">Remaining:</span>
+          <span class="value remaining">${{ getRemainingAmount() | number:'1.0-2' }}</span>
+        </div>
+        <div class="metric">
+          <span class="label">Progress:</span>
+          <span class="value progress">{{ getProgressPercentage() | number:'1.0-1' }}%</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Risk Assessment -->
+    <div class="evaluation-card">
+      <div class="card-header">
+        <h4>Risk Assessment</h4>
+        <div class="card-icon">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M12 9V13M12 17H12.01M21 12C21 16.9706 16.9706 21 12 21C7.02944 21 3 16.9706 3 12C3 7.02944 7.02944 3 12 3C16.9706 3 21 7.02944 21 12Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+      </div>
+      <div class="card-content">
+        <div class="metric">
+          <span class="label">Overdue Debts:</span>
+          <span class="value" [class]="overdueDebts.length > 0 ? 'warning' : 'success'">
+            {{ overdueDebts.length }}
+          </span>
+        </div>
+        <div class="metric">
+          <span class="label">High Interest:</span>
+          <span class="value" [class]="getHighInterestCount() > 0 ? 'warning' : 'success'">
+            {{ getHighInterestCount() }}
+          </span>
+        </div>
+        <div class="metric">
+          <span class="label">Due Soon:</span>
+          <span class="value" [class]="getDueSoonCount() > 0 ? 'warning' : 'success'">
+            {{ getDueSoonCount() }}
+          </span>
+        </div>
+        <div class="metric">
+          <span class="label">Risk Level:</span>
+          <span class="value risk-level" [class]="getRiskLevelClass()">
+            {{ getRiskLevel() }}
+          </span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Creditor Analysis -->
+    <div class="evaluation-card">
+      <div class="card-header">
+        <h4>Creditor Analysis</h4>
+        <div class="card-icon">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M17 21V19C17 17.9391 16.5786 16.9217 15.8284 16.1716C15.0783 15.4214 14.0609 15 13 15H5C3.93913 15 2.92172 15.4214 2.17157 16.1716C1.42143 16.9217 1 17.9391 1 19V21" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            <circle cx="9" cy="7" r="4" stroke="currentColor" stroke-width="2"/>
+            <path d="M23 21V19C22.9993 18.1137 22.7044 17.2528 22.1614 16.5523C21.6184 15.8519 20.8581 15.3516 20 15.13" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M16 3.13C16.8604 3.35031 17.623 3.85071 18.1676 4.55232C18.7122 5.25392 19.0078 6.11683 19.0078 7.005C19.0078 7.89317 18.7122 8.75608 18.1676 9.45768C17.623 10.1593 16.8604 10.6597 16 10.88" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+      </div>
+      <div class="card-content">
+        <div class="metric">
+          <span class="label">Total Creditors:</span>
+          <span class="value">{{ getCreditorCount() }}</span>
+        </div>
+        <div class="metric">
+          <span class="label">Largest Debt:</span>
+          <span class="value remaining">${{ getLargestDebt() | number:'1.0-2' }}</span>
+        </div>
+        <div class="metric">
+          <span class="label">Avg Interest:</span>
+          <span class="value">{{ getAverageInterestRate() | number:'1.1-1' }}%</span>
+        </div>
+        <div class="metric">
+          <span class="label">Total Min Payments:</span>
+          <span class="value">${{ getTotalMinPayments() | number:'1.0-2' }}</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Recommendations -->
+    <div class="evaluation-card recommendations">
+      <div class="card-header">
+        <h4>Recommendations</h4>
+        <div class="card-icon">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M9 12L11 14L15 10M21 12C21 16.9706 16.9706 21 12 21C7.02944 21 3 16.9706 3 12C3 7.02944 7.02944 3 12 3C16.9706 3 21 7.02944 21 12Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+      </div>
+      <div class="card-content">
+        <ul class="recommendations-list">
+          <li *ngFor="let recommendation of getRecommendations()" [class]="recommendation.priority">
+            <span class="recommendation-text">{{ recommendation.text }}</span>
+            <span class="priority-badge">{{ recommendation.priority }}</span>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>

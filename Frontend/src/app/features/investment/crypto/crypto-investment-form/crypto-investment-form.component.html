@@ -1,0 +1,203 @@
+<!-- src/app/crypto/crypto-investment-form/crypto-investment-form.component.html -->
+
+<h2 id="cryptoFormTitle" class="visually-hidden">Crypto Investment Form</h2>
+
+<form
+  [formGroup]="formGroup"
+  (ngSubmit)="submit()"
+  class="crypto-form"
+  role="form"
+  aria-labelledby="cryptoFormTitle"
+>
+  <!-- Description Text -->
+  <p class="form-text">
+    {{
+      initialData
+        ? "Please update the details of this investment."
+        : "Please add the details of your new investment."
+    }}
+  </p>
+
+  <!-- ── Row 1: Name (dropdown) & Amount Invested ── -->
+  <div class="row">
+    <!-- Name / Symbol (dropdown) -->
+    <div class="col-12 col-md-6">
+      <div class="form-group">
+        <label for="invName-{{ mode }}">Name</label>
+        <select
+          id="invName-{{ mode }}"
+          class="form-control"
+          formControlName="name"
+          [disabled]="mode === 'modify'"
+        >
+          <option value="" disabled hidden>Select coin…</option>
+          <option *ngFor="let asset of allAssets" [value]="asset.symbol">
+            {{ asset.symbol }} — {{ asset.name }}
+          </option>
+        </select>
+        <div
+          class="error"
+          *ngIf="
+            formGroup.get('name')?.touched &&
+            formGroup.get('name')?.hasError('required')
+          "
+        >
+          Please select a valid coin.
+        </div>
+      </div>
+    </div>
+
+    <!-- Amount Invested -->
+    <div class="col-12 col-md-6">
+      <div class="form-group">
+        <label for="invAmount-{{ mode }}">Amount Invested</label>
+        <input
+          id="invAmount-{{ mode }}"
+          type="number"
+          class="form-control"
+          formControlName="amountInvested"
+          placeholder="e.g. 1000"
+        />
+        <div
+          class="error"
+          *ngIf="
+            formGroup.get('amountInvested')?.touched &&
+            (formGroup.get('amountInvested')?.hasError('required') ||
+              formGroup.get('amountInvested')?.hasError('min'))
+          "
+        >
+          Please enter a valid amount.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Row 2: Start Date & Risk Level ── -->
+  <div class="row">
+    <div class="col-12 col-md-6">
+      <div class="form-group">
+        <label for="invStart-{{ mode }}">Start Date</label>
+        <input
+          id="invStart-{{ mode }}"
+          type="date"
+          class="form-control"
+          formControlName="startDate"
+        />
+        <div
+          class="error"
+          *ngIf="
+            formGroup.get('startDate')?.touched &&
+            formGroup.get('startDate')?.hasError('required')
+          "
+        >
+          Please select a date.
+        </div>
+      </div>
+    </div>
+
+    <div class="col-12 col-md-6">
+      <div class="form-group">
+        <label for="invRisk-{{ mode }}">Risk Level</label>
+        <select
+          id="invRisk-{{ mode }}"
+          class="form-control"
+          formControlName="riskLevel"
+        >
+          <option [value]="null">None</option>
+          <option *ngFor="let r of risks" [value]="r.value">
+            {{ r.label }}
+          </option>
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Row 3: Notes ── -->
+  <div class="row">
+    <div class="col-12">
+      <div class="form-group">
+        <label for="invNotes-{{ mode }}">Notes</label>
+        <textarea
+          id="invNotes-{{ mode }}"
+          class="form-control"
+          rows="3"
+          formControlName="notes"
+          placeholder="Optional notes…"
+        ></textarea>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Row 4: Sold Checkbox & Conditional Sold Fields ── -->
+  <div class="form-group form-check mt-3">
+    <input
+      type="checkbox"
+      id="invSold-{{ mode }}"
+      class="form-check-input"
+      formControlName="isSold"
+    />
+    <label for="invSold-{{ mode }}" class="form-check-label">
+      I have sold this investment
+    </label>
+  </div>
+
+  <div class="sold-fields row mt-2" *ngIf="formGroup.get('isSold')!.value">
+    <div class="col-12 col-md-6">
+      <div class="form-group">
+        <label for="invSoldValue-{{ mode }}">Sold Value</label>
+        <input
+          id="invSoldValue-{{ mode }}"
+          type="number"
+          class="form-control"
+          formControlName="soldValue"
+          placeholder="Amount you sold at"
+        />
+        <div
+          class="error"
+          *ngIf="
+            formGroup.get('soldValue')?.touched &&
+            formGroup.get('soldValue')?.hasError('required')
+          "
+        >
+          Please enter the sold value.
+        </div>
+      </div>
+    </div>
+
+    <div class="col-12 col-md-6">
+      <div class="form-group">
+        <label for="invSoldDate-{{ mode }}">Sold Date</label>
+        <input
+          id="invSoldDate-{{ mode }}"
+          type="date"
+          class="form-control"
+          formControlName="soldDate"
+        />
+        <div
+          class="error"
+          *ngIf="
+            formGroup.get('soldDate')?.touched &&
+            formGroup.get('soldDate')?.hasError('required')
+          "
+        >
+          Please select the sold date.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Action Buttons: Cancel / Submit ── -->
+  <div class="d-flex justify-content-end gap-2 mt-4">
+    <button class="btn btn-secondary" type="button" (click)="cancelForm.emit()">
+      Cancel
+    </button>
+    <button
+      class="btn"
+      [ngClass]="mode === 'add' ? 'btn-add' : 'btn-modify'"
+      type="submit"
+      [disabled]="formGroup.invalid"
+    >
+      {{ mode === "add" ? "Add" : "Modify" }}
+    </button>
+  </div>
+</form>

@@ -1,0 +1,254 @@
+<!-- ====================================================================
+     Coded by Mohamed Dhaoui for Alpha Vault
+==================================================================== -->
+
+<!-- Section: Portfolio Chart Container -->
+<section class="crypto-portfolio-container" [@fadeInUp] role="region" aria-labelledby="portfolioChartTitle">
+
+  <!-- Section: Header -->
+  <header class="header-section">
+    <div class="header-content">
+      <div class="header-left">
+        <div class="header-icon" role="img" aria-label="Portfolio allocation icon">
+          <mat-icon>pie_chart</mat-icon>
+          <div class="icon-glow"></div>
+        </div>
+        <div class="header-text">
+          <h2 id="portfolioChartTitle" class="header-title">Portfolio Allocation</h2>
+          <p class="header-subtitle">Visualize your crypto investment distribution</p>
+        </div>
+      </div>
+      
+      <div class="header-actions">
+        <button 
+          class="action-btn chart-type-btn"
+          (click)="toggleChartType()"
+          [attr.aria-label]="getChartTypeLabel()"
+          matTooltip="Toggle chart type"
+          type="button"
+        >
+          <mat-icon>{{ getChartTypeIcon() }}</mat-icon>
+        </button>
+        
+        <button 
+          class="action-btn refresh-btn"
+          (click)="refreshData()"
+          [disabled]="isLoading"
+          aria-label="Refresh portfolio data"
+          matTooltip="Refresh data"
+          type="button"
+        >
+          <mat-icon [class.spinning]="isLoading">refresh</mat-icon>
+        </button>
+        
+        <button 
+          class="action-btn auto-refresh-btn"
+          (click)="toggleAutoRefresh()"
+          [class.active]="autoRefresh"
+          aria-label="Toggle auto refresh"
+          matTooltip="Toggle auto-refresh"
+          type="button"
+        >
+          <mat-icon>{{ autoRefresh ? 'sync' : 'sync_disabled' }}</mat-icon>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Section: Portfolio Summary -->
+  <section class="stats-section" [@staggerItems] role="region" aria-labelledby="portfolioStatsTitle">
+    <h3 id="portfolioStatsTitle" class="sr-only">Portfolio Statistics</h3>
+    <article class="stat-card total-invested" [@slideIn]>
+      <div class="stat-icon" role="img" aria-label="Total invested icon">
+        <mat-icon>account_balance_wallet</mat-icon>
+      </div>
+      <div class="stat-content">
+        <span class="stat-label">Total Invested</span>
+        <span class="stat-value" [@scaleIn]="totalInvested">{{ formatCurrency(totalInvested) }}</span>
+      </div>
+    </article>
+
+    <article class="stat-card total-profit-loss" [class.positive]="totalProfitLoss >= 0" [class.negative]="totalProfitLoss < 0" [@slideIn]>
+      <div class="stat-icon" [style.color]="getProfitLossColor(totalProfitLoss >= 0)" role="img" aria-label="Profit loss icon">
+        <mat-icon>{{ getProfitLossIcon(totalProfitLoss >= 0) }}</mat-icon>
+      </div>
+      <div class="stat-content">
+        <span class="stat-label">Total P&L</span>
+        <span class="stat-value" [@scaleIn]="totalProfitLoss" [style.color]="getProfitLossColor(totalProfitLoss >= 0)">
+          {{ formatCurrency(totalProfitLoss) }}
+        </span>
+      </div>
+    </article>
+
+    <article class="stat-card total-percentage" [class.positive]="totalProfitLossPercentage >= 0" [class.negative]="totalProfitLossPercentage < 0" [@slideIn]>
+      <div class="stat-icon" [style.color]="getProfitLossColor(totalProfitLossPercentage >= 0)" role="img" aria-label="Percentage icon">
+        <mat-icon>trending_up</mat-icon>
+      </div>
+      <div class="stat-content">
+        <span class="stat-label">Total Return</span>
+        <span class="stat-value" [@scaleIn]="totalProfitLossPercentage" [style.color]="getProfitLossColor(totalProfitLossPercentage >= 0)">
+          {{ formatPercentage(totalProfitLossPercentage) }}
+        </span>
+      </div>
+    </article>
+  </section>
+
+  <!-- Section: Chart and Legend Row -->
+  <section class="chart-legend-row" [@slideIn]>
+    <!-- Chart Section -->
+    <div class="chart-section">
+      <header class="chart-header">
+        <h3 class="chart-title">Portfolio Distribution</h3>
+        <div class="chart-controls">
+          <button 
+            class="control-btn"
+            (click)="toggleChartType()"
+            [attr.aria-label]="getChartTypeLabel()"
+            matTooltip="Toggle chart type"
+            type="button"
+          >
+            <mat-icon>{{ getChartTypeIcon() }}</mat-icon>
+          </button>
+        </div>
+      </header>
+      
+      <div class="chart-container" role="img" aria-label="Portfolio allocation chart">
+        <canvas
+          baseChart
+          [data]="pieData"
+          [options]="pieOptions"
+          [type]="selectedChartType"
+          class="chart-canvas"
+        ></canvas>
+        
+        <div *ngIf="isLoading" class="loading-overlay" role="status" aria-label="Loading chart data">
+          <div class="loading-content">
+            <mat-icon class="loading-spinner spinning">sync</mat-icon>
+            <span class="loading-text">Updating portfolio data...</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Legend Section -->
+    <div class="legend-section" *ngIf="legendItems.length > 0">
+      <header class="legend-header">
+        <h3 class="legend-title">Portfolio Breakdown</h3>
+        <p class="legend-subtitle">Click items for details</p>
+      </header>
+      
+      <div class="legend-grid">
+        <article 
+          *ngFor="let item of legendItems; trackBy: trackByLegendItem"
+          class="legend-item"
+          [@slideIn]
+          (click)="selectItem(item)"
+          (keydown)="onItemKeyDown($event, item)"
+          role="button"
+          tabindex="0"
+          [attr.aria-label]="'View details for ' + item.name + ' investment'"
+        >
+          <div class="item-header">
+            <div class="color-indicator" [style.background-color]="item.color"></div>
+            <div class="item-info">
+              <h4 class="item-name">{{ item.name }}</h4>
+              <span class="item-percentage">{{ formatPercentage(item.percentage) }}</span>
+            </div>
+            <div class="item-actions">
+              <mat-icon>chevron_right</mat-icon>
+            </div>
+          </div>
+          
+          <div class="item-details">
+            <div class="detail-row">
+              <span class="detail-label">Invested</span>
+              <span class="detail-value">{{ formatCurrency(item.invested) }}</span>
+            </div>
+            <div class="detail-row" [class.positive]="item.isPositive" [class.negative]="!item.isPositive">
+              <span class="detail-label">P&L</span>
+              <span class="detail-value" [style.color]="getProfitLossColor(item.isPositive)">
+                {{ formatCurrency(item.profitLoss) }}
+              </span>
+            </div>
+            <div class="detail-row" [class.positive]="item.isPositive" [class.negative]="!item.isPositive">
+              <span class="detail-label">Return</span>
+              <span class="detail-value" [style.color]="getProfitLossColor(item.isPositive)">
+                {{ formatPercentage(item.profitLossPercentage) }}
+              </span>
+            </div>
+          </div>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- Section: Empty State -->
+  <section *ngIf="investments.length === 0" class="empty-state" [@fadeInUp] role="status" aria-label="No investments found">
+    <div class="empty-content">
+      <div class="empty-icon" role="img" aria-label="Portfolio icon">
+        <mat-icon>pie_chart</mat-icon>
+      </div>
+      <h3 class="empty-title">No Crypto Investments Yet</h3>
+      <p class="empty-description">
+        Start adding cryptocurrency investments to see your portfolio allocation and performance breakdown.
+      </p>
+      <button class="empty-action-btn" aria-label="Add new investment" type="button">
+        <mat-icon>add</mat-icon>
+        Add Investment
+      </button>
+    </div>
+  </section>
+
+  <!-- Section: Details Modal -->
+  <section *ngIf="showDetails && selectedItem" class="details-overlay" (click)="closeDetails()" role="dialog" aria-label="Investment details" aria-modal="true">
+    <article class="details-modal" (click)="$event.stopPropagation()" [@fadeInUp]>
+      <header class="modal-header">
+        <div class="modal-title">
+          <div class="title-color" [style.background-color]="selectedItem.color"></div>
+          <div class="title-text">
+            <h3>{{ selectedItem.name }}</h3>
+            <span class="title-subtitle">{{ formatPercentage(selectedItem.percentage) }} of portfolio</span>
+          </div>
+        </div>
+        <button class="close-btn" (click)="closeDetails()" aria-label="Close details" type="button">
+          <mat-icon>close</mat-icon>
+        </button>
+      </header>
+      
+      <div class="modal-content">
+        <div class="investment-stats">
+          <div class="stat-item">
+            <span class="stat-label">Amount Invested</span>
+            <span class="stat-value">{{ formatCurrency(selectedItem.invested) }}</span>
+          </div>
+          <div class="stat-item" [class.positive]="selectedItem.isPositive" [class.negative]="!selectedItem.isPositive">
+            <span class="stat-label">Profit & Loss</span>
+            <span class="stat-value" [style.color]="getProfitLossColor(selectedItem.isPositive)">
+              {{ formatCurrency(selectedItem.profitLoss) }}
+            </span>
+          </div>
+          <div class="stat-item" [class.positive]="selectedItem.isPositive" [class.negative]="!selectedItem.isPositive">
+            <span class="stat-label">Return Percentage</span>
+            <span class="stat-value" [style.color]="getProfitLossColor(selectedItem.isPositive)">
+              {{ formatPercentage(selectedItem.profitLossPercentage) }}
+            </span>
+          </div>
+        </div>
+      </div>
+    </article>
+  </section>
+</section>
+
+<style>
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+</style>

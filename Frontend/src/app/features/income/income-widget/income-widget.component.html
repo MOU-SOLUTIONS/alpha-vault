@@ -1,0 +1,21 @@
+<!-- ================================================================
+              Coded by Mohamed Dhaoui for Alpha Vault
+================================================================ -->
+
+<section class="row justify-content-center g-2">
+  <article *ngFor="let item of cards; trackBy: trackByKey" class="col-6 col-lg-3">
+    <div class="income-box" role="region" [attr.aria-labelledby]="item.key + 'Label'">
+      <div class="income-icon">
+        <i class="fas" [ngClass]="item.icon"></i>
+      </div>
+      <div class="income-content">
+        <p class="income-label" [id]="item.key + 'Label'">{{ item.label }}</p>
+        <div class="income-amount-wrapper">
+          <span class="income-amount">{{ getExpenseValue(item.key) | currency }}</span>
+          <span class="income-currency">USD</span>
+        </div>
+      </div>
+      <div class="income-indicator" [ngClass]="item.class"></div>
+    </div>
+  </article>
+</section>

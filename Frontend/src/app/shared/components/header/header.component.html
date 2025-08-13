@@ -1,0 +1,37 @@
+<!-- ================= HEADER SECTION ================= -->
+<header class="alpha-header" role="banner">
+  <div class="nav-container" role="navigation" aria-label="Main navigation">
+    <!-- Logo -->
+    <div class="logo-section">
+      <a routerLink="/" aria-label="Alpha Vault Home" class="logo-link">
+        <div class="logo-glow">
+          <!-- Using existing logo from assets -->
+          <img
+            class="alpha-logo"
+            src="../../../assets/logos/black-alpha.png"
+            alt="Alpha Vault - Financial Dominance"
+            width="60"
+            height="60"
+            loading="eager"
+          />
+        </div>
+        <span class="brand-text"><span class="highlight">ALPHA</span> VAULT</span>
+      </a>
+    </div>
+
+    <!-- Navigation Menu -->
+    <div class="nav-menu" [class.active]="isMobileMenuOpen">
+      <a href="#features" class="nav-link" (click)="onScrollTo('features', $event)">Features</a>
+      <a href="#about" class="nav-link" (click)="onScrollTo('about', $event)">About</a>
+      <a href="#contact" class="nav-link" (click)="onScrollTo('contact', $event)">Contact</a>
+      <button class="btn-primary" routerLink="/auth">Get Started</button>
+    </div>
+    
+    <!-- Hamburger Menu -->
+    <div class="hamburger" [class.active]="isMobileMenuOpen" (click)="toggleMobileMenu()">
+      <span></span>
+      <span></span>
+      <span></span>
+    </div>
+  </div>
+</header>

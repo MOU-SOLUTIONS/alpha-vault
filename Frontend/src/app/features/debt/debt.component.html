@@ -1,0 +1,281 @@
+<!-- Section: Debt Dashboard -->
+<main class="parent-container" role="main">
+  
+  <!-- Section: Summary Widget Overview -->
+  <section class="first-row" aria-labelledby="debtSummary">
+    <app-debt-widget
+      [totalDebt]="calculatedTotalDebt"
+      [totalMinPayments]="totalMinPayments"
+      [overdueDebts]="overdueDebts.length"
+      [totalCreditors]="getCreditorCount()"
+    ></app-debt-widget>
+  </section>
+
+  <!-- Section: Quick Actions and Insights -->
+  <section class="quick-actions-row" aria-labelledby="quickActions">
+    <h2 id="quickActions" class="sr-only">Quick Actions</h2>
+    <div class="row">
+      <div class="col-12 col-md-4">
+        <div class="debt-card quick-action-card">
+          <div class="card-header">
+            <h3>🚀 Quick Actions</h3>
+          </div>
+          <div class="card-content">
+            <div class="quick-action-buttons">
+              <button class="btn btn-primary" (click)="onAddDebt()">
+                ➕ Add New Debt
+              </button>
+              <button class="btn btn-info" (click)="showPaymentCalculator()">
+                🧮 Payment Calculator
+              </button>
+              <button class="btn btn-success" (click)="showDebtSnowball()">
+                ❄️ Debt Snowball
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <div class="col-12 col-md-4">
+        <div class="debt-card insight-card">
+          <div class="card-header">
+            <h3>💡 Smart Insights</h3>
+          </div>
+          <div class="card-content">
+            <div class="insight-item" *ngIf="getDebtInsights().length > 0">
+              <div class="insight-icon">🎯</div>
+              <div class="insight-text">
+                <strong>{{ getDebtInsights()[0].title }}</strong>
+                <p>{{ getDebtInsights()[0].description }}</p>
+              </div>
+            </div>
+            <div class="insight-item" *ngIf="getDebtInsights().length > 1">
+              <div class="insight-icon">⚡</div>
+              <div class="insight-text">
+                <strong>{{ getDebtInsights()[1].title }}</strong>
+                <p>{{ getDebtInsights()[1].description }}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <div class="col-12 col-md-4">
+        <div class="debt-card progress-card">
+          <div class="card-header">
+            <h3>📈 Progress Overview</h3>
+          </div>
+          <div class="card-content">
+            <div class="progress-item">
+              <div class="progress-label">Debt Reduction</div>
+              <div class="progress-container">
+                <div class="progress-bar" [style.width.%]="getDebtReductionPercentage()"></div>
+              </div>
+              <div class="progress-value">{{ getDebtReductionPercentage() | number:'1.0-1' }}%</div>
+            </div>
+            <div class="progress-item">
+              <div class="progress-label">Payment Consistency</div>
+              <div class="progress-container">
+                <div class="progress-bar" [style.width.%]="getPaymentConsistencyScore()"></div>
+              </div>
+              <div class="progress-value">{{ getPaymentConsistencyScore() | number:'1.0-1' }}%</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Section: Debt Progress and Creditor Chart -->
+  <section class="second-row row" aria-labelledby="debtOverview">
+    <h2 id="debtOverview" class="sr-only">Debt Overview</h2>
+    <div class="debt-progress col-12 col-md-6">
+      <app-debt-progress [totalDebt]="calculatedTotalDebt" [totalPaid]="totalPaid"></app-debt-progress>
+    </div>
+    <div class="creditor-chart col-12 col-md-6">
+      <app-debt-creditor-chart [creditorData]="creditorSummary"></app-debt-creditor-chart>
+    </div>
+  </section>
+
+  <!-- Section: Top 5 and Due Date Chart -->
+  <section class="third-row row" aria-labelledby="debtAnalytics">
+    <h2 id="debtAnalytics" class="sr-only">Debt Analytics</h2>
+    <div class="top-5-table col-12 col-md-6">
+      <app-debt-top5 [topDebts]="top5LargestDebts"></app-debt-top5>
+    </div>
+    <div class="due-date-chart col-12 col-md-6">
+      <app-debt-due-date-chart [debts]="debts"></app-debt-due-date-chart>
+    </div>
+  </section>
+
+  <!-- Section: Evaluation Block -->
+  <section class="fourth-row" aria-labelledby="debtEvaluation">
+    <h2 id="debtEvaluation" class="sr-only">Debt Evaluation</h2>
+    <app-debt-evaluation
+      [totalDebt]="calculatedTotalDebt"
+      [totalPaid]="totalPaid"
+      [overdueDebts]="overdueDebts"
+      [creditorSummary]="creditorSummary"
+      [top5LargestDebts]="top5LargestDebts"
+      [debts]="debts"
+    ></app-debt-evaluation>
+  </section>
+
+  <!-- Section: Debt Table -->
+  <section class="fifth-row" aria-labelledby="debtTable">
+    <h2 id="debtTable" class="sr-only">Debt Table</h2>
+    <app-debt-table
+      [debts]="debts"
+      (onAdd)="onAddDebt()"
+      (onModify)="onModifyDebt($event)"
+      (onDelete)="onDeleteDebt($event)"
+    ></app-debt-table>
+  </section>
+</main>
+
+<!-- Enhanced Overlay for Forms -->
+<div *ngIf="isAddOverlayVisible || isModifyOverlayVisible || isDeleteOverlayVisible" 
+     class="overlay-backdrop fade-in" 
+     (click)="closeOverlay()">
+  <div class="overlay-content form-container slide-up" (click)="$event.stopPropagation()">
+    <!-- Add Debt Form -->
+    <app-debt-form
+      *ngIf="isAddOverlayVisible"
+      [isVisible]="isAddOverlayVisible"
+      [isAddMode]="true"
+      [debt]="null"
+      (onSubmit)="addDebt($event)"
+      (onCancel)="closeOverlay()"
+    ></app-debt-form>
+
+    <!-- Modify Debt Form -->
+    <app-debt-form
+      *ngIf="isModifyOverlayVisible"
+      [isVisible]="isModifyOverlayVisible"
+      [isAddMode]="false"
+      [debt]="selectedDebt"
+      (onSubmit)="modifyDebt($event)"
+      (onCancel)="closeOverlay()"
+    ></app-debt-form>
+
+    <!-- Enhanced Delete Confirmation -->
+    <div *ngIf="isDeleteOverlayVisible" class="delete-confirmation">
+      <div class="delete-header">
+        <div class="delete-icon">🗑️</div>
+        <h3>Confirm Deletion</h3>
+      </div>
+      <p>Are you sure you want to delete this debt? This action cannot be undone.</p>
+      <div class="debt-info">
+        <div class="debt-name">
+          <strong>{{ selectedDebt.creditorName }}</strong>
+        </div>
+        <div class="debt-amount">
+          Remaining: ${{ selectedDebt.remainingAmount | number:'1.2-2' }}
+        </div>
+        <div class="debt-due-date">
+          Due: {{ selectedDebt.dueDate | date:'mediumDate' }}
+        </div>
+      </div>
+      <div class="button-group">
+        <button class="btn btn-danger" (click)="deleteDebt()">
+          🗑️ Delete Permanently
+        </button>
+        <button class="btn btn-secondary" (click)="closeOverlay()">
+          ❌ Cancel
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Payment Calculator Modal -->
+<div *ngIf="isPaymentCalculatorVisible" class="overlay-backdrop fade-in" (click)="closePaymentCalculator()">
+  <div class="overlay-content form-container slide-up" (click)="$event.stopPropagation()">
+    <div class="form-header">
+      <h3>🧮 Payment Calculator</h3>
+      <p>Calculate your debt payoff strategy and monthly payments</p>
+    </div>
+    
+    <div class="calculator-form">
+      <div class="form-group">
+        <label for="debtAmount">Debt Amount ($)</label>
+        <input type="number" id="debtAmount" [(ngModel)]="calculatorData.debtAmount" placeholder="1000">
+      </div>
+      
+      <div class="form-group">
+        <label for="interestRate">Interest Rate (%)</label>
+        <input type="number" id="interestRate" [(ngModel)]="calculatorData.interestRate" placeholder="5.99" step="0.01">
+      </div>
+      
+      <div class="form-group">
+        <label for="monthlyPayment">Monthly Payment ($)</label>
+        <input type="number" id="monthlyPayment" [(ngModel)]="calculatorData.monthlyPayment" placeholder="100">
+      </div>
+      
+      <div class="calculator-results" *ngIf="calculatorResults">
+        <h4>📊 Calculation Results</h4>
+        <div class="result-item">
+          <span>Time to Payoff:</span>
+          <strong>{{ calculatorResults.monthsToPayoff }} months</strong>
+        </div>
+        <div class="result-item">
+          <span>Total Interest:</span>
+          <strong>${{ calculatorResults.totalInterest | number:'1.2-2' }}</strong>
+        </div>
+        <div class="result-item">
+          <span>Total Amount:</span>
+          <strong>${{ calculatorResults.totalAmount | number:'1.2-2' }}</strong>
+        </div>
+      </div>
+      
+      <div class="form-actions">
+        <button class="btn btn-primary" (click)="calculatePayment()">
+          🧮 Calculate
+        </button>
+        <button class="btn btn-secondary" (click)="closePaymentCalculator()">
+          ❌ Close
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Debt Snowball Modal -->
+<div *ngIf="isDebtSnowballVisible" class="overlay-backdrop fade-in" (click)="closeDebtSnowball()">
+  <div class="overlay-content form-container slide-up" (click)="$event.stopPropagation()">
+    <div class="form-header">
+      <h3>❄️ Debt Snowball Strategy</h3>
+      <p>Optimize your debt payoff order for maximum motivation</p>
+    </div>
+    
+    <div class="snowball-strategy">
+      <div class="strategy-info">
+        <p><strong>Strategy:</strong> Pay off debts from smallest to largest balance to build momentum.</p>
+        <p><strong>Monthly Budget:</strong> ${{ snowballData.monthlyBudget | number:'1.2-2' }}</p>
+      </div>
+      
+      <div class="snowball-order" *ngIf="snowballOrder.length > 0">
+        <h4>🎯 Recommended Payoff Order</h4>
+        <div class="debt-item" *ngFor="let debt of snowballOrder; let i = index">
+          <div class="debt-rank">{{ i + 1 }}</div>
+                   <div class="debt-details">
+           <div class="debt-name">{{ debt.creditor }}</div>
+           <div class="debt-amount">${{ debt.remainingAmount | number:'1.2-2' }}</div>
+         </div>
+          <div class="debt-payment">
+            ${{ debt.recommendedPayment | number:'1.2-2' }}/month
+          </div>
+        </div>
+      </div>
+      
+      <div class="form-actions">
+        <button class="btn btn-primary" (click)="generateSnowballStrategy()">
+          🎯 Generate Strategy
+        </button>
+        <button class="btn btn-secondary" (click)="closeDebtSnowball()">
+          ❌ Close
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

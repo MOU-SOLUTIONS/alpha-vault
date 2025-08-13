@@ -1,0 +1,90 @@
+<!-- ================================================================
+               Coded by Mohamed Dhaoui for Alpha Vault
+=============================================================== -->
+
+<section 
+  class="elite-bar-chart"
+  [class.animate-in]="isVisible"
+  [class.has-data]="hasData"
+  [class.no-data]="!hasData"
+  role="region"
+  aria-label="Budget Allocation Bar Chart"
+>
+  <header class="chart-header">
+    <h3 class="chart-title">
+      <svg class="title-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+      </svg>
+      {{ title }}
+    </h3>
+    
+    <div class="chart-stats" *ngIf="hasData">
+      <div class="stat-item">
+        <span class="stat-label">Allocated</span>
+        <span class="stat-value allocated">{{ getTotalAllocatedFormatted() }}</span>
+      </div>
+      <div class="stat-item">
+        <span class="stat-label">Remaining</span>
+        <span class="stat-value remaining">{{ getTotalRemainingFormatted() }}</span>
+      </div>
+      <div class="stat-item">
+        <span class="stat-label">Spent</span>
+        <span class="stat-value spent">{{ getTotalSpentFormatted() }}</span>
+      </div>
+    </div>
+  </header>
+
+  <div class="chart-container">
+    <div class="chart-content" *ngIf="hasData">
+      <div class="bar-chart-wrapper">
+        <canvas
+          baseChart
+          [data]="barChartData"
+          [options]="barChartOptions"
+          [type]="'bar'"
+          class="chart-canvas"
+          role="img"
+          aria-label="Bar chart showing budget allocation vs remaining by category"
+        ></canvas>
+      </div>
+
+      <div class="category-breakdown" *ngIf="showLegend">
+        <h4 class="breakdown-title">Category Breakdown</h4>
+        <div class="breakdown-items">
+          <div 
+            class="breakdown-item" 
+            *ngFor="let category of getTopCategories(8); trackBy: trackByCategory"
+          >
+            <div class="category-header">
+              <span class="category-name">{{ category.category }}</span>
+              <span class="category-percentage">{{ getCategoryPercentage(category) }}% used</span>
+            </div>
+            <div class="category-bars">
+              <div class="bar allocated" [style.width.%]="100">
+                <span class="bar-label">Allocated: {{ getCategoryAllocated(category) }}</span>
+              </div>
+              <div class="bar remaining" [style.width.%]="(category.remaining / category.allocated) * 100">
+                <span class="bar-label">Remaining: {{ getCategoryRemaining(category) }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="empty-state" *ngIf="!hasData">
+      <div class="empty-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+        </svg>
+      </div>
+      
+      <div class="empty-content">
+        <h4 class="empty-title">No Budget Data Available</h4>
+        <p class="empty-description">
+          Start by adding budget allocations to see your spending breakdown visualized in this beautiful bar chart.
+        </p>
+      </div>
+    </div>
+  </div>
+</section>

@@ -1,0 +1,11 @@
+<!-- ================= PAGE WRAPPER ================= -->
+<div class="page-wrapper">
+    <app-header (scrollToSection)="scrollTo($event.sectionId, $event.event)"></app-header>
+    <app-hero></app-hero>
+    <app-features></app-features>
+    <app-about></app-about>
+    <app-contact></app-contact>
+    <app-cta></app-cta>
+    <app-footer></app-footer>
+    <app-welcome-overlay (closeOverlay)="onOverlayClosed()"></app-welcome-overlay>
+</div>

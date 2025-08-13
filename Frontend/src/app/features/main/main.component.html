@@ -1,0 +1,26 @@
+<div class="body" [class.sidebar-open]="sidebarOpen">
+  <!-- ========== MOBILE MENU BUTTON ========== -->
+  <button
+    class="menu-toggle d-lg-none"
+    aria-label="Toggle sidebar"
+    (click)="toggleSidebar()"
+  >
+    <i class="fas fa-bars"></i>
+  </button>
+
+  <!-- ========== NAVBAR ========== -->
+  <app-navbar></app-navbar>
+
+  <!-- ========== SIDEBAR ========== -->
+  <app-sidbar></app-sidbar>
+
+  <!-- ========== MAIN CONTENT ========== -->
+  <app-body></app-body>
+
+  <!-- ========== OVERLAY (click to close) ========== -->
+  <div
+    class="overlay d-lg-none"
+    *ngIf="sidebarOpen"
+    (click)="toggleSidebar()"
+  ></div>
+</div>

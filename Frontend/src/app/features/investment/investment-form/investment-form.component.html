@@ -1,0 +1,58 @@
+<!-- src/app/investments/investment-form.component.html -->
+<form [formGroup]="form" (ngSubmit)="submit()">
+  <mat-form-field appearance="outline">
+    <mat-label>Type</mat-label>
+    <mat-select formControlName="investmentType">
+      <mat-option *ngFor="let t of investmentTypes" [value]="t">
+        {{ t }}
+      </mat-option>
+    </mat-select>
+  </mat-form-field>
+
+  <ng-container *ngIf="isDynamic(form.value.investmentType); else freeName">
+    <mat-form-field appearance="outline" class="w-100">
+      <mat-label>Symbol</mat-label>
+      <input
+        type="text"
+        matInput
+        formControlName="symbol"
+        [matAutocomplete]="auto"
+      />
+      <mat-autocomplete
+        #auto="matAutocomplete"
+        (optionSelected)="onOptionSelected($event.option.value)"
+      >
+        <mat-option *ngFor="let a of filteredAssets" [value]="a">
+          {{ a.symbol }} – {{ a.name }}
+        </mat-option>
+      </mat-autocomplete>
+    </mat-form-field>
+  </ng-container>
+  <ng-template #freeName>
+    <mat-form-field appearance="outline" class="w-100">
+      <mat-label>Name</mat-label>
+      <input matInput formControlName="name" />
+    </mat-form-field>
+  </ng-template>
+
+  <!-- ... your existing inputs for amounts, dates, notes, etc. ... -->
+
+  <div class="d-flex justify-content-end gap-2 mt-3">
+    <button
+      mat-stroked-button
+      color="warn"
+      type="button"
+      (click)="cancel.emit()"
+    >
+      Cancel
+    </button>
+    <button
+      mat-flat-button
+      color="primary"
+      type="submit"
+      [disabled]="form.invalid"
+    >
+      {{ initialData ? "Update" : "Create" }}
+    </button>
+  </div>
+</form>

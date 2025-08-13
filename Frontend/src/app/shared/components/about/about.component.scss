@@ -1,0 +1,146 @@
+@use '../../../shared/styles/animations.scss' as *;
+
+/* ================= VARIABLES ================= */
+
+$primary-color: #6366f1;
+$secondary-color: #8b5cf6;
+$text-dark: #1a1a1a;
+$text-light: #64748b;
+$background-light: #fafafa;
+$spacing-sm: 15px;
+$spacing-md: 20px;
+$spacing-lg: 30px;
+$spacing-xl: 60px;
+$spacing-xxl: 100px;
+$border-radius-full: 50%;
+$transition-standard: transform 0.3s ease;
+$primary-gradient: linear-gradient(135deg, $primary-color 0%, $secondary-color 100%);
+
+:host {
+  display: block;
+}
+
+/* ================= ABOUT SECTION ================= */
+
+.about {
+  padding: 120px 0;
+  background: $background-light;
+}
+
+/* ================= SECTION HEADER ================= */
+
+.section-header {
+  text-align: center;
+  margin-bottom: $spacing-xxl;
+  
+  h2 {
+    font-size: 2.5rem;
+    font-weight: 700;
+    margin-bottom: $spacing-sm;
+  }
+  
+  p {
+    font-size: 1.2rem;
+    color: $text-light;
+  }
+}
+
+.gradient-text {
+  background: $primary-gradient;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  display: inline-block;
+}
+
+/* ================= ABOUT CONTENT ================= */
+
+.about-content {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: $spacing-xl;
+  align-items: center;
+  @include reveal-on-scroll;
+}
+
+/* ================= ABOUT TEXT ================= */
+
+.about-text {
+  h3 {
+    font-size: 1.8rem;
+    font-weight: 600;
+    margin-bottom: $spacing-md;
+    color: $text-dark;
+  }
+  
+  p {
+    font-size: 1.1rem;
+    color: $text-light;
+    margin-bottom: $spacing-lg;
+    line-height: 1.6;
+  }
+}
+
+/* ================= TEAM SECTION ================= */
+
+.team-section {
+  h3 {
+    font-size: 1.8rem;
+    font-weight: 600;
+    margin-bottom: $spacing-lg;
+    color: $text-dark;
+  }
+}
+
+.team-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: $spacing-lg;
+}
+
+.team-member {
+  text-align: center;
+  @include reveal-on-scroll;
+  transition-delay: calc(var(--index, 0) * 0.1s);
+  transition: $transition-standard;
+  
+  &:hover {
+    transform: translateY(-10px);
+    
+    .member-photo {
+      transform: scale(1.05);
+    }
+  }
+  
+  h4 {
+    font-size: 1.2rem;
+    font-weight: 600;
+    margin-bottom: 5px;
+    color: $text-dark;
+  }
+  
+  p {
+    color: $text-light;
+  }
+}
+
+.member-photo {
+  width: 120px;
+  height: 120px;
+  border-radius: $border-radius-full;
+  background: $primary-gradient;
+  margin: 0 auto $spacing-sm;
+  transition: $transition-standard;
+}
+
+/* ================= RESPONSIVE DESIGN ================= */
+
+@media (max-width: 768px) {
+  .about-content {
+    grid-template-columns: 1fr;
+  }
+  
+  .team-grid {
+    grid-template-columns: 1fr;
+  }
+}

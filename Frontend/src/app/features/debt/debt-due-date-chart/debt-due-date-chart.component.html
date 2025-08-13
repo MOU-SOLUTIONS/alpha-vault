@@ -1,0 +1,67 @@
+<!-- ================================================================
+              Coded by Mohamed Dhaoui for Alpha Vault
+================================================================ -->
+
+<!-- Section: Debt Due Date Chart Container -->
+<section class="due-date-chart-container" role="region" aria-labelledby="dueDateChartTitle">
+  
+  <!-- Section: Chart Header -->
+  <header class="chart-header">
+    <h3 id="dueDateChartTitle">Debt Due Dates</h3>
+    <div class="chart-subtitle">Upcoming payment deadlines</div>
+  </header>
+  
+  <!-- Section: Chart Content -->
+  <div class="chart-content">
+    <div *ngIf="!hasDebtData()" class="no-data">
+      <div class="no-data-icon" role="img" aria-label="Calendar icon">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <rect x="3" y="4" width="18" height="18" rx="2" ry="2" stroke="currentColor" stroke-width="2"/>
+          <line x1="16" y1="2" x2="16" y2="6" stroke="currentColor" stroke-width="2"/>
+          <line x1="8" y1="2" x2="8" y2="6" stroke="currentColor" stroke-width="2"/>
+          <line x1="3" y1="10" x2="21" y2="10" stroke="currentColor" stroke-width="2"/>
+        </svg>
+      </div>
+      <p>No debt data available</p>
+    </div>
+    
+    <div *ngIf="hasDebtData()" class="due-date-list">
+      <div 
+        *ngFor="let debt of getSortedDebts(); trackBy: trackByDebt" 
+        class="due-date-item"
+        [class.overdue]="isOverdue(debt.dueDate)"
+        [class.urgent]="isUrgent(debt.dueDate)"
+        [class.warning]="isWarning(debt.dueDate)"
+      >
+        <div class="due-date-info">
+          <div class="creditor-name">{{ debt.creditorName }}</div>
+          <div class="due-date">{{ debt.dueDate | date:'MMM dd, yyyy' }}</div>
+        </div>
+        
+        <div class="debt-amount">
+          ${{ debt.remainingAmount | number:'1.0-2' }}
+        </div>
+        
+        <div class="status-badge" [class]="getStatusClass(debt.dueDate)">
+          {{ getStatusText(debt.dueDate) }}
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Section: Chart Summary -->
+  <footer class="chart-summary" *ngIf="hasDebtData()">
+    <div class="summary-item">
+      <span class="summary-label">Overdue:</span>
+      <span class="summary-value overdue">{{ getOverdueCount() }}</span>
+    </div>
+    <div class="summary-item">
+      <span class="summary-label">Due Soon:</span>
+      <span class="summary-value urgent">{{ getUrgentCount() }}</span>
+    </div>
+    <div class="summary-item">
+      <span class="summary-label">Upcoming:</span>
+      <span class="summary-value upcoming">{{ getUpcomingCount() }}</span>
+    </div>
+  </footer>
+</section>

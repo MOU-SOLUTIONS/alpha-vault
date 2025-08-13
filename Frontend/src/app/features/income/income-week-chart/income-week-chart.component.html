@@ -1,0 +1,65 @@
+<!-- ================================================================
+              Coded by Mohamed Dhaoui for Alpha Vault
+================================================================ -->
+
+<section class="row" role="region" aria-labelledby="weekChartTitle">
+  <div class="col-12">
+    <div class="chart-box" [class.loading]="isLoading">
+      <header class="chart-header">
+        <h3 id="weekChartTitle" class="chart-title">Weekly Income Overview</h3>
+        <nav class="chart-actions" *ngIf="!isLoading">
+          <button class="toggle-btn" (click)="toggleChartType()" aria-label="Toggle chart type">
+            <span class="toggle-icon">{{ isLineChart ? 'Bar' : 'Line' }}</span>
+          </button>
+          <button class="refresh-btn" (click)="refreshData()" aria-label="Refresh data">
+            <i class="refresh-icon">↻</i>
+          </button>
+        </nav>
+      </header>
+
+      <div class="loading-indicator" *ngIf="isLoading">
+        <div class="spinner"></div>
+        <p>Loading data...</p>
+      </div>
+
+      <div class="chart-container" [class.hidden]="isLoading">
+        <canvas
+          baseChart
+          [data]="chartData"
+          [options]="chartOptions"
+          [type]="chartType"
+          class="chart-canvas"
+          role="img"
+          aria-label="Chart showing weekly income data"
+        ></canvas>
+        <p class="no-data-message" *ngIf="!isLoading && (!chartData || chartData.datasets[0].data.length === 0)">
+          No data available for this period
+        </p>
+      </div>
+
+      <footer class="chart-summary">
+        <ng-container *ngIf="!isLoading && weeklyTotal > 0">
+          <div class="summary-item">
+            <span class="summary-label">Total</span>
+            <span class="summary-value">{{ weeklyTotal | currency }}</span>
+          </div>
+          <div class="summary-item">
+            <span class="summary-label">Average</span>
+            <span class="summary-value">{{ weeklyAverage | currency }}</span>
+          </div>
+        </ng-container>
+
+        <ng-container *ngIf="isLoading || weeklyTotal <= 0">
+          <div class="summary-item">
+            <span class="summary-label">Total</span>
+            <span class="summary-value">--</span>
+          </div>
+          <div class="summary-item">
+            <span class="summary-label">Average</span>
+            <span class="summary-value">--</span>
+          </div>
+        </ng-container>
+      </footer>
+    </div>
+  </div>
+</section>

@@ -1,0 +1,354 @@
+<!-- Section: Income Table Container -->
+<section class="income-table-section" #tableContainer [@fadeIn]>
+  <div class="container">
+    <div class="row justify-content-center g-2">
+      <div class="col-12">
+        <div class="table-card" role="region" aria-labelledby="incomeBreakdownTitle">
+
+          <header class="table-header">
+            <h2 id="incomeBreakdownTitle" class="table-title">
+              <mat-icon aria-hidden="true">account_balance_wallet</mat-icon>
+              Income Breakdown
+            </h2>
+            <div class="header-actions">
+              <button 
+                class="filter-toggle-button" 
+                mat-flat-button 
+                [ngClass]="{'active': hasActiveFilters()}"
+                type="button" 
+                (click)="toggleFilterSection()"
+                [matBadge]="hasActiveFilters() ? '!' : null"
+                matBadgeColor="warn"
+                matTooltip="Toggle filter panel"
+                aria-label="Toggle filter panel"
+                [attr.aria-expanded]="isFilterExpanded"
+                aria-controls="filterPanel">
+                <mat-icon>filter_list</mat-icon>
+                <span class="button-text">Filters</span>
+              </button>
+              <button 
+                id="addIncomeButton"
+                class="add-button" 
+                mat-flat-button 
+                type="button" 
+                (click)="onAdd()"
+                matTooltip="Add new income"
+                aria-label="Add new income">
+                <mat-icon>add</mat-icon>
+                <span class="button-text">Add Income</span>
+              </button>
+            </div>
+          </header>
+
+          <form
+            *ngIf="isFilterExpanded"
+            [formGroup]="filterForm"
+            class="filter-box"
+            role="search"
+            aria-labelledby="filterSectionLabel"
+            id="filterPanel"
+          >
+            <div class="filter-header">
+              <h3 id="filterSectionLabel" class="filter-title">
+                <mat-icon aria-hidden="true">filter_list</mat-icon>
+                Filters
+                <span class="filter-subtitle" *ngIf="filteredCount !== totalCount">
+                  (Showing {{ filteredCount }} of {{ totalCount }} entries)
+                </span>
+              </h3>
+              <button
+                class="reset-button"
+                mat-stroked-button
+                color="warn"
+                type="button"
+                (click)="resetFilters()"
+                matTooltip="Reset all filters"
+                aria-label="Reset all filters"
+                [disabled]="!hasActiveFilters()">
+                <mat-icon>refresh</mat-icon>
+                <span class="button-text">Reset</span>
+              </button>
+            </div>
+            <div class="row g-3">
+              <div class="col-12 col-md-3">
+                <mat-form-field appearance="outline" class="w-100">
+                  <mat-label>Search anything</mat-label>
+                  <input
+                    matInput
+                    formControlName="search"
+                    placeholder="e.g. Salary, Week, 2025"
+                    aria-label="Search income records"
+                  />
+                  <mat-icon matSuffix>search</mat-icon>
+                </mat-form-field>
+              </div>
+              <div class="col-6 col-md-3">
+                <mat-form-field appearance="outline" class="w-100">
+                  <mat-label>From Date</mat-label>
+                  <input 
+                    matInput 
+                    type="date" 
+                    formControlName="fromDate"
+                    aria-label="Filter from date" 
+                  />
+                  <mat-icon matSuffix>event</mat-icon>
+                </mat-form-field>
+              </div>
+              <div class="col-6 col-md-3">
+                <mat-form-field appearance="outline" class="w-100">
+                  <mat-label>To Date</mat-label>
+                  <input 
+                    matInput 
+                    type="date" 
+                    formControlName="toDate"
+                    aria-label="Filter to date" 
+                  />
+                  <mat-icon matSuffix>event</mat-icon>
+                </mat-form-field>
+              </div>
+              <div class="col-6 col-md-3">
+                <mat-form-field appearance="outline" class="w-100">
+                  <mat-label>Payment Method</mat-label>
+                  <mat-select 
+                    formControlName="method"
+                    aria-label="Filter by payment method">
+                    <mat-option value="">All</mat-option>
+                    <mat-option *ngFor="let option of paymentMethods; trackBy: trackByPaymentMethod" [value]="option.value">
+                      {{ option.label }}
+                    </mat-option>
+                  </mat-select>
+                  <mat-icon matSuffix>payments</mat-icon>
+                </mat-form-field>
+              </div>
+              <div class="col-6 col-md-3">
+                <mat-form-field appearance="outline" class="w-100">
+                  <mat-label>Received</mat-label>
+                  <mat-select 
+                    formControlName="received"
+                    aria-label="Filter by received status">
+                    <mat-option value="">All</mat-option>
+                    <mat-option value="true">Yes</mat-option>
+                    <mat-option value="false">No</mat-option>
+                  </mat-select>
+                  <mat-icon matSuffix>check_circle</mat-icon>
+                </mat-form-field>
+              </div>
+            </div>
+          </form>
+
+          <div class="total-summary" [@fadeIn]>
+            <div class="total-badge">
+              <span class="total-label">Total Income:</span>
+              <span class="total-amount">{{ dataSource.data | totalIncome | currency }}</span>
+            </div>
+            <div class="entries-info" *ngIf="filteredCount !== totalCount">
+              <mat-icon>filter_alt</mat-icon>
+              <span>Filtered: {{ filteredCount }} of {{ totalCount }}</span>
+            </div>
+          </div>
+
+          <div *ngIf="isLoading" class="loading-container" [@fadeIn]>
+            <mat-spinner diameter="40"></mat-spinner>
+            <h3>Loading income data...</h3>
+          </div>
+
+          <div *ngIf="!isLoading && filteredCount === 0" class="empty-state" [@fadeIn]>
+            <mat-icon class="empty-icon">search_off</mat-icon>
+            <h3>No income records found</h3>
+            <p>Try adjusting your filters or add a new income record.</p>
+          </div>
+
+          <div *ngIf="!isLoading && filteredCount > 0" class="table-content" [@fadeIn]>
+            <cdk-virtual-scroll-viewport 
+              [itemSize]="itemSize" 
+              [style.height.px]="viewportHeight"
+              class="virtual-scroll-viewport"
+              *ngIf="!isMobile">
+              <table mat-table [dataSource]="dataSource" class="w-100" [@listAnimation]="dataSource.data.length">
+                <ng-container matColumnDef="select">
+                  <th mat-header-cell *matHeaderCellDef></th>
+                  <td mat-cell *matCellDef="let element" [@tableRowAnimation]>
+                    <mat-checkbox [checked]="element.isReceived" disabled></mat-checkbox>
+                  </td>
+                </ng-container>
+                <ng-container matColumnDef="source">
+                  <th mat-header-cell *matHeaderCellDef>Source</th>
+                  <td mat-cell *matCellDef="let element" [@tableRowAnimation]>
+                    <div class="source-elite">
+                      <div class="source-icon">
+                        <mat-icon>account_balance_wallet</mat-icon>
+                      </div>
+                      <div class="source-content">
+                        <div class="source-name">{{ element.source }}</div>
+                        <div class="source-category">Income Source</div>
+                      </div>
+                    </div>
+                  </td>
+                </ng-container>
+                <ng-container matColumnDef="amount">
+                  <th mat-header-cell *matHeaderCellDef>Amount</th>
+                  <td mat-cell *matCellDef="let element" [@tableRowAnimation]>
+                    <div class="amount-elite" [ngClass]="getAmountClass(element.amount)">
+                      <div class="amount-icon">
+                        <mat-icon>attach_money</mat-icon>
+                      </div>
+                      <div class="amount-content">
+                        <div class="amount-value">{{ element.amount | currency }}</div>
+                        <div class="amount-status">{{ element.isReceived ? 'Received' : 'Pending' }}</div>
+                      </div>
+                    </div>
+                  </td>
+                </ng-container>
+                <ng-container matColumnDef="date">
+                  <th mat-header-cell *matHeaderCellDef>Date</th>
+                  <td mat-cell *matCellDef="let element" [@tableRowAnimation]>
+                    <span class="date-text">{{ formatDate(element.date) }}</span>
+                  </td>
+                </ng-container>
+                <ng-container matColumnDef="method">
+                  <th mat-header-cell *matHeaderCellDef>Method</th>
+                  <td mat-cell *matCellDef="let element" [@tableRowAnimation]>
+                    <span class="method-text" [ngClass]="getPaymentMethodClass(element.paymentMethod)">
+                      {{ getPaymentLabel(element.paymentMethod) }}
+                    </span>
+                  </td>
+                </ng-container>
+                <ng-container matColumnDef="description">
+                  <th mat-header-cell *matHeaderCellDef>Description</th>
+                  <td mat-cell *matCellDef="let element" [@tableRowAnimation]>
+                    <span class="description-text">{{ element.description || 'N/A' }}</span>
+                  </td>
+                </ng-container>
+                <ng-container matColumnDef="actions">
+                  <th mat-header-cell *matHeaderCellDef>Actions</th>
+                  <td mat-cell *matCellDef="let element" [@tableRowAnimation]>
+                    <div class="actions-wrapper">
+                      <button
+                        class="edit-button"
+                        mat-icon-button
+                        color="primary"
+                        (click)="onModify(element)"
+                        matTooltip="Edit income"
+                        aria-label="Edit income">
+                        <mat-icon>edit</mat-icon>
+                      </button>
+                      <button
+                        class="delete-button"
+                        mat-icon-button
+                        color="warn"
+                        (click)="onDelete(element.id)"
+                        matTooltip="Delete income"
+                        aria-label="Delete income">
+                        <mat-icon>delete</mat-icon>
+                      </button>
+                    </div>
+                  </td>
+                </ng-container>
+                <tr mat-header-row *matHeaderRowDef="activeColumns"></tr>
+                <tr 
+                  mat-row 
+                  *matRowDef="let row; columns: activeColumns"
+                  [class.highlight-row]="expandedElement === row"
+                ></tr>
+              </table>
+            </cdk-virtual-scroll-viewport>
+
+            <div 
+              class="mobile-scroll-container"
+              *ngIf="isMobile">
+              <div class="mobile-table-view" [@listAnimation]="dataSource.data.length">
+                <div 
+                  *ngFor="let element of dataSource.data; trackBy: trackByIncome" 
+                  class="mobile-row"
+                  [class.expanded]="expandedElement === element"
+                  (click)="toggleRowExpand(element)"
+                  [@tableRowAnimation]
+                  tabindex="0"
+                  role="button"
+                  [attr.aria-expanded]="expandedElement === element"
+                  [attr.aria-label]="'Expand income details for ' + element.source"
+                >
+                  <div class="mobile-row-header">
+                    <div class="mobile-header-main">
+                      <div class="mobile-source">
+                        <mat-icon class="mobile-icon">account_balance_wallet</mat-icon>
+                        <span class="source-text">{{ element.source }}</span>
+                      </div>
+                      <div class="mobile-amount">
+                        <mat-icon class="mobile-icon">attach_money</mat-icon>
+                        <span class="amount-text">{{ element.amount | currency }}</span>
+                        <span class="amount-status" [ngClass]="{'received': element.isReceived, 'pending': !element.isReceived}">
+                          {{ element.isReceived ? 'Received' : 'Pending' }}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="mobile-divider" *ngIf="expandedElement === element"></div>
+                  <div 
+                    class="mobile-row-detail"
+                    *ngIf="expandedElement === element"
+                  >
+                    <div class="detail-item">
+                      <mat-icon class="detail-icon">event</mat-icon>
+                      <span class="detail-label">Date:</span>
+                      <span class="detail-value">{{ formatDate(element.date) }}</span>
+                    </div>
+                    <div class="detail-item">
+                      <mat-icon class="detail-icon">payments</mat-icon>
+                      <span class="detail-label">Method:</span>
+                      <span class="detail-value">
+                        <span class="method-text" [ngClass]="getPaymentMethodClass(element.paymentMethod)">
+                          {{ getPaymentLabel(element.paymentMethod) }}
+                        </span>
+                      </span>
+                    </div>
+                    <div class="detail-item" *ngIf="element.description">
+                      <mat-icon class="detail-icon">description</mat-icon>
+                      <span class="detail-label">Description:</span>
+                      <span class="detail-value">{{ element.description }}</span>
+                    </div>
+                    <div class="detail-item">
+                      <mat-icon class="detail-icon">check_circle</mat-icon>
+                      <span class="detail-label">Received:</span>
+                      <span class="detail-value">{{ element.isReceived ? 'Yes' : 'No' }}</span>
+                    </div>
+                  </div>
+                  <div class="mobile-actions" *ngIf="expandedElement === element" (click)="$event.stopPropagation()">
+                    <button
+                      class="edit-button"
+                      mat-icon-button
+                      color="primary"
+                      (click)="onModify(element); $event.stopPropagation()"
+                      matTooltip="Edit income"
+                      aria-label="Edit income">
+                      <mat-icon>edit</mat-icon>
+                    </button>
+                    <button
+                      class="delete-button"
+                      mat-icon-button
+                      color="warn"
+                      (click)="onDelete(element.id); $event.stopPropagation()"
+                      matTooltip="Delete income"
+                      aria-label="Delete income">
+                      <mat-icon>delete</mat-icon>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="paginator-container">
+              <mat-paginator
+                [length]="totalCount"
+                [pageSize]="pageSize"
+                [pageSizeOptions]="pageSizeOptions"
+                (page)="onPageChange($event)"
+                aria-label="Income table pagination">
+              </mat-paginator>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>

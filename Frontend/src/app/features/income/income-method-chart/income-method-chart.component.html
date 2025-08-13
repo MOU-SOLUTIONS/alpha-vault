@@ -1,0 +1,51 @@
+<!-- ================================================================
+              Coded by Mohamed Dhaoui for Alpha Vault
+================================================================ -->
+
+<section class="row justify-content-center g-2 h-100" role="region" aria-labelledby="incomeMethodChartTitle">
+  <div class="col-12 h-100">
+    <div class="method-chart-box d-flex flex-column h-100">
+      <header class="method-chart-header">
+        <h3 id="incomeMethodChartTitle" class="method-chart-title">Payment Methods</h3>
+        <div class="method-chart-badge">This Month</div>
+      </header>
+
+      <div class="method-chart-content flex-grow-1" [class.loading]="isLoading">
+        <ng-container *ngIf="!hasData && !isLoading; else showChart">
+          <div class="no-data-message">
+            <div class="no-data-icon">💰</div>
+            <p>No income method data available</p>
+            <p class="no-data-hint">Add some incomes to see this chart</p>
+          </div>
+        </ng-container>
+
+        <ng-template #showChart>
+          <div class="method-chart-wrapper">
+            <canvas
+              baseChart
+              [data]="pieChartData"
+              [labels]="pieChartLabels"
+              [type]="'doughnut'"
+              [options]="pieChartOptions"
+              class="method-chart-canvas"
+              role="img"
+              aria-label="Income distribution by payment method"
+            ></canvas>
+          </div>
+
+          <div class="legend-container">
+            <div *ngFor="let label of pieChartLabels; let i = index" class="legend-item">
+              <div class="legend-color" [style.background-color]="getBackgroundColor(i)"></div>
+              <div class="legend-label">{{ label }}</div>
+              <div class="legend-value">{{ getValueForLabel(label) | currency }}</div>
+            </div>
+          </div>
+        </ng-template>
+
+        <div *ngIf="isLoading" class="chart-loader">
+          <div class="loader-spinner"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>

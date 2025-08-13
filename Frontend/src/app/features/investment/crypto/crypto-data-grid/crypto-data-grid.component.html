@@ -1,0 +1,315 @@
+<!-- ====================================================================
+     Coded by Mohamed Dhaoui for Alpha Vault
+==================================================================== -->
+
+<div class="crypto-data-container" [@fadeInUp]>
+  <div class="header-section" [@glowPulse]="'glowing'">
+    <div class="header-content">
+      <div class="header-left">
+        <div class="header-icon">
+          <mat-icon>currency_bitcoin</mat-icon>
+          <div class="icon-glow"></div>
+        </div>
+        <div class="header-text">
+          <h1 class="header-title">Crypto Market Overview</h1>
+          <p class="header-subtitle">Real-time cryptocurrency data and market insights</p>
+        </div>
+      </div>
+      
+      <div class="header-actions">
+        <button 
+          class="action-btn view-toggle"
+          (click)="toggleViewMode()"
+          [class.active]="viewMode === 'grid'"
+          matTooltip="Toggle view mode"
+        >
+          <mat-icon>{{ viewMode === 'grid' ? 'view_list' : 'grid_view' }}</mat-icon>
+        </button>
+        
+        <button 
+          class="action-btn refresh-btn"
+          (click)="refreshData()"
+          [disabled]="isLoading"
+          matTooltip="Refresh data"
+        >
+          <mat-icon [class.spinning]="isLoading">refresh</mat-icon>
+        </button>
+        
+        <button 
+          class="action-btn auto-refresh"
+          (click)="toggleAutoRefresh()"
+          [class.active]="autoRefresh"
+          matTooltip="Toggle auto-refresh"
+        >
+          <mat-icon>{{ autoRefresh ? 'pause' : 'play_arrow' }}</mat-icon>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div class="controls-section">
+    <div class="sort-controls">
+      <span class="sort-label">Sort by:</span>
+      <button 
+        class="sort-btn"
+        [class.active]="sortBy === 'market_cap'"
+        (click)="sortData('market_cap')"
+        matTooltip="Sort by market cap"
+      >
+        Market Cap
+        <mat-icon>{{ sortBy === 'market_cap' ? (sortOrder === 'asc' ? 'arrow_upward' : 'arrow_downward') : 'unfold_more' }}</mat-icon>
+      </button>
+      
+      <button 
+        class="sort-btn"
+        [class.active]="sortBy === 'price'"
+        (click)="sortData('price')"
+        matTooltip="Sort by price"
+      >
+        Price
+        <mat-icon>{{ sortBy === 'price' ? (sortOrder === 'asc' ? 'arrow_upward' : 'arrow_downward') : 'unfold_more' }}</mat-icon>
+      </button>
+      
+      <button 
+        class="sort-btn"
+        [class.active]="sortBy === 'change_24h'"
+        (click)="sortData('change_24h')"
+        matTooltip="Sort by 24h change"
+      >
+        24h Change
+        <mat-icon>{{ sortBy === 'change_24h' ? (sortOrder === 'asc' ? 'arrow_upward' : 'arrow_downward') : 'unfold_more' }}</mat-icon>
+      </button>
+      
+      <button 
+        class="sort-btn"
+        [class.active]="sortBy === 'volume'"
+        (click)="sortData('volume')"
+        matTooltip="Sort by volume"
+      >
+        Volume
+        <mat-icon>{{ sortBy === 'volume' ? (sortOrder === 'asc' ? 'arrow_upward' : 'arrow_downward') : 'unfold_more' }}</mat-icon>
+      </button>
+    </div>
+    
+    <div class="last-updated">
+      <mat-icon>schedule</mat-icon>
+      <span>Last updated: {{ getTimeAgo(lastUpdated) }}</span>
+    </div>
+  </div>
+
+  <div *ngIf="isLoading" class="loading-state" [@fadeInUp]>
+    <div class="loading-content">
+      <mat-spinner diameter="60"></mat-spinner>
+      <h3>Updating market data...</h3>
+      <p>Fetching the latest cryptocurrency information</p>
+    </div>
+  </div>
+
+  <div *ngIf="error && !isLoading" class="error-state" [@fadeInUp]>
+    <div class="error-content">
+      <mat-icon class="error-icon">error_outline</mat-icon>
+      <h3>Data Update Failed</h3>
+      <p>{{ error }}</p>
+      <button class="retry-btn" (click)="refreshData()">
+        <mat-icon>refresh</mat-icon>
+        Try Again
+      </button>
+    </div>
+  </div>
+
+  <div *ngIf="!isLoading && viewMode === 'grid'" class="grid-view" [@staggerList]="getPaginatedData().length">
+    <div 
+      *ngFor="let crypto of getPaginatedData(); trackBy: trackByCrypto"
+      class="crypto-card"
+      [@cardHover]="'normal'"
+      (mouseenter)="onCardHover($event)"
+      (mouseleave)="onCardLeave($event)"
+      (click)="selectCrypto(crypto)"
+    >
+      <div class="card-header">
+        <div class="rank-badge" [style.background-color]="getRankColor(crypto.market_cap_rank)">
+          #{{ crypto.market_cap_rank }}
+        </div>
+        <div class="crypto-info">
+          <img [src]="crypto.image" [alt]="crypto.name" class="crypto-icon">
+          <div class="crypto-details">
+            <h3 class="crypto-name">{{ crypto.name }}</h3>
+            <span class="crypto-symbol">{{ crypto.symbol }}</span>
+          </div>
+        </div>
+      </div>
+      
+      <div class="card-body">
+        <div class="price-section">
+          <span class="price-value" [@pricePulse]="crypto.price">
+            {{ crypto.price | currency:'USD':'symbol':'1.2-6' }}
+          </span>
+          <div class="price-change" [class]="crypto.price_change_percentage_24h > 0 ? 'positive' : 'negative'">
+            <mat-icon>{{ getChangeIcon(crypto.price_change_percentage_24h) }}</mat-icon>
+            <span>{{ crypto.price_change_percentage_24h > 0 ? '+' : '' }}{{ crypto.price_change_percentage_24h.toFixed(2) }}%</span>
+          </div>
+        </div>
+        
+        <div class="stats-grid">
+          <div class="stat-item">
+            <span class="stat-label">Market Cap</span>
+            <span class="stat-value">{{ formatCurrency(crypto.market_cap) }}</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-label">Volume (24h)</span>
+            <span class="stat-value">{{ formatCurrency(crypto.total_volume) }}</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-label">Circulating Supply</span>
+            <span class="stat-value">{{ formatNumber(crypto.circulating_supply) }}</span>
+          </div>
+        </div>
+      </div>
+      
+      <div class="card-footer">
+        <div class="price-range">
+          <span class="range-label">24h Range</span>
+          <span class="range-value">${{ crypto.low_24h.toFixed(2) }} - ${{ crypto.high_24h.toFixed(2) }}</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div *ngIf="!isLoading && viewMode === 'list'" class="list-view">
+    <div class="list-header">
+      <div class="header-cell rank">Rank</div>
+      <div class="header-cell name">Asset</div>
+      <div class="header-cell price">Price</div>
+      <div class="header-cell change">24h Change</div>
+      <div class="header-cell market-cap">Market Cap</div>
+      <div class="header-cell volume">Volume (24h)</div>
+      <div class="header-cell supply">Circulating Supply</div>
+    </div>
+    
+    <div class="list-body" [@staggerList]="getPaginatedData().length">
+      <div 
+        *ngFor="let crypto of getPaginatedData(); trackBy: trackByCrypto"
+        class="list-item"
+        (click)="selectCrypto(crypto)"
+      >
+        <div class="item-cell rank">
+          <span class="rank-number" [style.color]="getRankColor(crypto.market_cap_rank)">
+            #{{ crypto.market_cap_rank }}
+          </span>
+        </div>
+        
+        <div class="item-cell name">
+          <div class="crypto-info">
+            <img [src]="crypto.image" [alt]="crypto.name" class="crypto-icon">
+            <div class="crypto-details">
+              <span class="crypto-name">{{ crypto.name }}</span>
+              <span class="crypto-symbol">{{ crypto.symbol }}</span>
+            </div>
+          </div>
+        </div>
+        
+        <div class="item-cell price">
+          <span class="price-value" [@pricePulse]="crypto.price">
+            {{ crypto.price | currency:'USD':'symbol':'1.2-6' }}
+          </span>
+        </div>
+        
+        <div class="item-cell change">
+          <div class="change-indicator" [class]="crypto.price_change_percentage_24h > 0 ? 'positive' : 'negative'">
+            <mat-icon>{{ getChangeIcon(crypto.price_change_percentage_24h) }}</mat-icon>
+            <span>{{ crypto.price_change_percentage_24h > 0 ? '+' : '' }}{{ crypto.price_change_percentage_24h.toFixed(2) }}%</span>
+          </div>
+        </div>
+        
+        <div class="item-cell market-cap">
+          <span class="market-cap-value">{{ formatCurrency(crypto.market_cap) }}</span>
+        </div>
+        
+        <div class="item-cell volume">
+          <span class="volume-value">{{ formatCurrency(crypto.total_volume) }}</span>
+        </div>
+        
+        <div class="item-cell supply">
+          <span class="supply-value">{{ formatNumber(crypto.circulating_supply) }}</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div *ngIf="!isLoading && cryptoData.length > 0" class="paginator-container">
+    <mat-paginator
+      [length]="cryptoData.length"
+      [pageSize]="pageSize"
+      [pageSizeOptions]="pageSizeOptions"
+      [pageIndex]="currentPage"
+      (page)="onPageChange($event)"
+      showFirstLastButtons
+      aria-label="Select page of cryptocurrencies">
+    </mat-paginator>
+  </div>
+
+  <div *ngIf="showDetails && selectedCrypto" class="details-overlay" (click)="closeDetails()">
+    <div class="details-modal" (click)="$event.stopPropagation()" [@fadeInUp]>
+      <div class="modal-header">
+        <div class="modal-title">
+          <img [src]="selectedCrypto.image" [alt]="selectedCrypto.name" class="modal-icon">
+          <div class="title-text">
+            <h3>{{ selectedCrypto.name }}</h3>
+            <span class="symbol">{{ selectedCrypto.symbol }}</span>
+          </div>
+        </div>
+        <button class="close-btn" (click)="closeDetails()">
+          <mat-icon>close</mat-icon>
+        </button>
+      </div>
+      
+      <div class="modal-content">
+        <div class="price-section">
+          <div class="current-price">
+            <span class="price-label">Current Price</span>
+            <span class="price-value">{{ selectedCrypto.price | currency:'USD':'symbol':'1.2-6' }}</span>
+          </div>
+          <div class="price-change" [class]="selectedCrypto.price_change_percentage_24h > 0 ? 'positive' : 'negative'">
+            <mat-icon>{{ getChangeIcon(selectedCrypto.price_change_percentage_24h) }}</mat-icon>
+            <span>{{ selectedCrypto.price_change_percentage_24h > 0 ? '+' : '' }}{{ selectedCrypto.price_change_percentage_24h.toFixed(2) }}%</span>
+          </div>
+        </div>
+        
+        <div class="stats-grid">
+          <div class="stat-item">
+            <span class="stat-label">Market Cap</span>
+            <span class="stat-value">{{ formatCurrency(selectedCrypto.market_cap) }}</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-label">24h Volume</span>
+            <span class="stat-value">{{ formatCurrency(selectedCrypto.total_volume) }}</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-label">24h High</span>
+            <span class="stat-value">{{ selectedCrypto.high_24h | currency:'USD':'symbol':'1.2-2' }}</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-label">24h Low</span>
+            <span class="stat-value">{{ selectedCrypto.low_24h | currency:'USD':'symbol':'1.2-2' }}</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-label">Circulating Supply</span>
+            <span class="stat-value">{{ formatNumber(selectedCrypto.circulating_supply) }}</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-label">Total Supply</span>
+            <span class="stat-value">{{ selectedCrypto.total_supply ? formatNumber(selectedCrypto.total_supply) : 'N/A' }}</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-label">All Time High</span>
+            <span class="stat-value">{{ selectedCrypto.ath | currency:'USD':'symbol':'1.2-2' }}</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-label">All Time Low</span>
+            <span class="stat-value">{{ selectedCrypto.atl | currency:'USD':'symbol':'1.2-2' }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div> 

@@ -1,0 +1,88 @@
+<!-- Navigation container, positioned on the left side of the screen -->
+<div class="nav-container">
+  <!-- Container for the logo inside the navigation bar -->
+  <div class="image-container">
+    <!-- Logo image with alternative text for accessibility -->
+    <img
+      src="../../../assets/logos/white-alpha.png"
+      class="logo"
+      alt="Alpha Logo"
+    />
+  </div>
+
+  <!-- Container for the navigation buttons -->
+  <div
+    [ngClass]="{ active: isRouteActive('main/body/income') }"
+    class="button-container"
+  >
+    <!-- Navigation button with a dashboard icon -->
+    <button
+      [ngClass]="{ active: isRouteActive('main/body/income') }"
+      (click)="navigateToIncome()"
+      aria-label="Dashboard"
+    >
+      <!-- Icon for the dashboard -->
+      <i class="fas fa-chart-line nav-icon" aria-hidden="true"></i>
+    </button>
+
+    <!-- Navigation button with a finance icon -->
+    <button
+      [ngClass]="{ active: isRouteActive('main/body/income') }"
+      (click)="navigateToIncome()"
+      aria-label="Income"
+    >
+      <!-- Icon for income -->
+      <i class="fas fa-wallet nav-icon" aria-hidden="true"></i>
+    </button>
+
+    <!-- Navigation button with an expense icon -->
+    <button
+      [ngClass]="{ active: isRouteActive('main/body/income') }"
+      (click)="navigateToExpense()"
+      aria-label="Expense"
+    >
+      <!-- Icon for expense -->
+      <i class="fas fa-receipt nav-icon" aria-hidden="true"></i>
+    </button>
+
+    <!-- Navigation button with a budget icon -->
+    <button
+      [ngClass]="{ active: isRouteActive('main/body/income') }"
+      (click)="navigateToBudget()"
+      aria-label="Budget"
+    >
+      <!-- Icon for budget -->
+      <i class="fas fa-money-bill-wave nav-icon" aria-hidden="true"></i>
+    </button>
+
+    <!-- Navigation button with a saving icon -->
+    <button
+      [ngClass]="{ active: isRouteActive('main/body/income') }"
+      (click)="navigateToSaving()"
+      aria-label="Saving"
+    >
+      <!-- Icon for saving -->
+      <i class="fas fa-piggy-bank nav-icon" aria-hidden="true"></i>
+    </button>
+
+    <!-- Navigation button with an investment icon -->
+    <button
+      [ngClass]="{ active: isRouteActive('main/body/income') }"
+      (click)="navigateToInvestment()"
+      aria-label="Investment"
+    >
+      <!-- Icon for investment -->
+      <i class="fas fa-chart-bar nav-icon" aria-hidden="true"></i>
+    </button>
+
+    <!-- Navigation button with a debt icon -->
+    <button
+      [ngClass]="{ active: isRouteActive('main/body/debt') }"
+      (click)="navigateToDebt()"
+      aria-label="Debt"
+    >
+      <!-- Icon for debt -->
+      <i class="fas fa-credit-card nav-icon" aria-hidden="true"></i>
+    </button>
+  </div>
+</div>

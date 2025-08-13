@@ -1,0 +1,171 @@
+<!-- ====================================================================
+     Coded by Mohamed Dhaoui for Alpha Vault
+==================================================================== -->
+
+<div class="saving-container">
+  <!-- Section: Filter & Controls -->
+  <section class="controls-section">
+    <div class="filter-container">
+      <app-saving-filter
+        (filterChange)="onFilterChanged($event)"
+        (addGoal)="openAddOverlay()"
+      ></app-saving-filter>
+    </div>
+  </section>
+
+  <!-- Section: View Toggle & Quote -->
+  <section class="view-section" *ngIf="showViewToggle">
+    <div class="view-controls">
+      <div class="quote-container">
+        <blockquote class="inspirational-quote">
+          "A goal without a plan is just a wish."
+        </blockquote>
+      </div>
+      
+      <div class="view-toggle">
+        <button
+          class="view-btn"
+          [class.active]="selectedView === 'cards'"
+          (click)="onToggleView('cards')"
+          aria-label="Switch to card view"
+        >
+          <i class="bi bi-grid-fill" aria-hidden="true"></i>
+          <span class="btn-text">Cards</span>
+        </button>
+        
+        <button
+          class="view-btn"
+          [class.active]="selectedView === 'table'"
+          (click)="onToggleView('table')"
+          aria-label="Switch to table view"
+        >
+          <i class="bi bi-table" aria-hidden="true"></i>
+          <span class="btn-text">Table</span>
+        </button>
+      </div>
+    </div>
+  </section>
+
+  <!-- Section: Content Views -->
+  <section class="content-section">
+    <!-- Loading State -->
+    <div *ngIf="isLoading" class="loading-state">
+      <div class="loading-spinner">
+        <i class="fa fa-spinner fa-spin"></i>
+        <p>Loading your saving goals...</p>
+      </div>
+    </div>
+
+    <!-- Cards View -->
+    <div 
+      *ngIf="!isLoading"
+      class="cards-view"
+      [class.active]="selectedView === 'cards' || isMobile"
+      role="region"
+      aria-label="Saving goals in card format"
+      [hidden]="selectedView === 'table' && !isMobile"
+    >
+      <app-saving-card-list
+        [goals]="filteredGoals"
+        (openOverlay)="onOpenOverlay($event)"
+      ></app-saving-card-list>
+    </div>
+
+    <!-- Table View -->
+    <div 
+      *ngIf="!isLoading"
+      class="table-view"
+      [class.active]="selectedView === 'table' && !isMobile"
+      role="region"
+      aria-label="Saving goals in table format"
+      [hidden]="selectedView === 'cards' || isMobile"
+    >
+      <app-saving-table
+        [goals]="filteredGoals"
+        (onModify)="onModifyGoal($event)"
+        (onDelete)="onDeleteGoal($event)"
+        (openOverlay)="onOpenOverlay($event)"
+      ></app-saving-table>
+    </div>
+  </section>
+</div>
+
+<!-- Section: Overlays -->
+<section class="overlays-section">
+  <!-- Goal Details Overlay -->
+  <app-saving-overlay
+    *ngIf="overlayVisible && selectedGoal"
+    [goal]="selectedGoal!"
+    (close)="onCloseOverlay()"
+    (refresh)="onGoalUpdated()"
+    (modify)="onModifyGoal($event)"
+    (delete)="onDeleteGoal($event)"
+  ></app-saving-overlay>
+
+  <!-- Modify Goal Overlay -->
+  <app-overlay-container
+    *ngIf="isModifyOverlayVisible"
+    [title]="'Modify Goal'"
+    [theme]="'modify'"
+    (cancel)="closeOverlay()"
+  >
+    <app-saving-goal-form
+      [formGroup]="savingForm"
+      [mode]="'edit'"
+      [categories]="categories"
+      [priorities]="priorities"
+      (formSubmit)="submitModification()"
+      (cancel)="closeOverlay()"
+    />
+  </app-overlay-container>
+
+  <!-- Delete Confirmation Overlay -->
+  <app-overlay-container
+    *ngIf="isDeleteOverlayVisible"
+    [title]="'Confirm Deletion'"
+    [theme]="'delete'"
+    (cancel)="closeOverlay()"
+  >
+    <div class="delete-content">
+      <p class="delete-message">
+        Are you sure you want to delete this saving goal?
+      </p>
+      <p class="delete-warning">
+        This action cannot be undone.
+      </p>
+      <div class="delete-actions">
+        <button 
+          class="btn btn-secondary" 
+          (click)="closeOverlay()"
+          aria-label="Cancel deletion"
+        >
+          Cancel
+        </button>
+        <button 
+          class="btn btn-danger" 
+          (click)="confirmDelete()"
+          aria-label="Confirm deletion"
+        >
+          Delete
+        </button>
+      </div>
+    </div>
+  </app-overlay-container>
+
+  <!-- Add Goal Overlay -->
+  <app-overlay-container
+    *ngIf="isAddOverlayVisible"
+    [title]="'Add Goal'"
+    [theme]="'add'"
+    (cancel)="closeOverlay()"
+  >
+    <app-saving-goal-form
+      [formGroup]="savingForm"
+      [mode]="'add'"
+      [categories]="categories"
+      [priorities]="priorities"
+      (formSubmit)="submitCreation()"
+      (cancel)="closeOverlay()"
+    />
+  </app-overlay-container>
+</section>

@@ -1,0 +1,55 @@
+<!-- ================================================================
+              Coded by Mohamed Dhaoui for Alpha Vault
+================================================================ -->
+
+<section class="row justify-content-center g-2 h-100" role="region" aria-labelledby="top5Title">
+  <div class="col-12 h-100">
+    <div class="top5-box d-flex flex-column h-100">
+      <header class="top5-header">
+        <h3 id="top5Title" class="top5-title">Top 5 Income Categories</h3>
+        <div class="top5-badge">Monthly</div>
+      </header>
+
+      <ng-container *ngIf="topIncomes && topIncomes.length > 0; else noData">
+        <div class="top5-table-wrapper flex-grow-1">
+          <table class="top5-table" role="table" aria-describedby="top5Title">
+            <thead>
+              <tr>
+                <th scope="col" class="top5-th">Category</th>
+                <th scope="col" class="top5-th text-end">Amount</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr
+                class="top5-tr"
+                *ngFor="let income of topIncomes; let i = index; trackBy: trackByIndex"
+                [attr.data-index]="i"
+              >
+                <td class="top5-td">
+                  <div class="category-wrapper">
+                    <div
+                      class="category-indicator"
+                      [ngStyle]="{ 'background-color': getCategoryColor(income.category) }"
+                    ></div>
+                    <span>{{ getCategoryLabel(income.category) }}</span>
+                  </div>
+                </td>
+                <td class="top5-td text-end" [class.pulse]="shouldPulse">
+                  {{ income.amount | currency }}
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </ng-container>
+
+      <ng-template #noData>
+        <div class="no-data-message flex-grow-1">
+          <div class="no-data-icon">📈</div>
+          <p>No income data available for this month</p>
+          <p class="no-data-hint">Add some income sources to see your top categories here</p>
+        </div>
+      </ng-template>
+    </div>
+  </div>
+</section>

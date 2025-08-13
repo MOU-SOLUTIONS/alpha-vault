@@ -1,0 +1,176 @@
+/* ========== LAYOUT WRAPPER ========== */
+
+.body {
+  top: 0;
+  display: flex;
+  height: 100vh;
+  width: 100vw;
+  margin: 0;
+  padding: 0;
+  background-color: #f1f1f1;
+  position: absolute;
+  overflow: hidden;
+  animation: fadeIn 0.5s ease-in-out;
+
+  &.sidebar-open {
+    overflow: hidden;
+  }
+}
+
+/* ========== ANIMATIONS ========== */
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideInFromLeft {
+  from { transform: translateX(-100%); opacity: 0; }
+  to { transform: translateX(0); opacity: 1; }
+}
+
+@keyframes slideInFromTop {
+  from { transform: translateY(-100%); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+@keyframes scaleIn {
+  from { transform: scale(0.95); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+
+/* ========== NAVBAR (desktop) ========== */
+
+app-navbar {
+  position: fixed;
+  top: 0;
+  left: 80px;
+  width: calc(100% - 80px);
+  height: 90px;
+  z-index: 100;
+  animation: slideInFromTop 0.6s ease-out;
+  animation-fill-mode: both;
+}
+
+/* ========== SIDEBAR (desktop) ========== */
+
+app-sidbar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 80px;
+  height: 100vh;
+  z-index: 90;
+  transition: transform 0.3s ease;
+  animation: slideInFromLeft 0.5s ease-out;
+  animation-fill-mode: both;
+}
+
+/* ========== CONTENT ========== */
+
+app-body {
+  position: fixed;
+  top: 80px;
+  left: 80px;
+  width: calc(100% - 80px);
+  height: calc(100vh - 90px);
+  padding: 10px;
+  overflow-y: auto;
+  box-sizing: border-box;
+  animation: scaleIn 0.7s ease-out;
+  animation-fill-mode: both;
+  animation-delay: 0.2s;
+}
+
+/* ========== MOBILE MENU TOGGLE BUTTON ========== */
+
+.menu-toggle {
+  position: fixed;
+  top: 15px;
+  left: 15px;
+  z-index: 150;
+  background: transparent;
+  border: none;
+  font-size: 1.5rem;
+  color: #333;
+  cursor: pointer;
+  padding: 8px;
+  border-radius: 4px;
+  transition: background-color 0.2s ease;
+  animation: fadeIn 0.8s ease-out;
+}
+
+.menu-toggle:hover {
+  background-color: rgba(0, 0, 0, 0.05);
+}
+
+/* ========== OVERLAY (mobile) ========== */
+
+.overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 85;
+  backdrop-filter: blur(2px);
+  animation: fadeIn 0.3s ease-out;
+}
+
+/* ========== MOBILE BREAKPOINT ========== */
+
+@media (max-width: 1024px) {
+  /* Sidebar off-screen by default */
+  app-sidbar {
+    transform: translateX(-100%);
+    will-change: transform;
+    transition: transform 0.3s ease-in-out;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 80px;
+    height: 100vh;
+    z-index: 90;
+    animation: none;
+  }
+
+  /* Navbar spans full width initially */
+  app-navbar {
+    width: 100%;
+    left: 0;
+    height: 90px;
+  }
+
+  /* Content fills width */
+  app-body {
+    left: 0;
+    width: 100%;
+    padding: 12px;
+  }
+
+  /* When sidebar is open, slide everything over */
+  .body.sidebar-open {
+    app-sidbar {
+      transform: translateX(0);
+      box-shadow: 0 0 20px rgba(0, 0, 0, 0.2);
+      animation: slideInFromLeft 0.3s ease-out;
+    }
+
+    app-navbar {
+      left: 80px;
+      transform: translateX(80px);
+      width: calc(100% - 80px);
+      transition: transform 0.3s ease, width 0.3s ease;
+    }
+
+    app-body {
+      transition: transform 0.3s ease, width 0.3s ease;
+    }
+
+    .menu-toggle {
+      transform: translateX(86px);
+      transition: transform 0.3s ease;
+    }
+  }
+}

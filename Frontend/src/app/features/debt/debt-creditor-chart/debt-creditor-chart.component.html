@@ -1,0 +1,92 @@
+<!-- ================================================================
+              Coded by Mohamed Dhaoui for Alpha Vault
+================================================================ -->
+
+<!-- Section: Creditor Chart Container -->
+<section class="creditor-chart-container" role="region" aria-labelledby="creditorChartTitle">
+  
+  <!-- Section: Enhanced Header -->
+  <header class="chart-header">
+    <div class="header-content">
+      <div class="header-left">
+        <div class="header-icon" role="img" aria-label="Creditor distribution icon">
+          <span class="icon-symbol">🏦</span>
+          <div class="icon-glow"></div>
+        </div>
+        <div class="header-text">
+          <h2 id="creditorChartTitle" class="header-title">Debt by Creditor</h2>
+          <p class="header-subtitle">Distribution of your total debt across creditors</p>
+        </div>
+      </div>
+      
+      <div class="header-stats" *ngIf="hasCreditorData()">
+        <div class="stat-badge">
+          <span class="stat-label">Creditors</span>
+          <span class="stat-value">{{ getCreditorCount() }}</span>
+        </div>
+        <div class="stat-badge primary" *ngIf="getTopCreditor() as topCreditor">
+          <span class="stat-label">Top</span>
+          <span class="stat-value">{{ topCreditor.key | slice:0:8 }}{{ topCreditor.key.length > 8 ? '...' : '' }}</span>
+        </div>
+      </div>
+    </div>
+  </header>
+  
+  <!-- Section: Chart Content -->
+  <div class="chart-content">
+    <div *ngIf="!hasCreditorData()" class="no-data">
+      <div class="no-data-icon">📊</div>
+      <h3 class="no-data-title">No Debt Data Available</h3>
+      <p class="no-data-description">Start adding your debts to see the creditor distribution chart</p>
+    </div>
+    
+    <div *ngIf="hasCreditorData()" class="creditor-list">
+      <div 
+        *ngFor="let creditor of getCreditorEntries(); let i = index; trackBy: trackByCreditor" 
+        class="creditor-item"
+        [style.--percentage]="getCreditorPercentage(creditor.value) + '%'"
+        [style.--animation-delay]="(i * 0.1) + 's'"
+      >
+        <div class="creditor-info">
+          <div class="creditor-details">
+            <span class="creditor-name">{{ creditor.key }}</span>
+            <span class="creditor-percentage">{{ getCreditorPercentage(creditor.value) | number:'1.0-1' }}%</span>
+          </div>
+          <span class="creditor-amount">${{ creditor.value | number:'1.0-2' }}</span>
+        </div>
+        
+        <div class="creditor-bar">
+          <div class="bar-fill" [style.width.%]="getCreditorPercentage(creditor.value)"></div>
+          <div class="bar-glow" [style.width.%]="getCreditorPercentage(creditor.value)"></div>
+        </div>
+        
+        <div class="creditor-rank" *ngIf="i < 3">
+          <span class="rank-badge" [class]="'rank-' + (i + 1)">{{ i + 1 }}</span>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Section: Enhanced Footer -->
+  <footer class="chart-footer" *ngIf="hasCreditorData()">
+    <div class="footer-content">
+      <div class="total-info">
+        <div class="total-label">
+          <span class="label-icon">💰</span>
+          <span>Total Debt</span>
+        </div>
+        <span class="total-amount">${{ getTotalDebt() | number:'1.0-2' }}</span>
+      </div>
+      
+      <div class="footer-insights" *ngIf="getTopCreditor() as topCreditor">
+        <div class="insight-item">
+          <span class="insight-icon">🎯</span>
+          <span class="insight-text">
+            <strong>{{ topCreditor.key }}</strong> represents 
+            <strong>{{ getCreditorPercentage(topCreditor.value) | number:'1.0-1' }}%</strong> of your total debt
+          </span>
+        </div>
+      </div>
+    </div>
+  </footer>
+</section>

@@ -1,0 +1,47 @@
+/* ===================================================================
+   Coded by Mohamed Dhaoui for Alpha Vault
+=================================================================== */
+
+.first-row {
+  margin-bottom: 10px;
+}
+
+.second-row {
+  margin-bottom: 10px;
+}
+
+.third-row {
+  margin-bottom: 10px;
+}
+
+.charts-container {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  width: 100%;
+}
+
+.pie-chart {
+  grid-column: 1;
+}
+
+.bar-chart {
+  grid-column: 2;
+}
+
+@media (max-width: 767px) {
+  .charts-container {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+  
+  .pie-chart {
+    grid-column: 1;
+    grid-row: 1;
+  }
+  
+  .bar-chart {
+    grid-column: 1;
+    grid-row: 2;
+  }
+}

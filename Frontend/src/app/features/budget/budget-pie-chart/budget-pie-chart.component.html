@@ -1,0 +1,78 @@
+<!-- ================================================================
+              Coded by Mohamed Dhaoui for Alpha Vault
+================================================================ -->
+
+<section 
+  class="elite-pie-chart"
+  [class.animate-in]="isVisible"
+  [class.has-data]="hasData"
+  [class.no-data]="!hasData"
+  role="region"
+  aria-label="Budget Allocation Chart"
+>
+  <header class="chart-header">
+    <h3 class="chart-title">
+      <svg class="title-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 3.055A9.001 9.001 0 1020.945 13H11V3.055z"/>
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.488 9H15V3.512A9.025 9.025 0 0120.488 9z"/>
+      </svg>
+      {{ title }}
+    </h3>
+    
+    <div class="chart-stats" *ngIf="hasData">
+      <div class="total-budget">
+        <span class="stat-label">Total Budget</span>
+        <span class="stat-value">{{ getTotalFormatted() }}</span>
+      </div>
+    </div>
+  </header>
+
+  <div class="chart-container">
+    <div class="chart-content" *ngIf="hasData">
+      <div class="pie-chart-wrapper">
+        <canvas
+          baseChart
+          [data]="pieChartData"
+          [labels]="pieChartLabels"
+          [type]="'pie'"
+          [options]="pieChartOptions"
+          class="chart-canvas"
+          role="img"
+          aria-label="Pie chart showing budget allocation by category"
+        ></canvas>
+      </div>
+
+      <div class="category-legend" *ngIf="showLegend">
+        <h4 class="legend-title">Top Categories</h4>
+        <div class="legend-items">
+          <div 
+            class="legend-item" 
+            *ngFor="let category of getTopCategories(5); trackBy: trackByCategory"
+          >
+            <div class="legend-color" [style.background-color]="category.color"></div>
+            <div class="legend-info">
+              <span class="category-name">{{ category.category }}</span>
+              <span class="category-amount">{{ getCategoryAmount(category) }}</span>
+            </div>
+            <div class="category-percentage">{{ getCategoryPercentage(category) }}%</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="empty-state" *ngIf="!hasData">
+      <div class="empty-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+        </svg>
+      </div>
+      
+      <div class="empty-content">
+        <h4 class="empty-title">No Budget Data Available</h4>
+        <p class="empty-description">
+          Start by adding budget allocations to see your spending breakdown visualized in this beautiful pie chart.
+        </p>
+      </div>
+    </div>
+  </div>
+</section>

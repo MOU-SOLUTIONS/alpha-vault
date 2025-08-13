@@ -1,0 +1,99 @@
+/* ===================================================================
+   Coded by Mohamed Dhaoui for Alpha Vault
+=================================================================== */
+
+.second-row {
+  width: 100%;
+  margin: 0;
+}
+
+.third-row {
+  width: 100%;
+  margin: 0;
+}
+
+.fourth-row {
+  width: 100%;
+  margin: 0;
+  padding-top: 10px;
+}
+
+.fifth-row {
+  width: 100%;
+  margin: 0;
+  padding-top: 10px;
+}
+
+.delete-text {
+  font-size: 1rem;
+  font-weight: 500;
+  color: #495057;
+  margin-bottom: 1rem;
+}
+
+.delete-button-group {
+  margin-top: 1rem;
+}
+
+@media (max-width: 767px) {
+  .weekly-chart {
+    padding: 0;
+    padding-top: 10px;
+    padding-bottom: 5px;
+  }
+
+  .monthly-chart {
+    padding: 0;
+    padding-top: 5px;
+  }
+
+  .top-5-table {
+    padding: 10px 0px 5px 0px;
+  }
+
+  .method-chart {
+    padding: 0;
+    padding-top: 5px;
+    padding-right: 5px;
+  }
+
+  .source-chart {
+    padding: 0;
+    padding-top: 5px;
+    padding-left: 5px;
+  }
+
+  .overlay {
+    height: 100% !important;
+  }
+
+  .overlay-content {
+    width: 80% !important;
+  }
+}
+
+@media (min-width: 768px) {
+  .weekly-chart {
+    padding: 0;
+    padding-top: 10px;
+    padding-right: 5px;
+  }
+
+  .monthly-chart {
+    padding: 0;
+    padding-top: 10px;
+    padding-left: 5px;
+  }
+
+  .top-5-table {
+    padding: 10px 5px 0px 0px;
+  }
+
+  .method-chart {
+    padding: 10px 5px 0px 5px;
+  }
+
+  .source-chart {
+    padding: 10px 0px 0px 5px;
+  }
+}

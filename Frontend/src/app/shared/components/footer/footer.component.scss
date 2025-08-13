@@ -1,0 +1,144 @@
+/* ================= VARIABLES ================= */
+
+:host {
+  --footer-bg: #1a1a1a;
+  --footer-text: white;
+  --footer-text-secondary: #a1a1aa;
+  --footer-border: #374151;
+  --primary-color: #6366f1;
+  
+  --spacing-xs: 10px;
+  --spacing-sm: 20px;
+  --spacing-md: 30px;
+  --spacing-lg: 40px;
+  --spacing-xl: 60px;
+  
+  --container-width: 1200px;
+  --mobile-breakpoint: 768px;
+  
+  --transition-speed: 0.3s;
+}
+
+/* ================= FOOTER LAYOUT ================= */
+
+.footer {
+  background: var(--footer-bg);
+  color: var(--footer-text);
+  padding: var(--spacing-xl) 0 var(--spacing-md);
+}
+
+.container {
+  max-width: var(--container-width);
+  margin: 0 auto;
+  padding: 0 var(--spacing-sm);
+}
+
+/* ================= FOOTER CONTENT ================= */
+
+.footer-content {
+  display: grid;
+  grid-template-columns: 1fr 2fr;
+  gap: var(--spacing-xl);
+  margin-bottom: var(--spacing-lg);
+}
+
+/* ================= FOOTER BRAND ================= */
+
+.footer-logo {
+  display: flex;
+  align-items: center;
+  font-size: 24px;
+  font-weight: 700;
+  margin-bottom: var(--spacing-sm);
+  
+  i {
+    margin-right: var(--spacing-xs);
+    color: var(--primary-color);
+    font-size: 28px;
+  }
+}
+
+.footer-brand {
+  p {
+    color: var(--footer-text-secondary);
+    line-height: 1.6;
+  }
+}
+
+/* ================= FOOTER NAVIGATION ================= */
+
+.footer-links {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--spacing-lg);
+}
+
+.footer-column {
+  h4 {
+    font-weight: 600;
+    margin-bottom: var(--spacing-sm);
+    color: var(--footer-text);
+  }
+  
+  a {
+    display: block;
+    color: var(--footer-text-secondary);
+    text-decoration: none;
+    margin-bottom: var(--spacing-xs);
+    transition: color var(--transition-speed) ease;
+    
+    &:hover {
+      color: var(--primary-color);
+    }
+  }
+}
+
+/* ================= FOOTER BOTTOM ================= */
+
+.footer-bottom {
+  border-top: 1px solid var(--footer-border);
+  padding-top: var(--spacing-md);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  
+  p {
+    color: var(--footer-text-secondary);
+  }
+}
+
+/* ================= SOCIAL LINKS ================= */
+
+.social-links {
+  display: flex;
+  gap: var(--spacing-sm);
+  
+  a {
+    color: var(--footer-text-secondary);
+    font-size: 20px;
+    transition: color var(--transition-speed) ease;
+    
+    &:hover {
+      color: var(--primary-color);
+    }
+  }
+}
+
+/* ================= RESPONSIVE DESIGN ================= */
+
+@media (max-width: var(--mobile-breakpoint)) {
+  .footer-content {
+    grid-template-columns: 1fr;
+    gap: var(--spacing-lg);
+  }
+  
+  .footer-links {
+    grid-template-columns: 1fr;
+    gap: var(--spacing-md);
+  }
+  
+  .footer-bottom {
+    flex-direction: column;
+    gap: var(--spacing-sm);
+  }
+}

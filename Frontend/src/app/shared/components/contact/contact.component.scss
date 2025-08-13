@@ -1,0 +1,304 @@
+@use '../../../shared/styles/animations.scss' as *;
+
+/* ================= VARIABLES ================= */
+
+:host {
+  --primary-color: #6366f1;
+  --secondary-color: #8b5cf6;
+  --text-dark: #1a1a1a;
+  --text-light: #64748b;
+  --background-light: #f1f5f9;
+  --border-color: #e2e8f0;
+  --success-color: #10b981;
+  --error-color: #ef4444;
+  --primary-gradient: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+  --spacing-xs: 5px;
+  --spacing-sm: 8px;
+  --spacing-md: 15px;
+  --spacing-lg: 20px;
+  --spacing-xl: 25px;
+  --spacing-xxl: 30px;
+  --spacing-section: 60px;
+  --spacing-page: 120px;
+  
+  --border-radius-sm: 8px;
+  --border-radius-full: 50%;
+  
+  --transition-speed: 0.3s;
+  --mobile-breakpoint: 768px;
+}
+
+/* ================= CONTACT SECTION ================= */
+
+.contact {
+  padding: var(--spacing-page) 0;
+  background: white;
+}
+
+/* ================= SECTION HEADER ================= */
+
+.section-header {
+  text-align: center;
+  margin-bottom: 100px;
+  
+  h2 {
+    font-size: 2.5rem;
+    font-weight: 700;
+    margin-bottom: var(--spacing-md);
+  }
+  
+  p {
+    font-size: 1.2rem;
+    color: var(--text-light);
+  }
+}
+
+.gradient-text {
+  background: var(--primary-gradient);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  display: inline-block;
+}
+
+/* ================= CONTACT LAYOUT ================= */
+
+.contact-content {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--spacing-section);
+  @include reveal-on-scroll;
+}
+
+/* ================= CONTACT INFO ================= */
+
+.info-item {
+  display: flex;
+  align-items: flex-start;
+  margin-bottom: var(--spacing-xxl);
+  
+  i {
+    font-size: 24px;
+    color: var(--primary-color);
+    margin-right: var(--spacing-lg);
+    margin-top: var(--spacing-xs);
+  }
+  
+  h3 {
+    font-size: 1.2rem;
+    font-weight: 600;
+    margin-bottom: var(--spacing-xs);
+    color: var(--text-dark);
+  }
+  
+  p {
+    color: var(--text-light);
+    
+    a {
+      color: inherit;
+      text-decoration: none;
+      transition: color var(--transition-speed) ease;
+      
+      &:hover {
+        color: var(--primary-color);
+      }
+    }
+  }
+}
+
+/* ================= SOCIAL LINKS ================= */
+
+.social-links {
+  h3 {
+    font-size: 1.2rem;
+    font-weight: 600;
+    margin-bottom: var(--spacing-md);
+    color: var(--text-dark);
+  }
+}
+
+.social-icons {
+  display: flex;
+  gap: var(--spacing-md);
+}
+
+.social-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: var(--border-radius-full);
+  background: var(--background-light);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--primary-color);
+  transition: transform var(--transition-speed) ease, 
+              background var(--transition-speed) ease, 
+              color var(--transition-speed) ease;
+  
+  &:hover {
+    background: var(--primary-color);
+    color: white;
+    transform: translateY(-5px) scale(1.1);
+  }
+}
+
+/* ================= CONTACT FORM ================= */
+
+.contact-form {
+  h3 {
+    font-size: 1.5rem;
+    font-weight: 600;
+    margin-bottom: var(--spacing-xl);
+    color: var(--text-dark);
+  }
+}
+
+.form-group {
+  margin-bottom: var(--spacing-lg);
+  
+  label {
+    display: block;
+    margin-bottom: var(--spacing-sm);
+    font-weight: 500;
+    color: var(--text-dark);
+  }
+  
+  input,
+  textarea {
+    width: 100%;
+    padding: 12px 15px;
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius-sm);
+    font-size: 1rem;
+    transition: border-color var(--transition-speed) ease;
+    
+    &:focus {
+      border-color: var(--primary-color);
+      outline: none;
+    }
+  }
+}
+
+/* ================= FORM CONTROLS ================= */
+
+.form-control {
+  transition: border-color var(--transition-speed) ease, 
+              box-shadow var(--transition-speed) ease;
+  
+  &:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2);
+  }
+}
+
+/* ================= FORM FEEDBACK ================= */
+
+.form-success {
+  background-color: rgba(16, 185, 129, 0.1);
+  border: 1px solid var(--success-color);
+  border-radius: var(--border-radius-sm);
+  padding: var(--spacing-xl);
+  text-align: center;
+  animation: fadeIn 0.5s ease-in-out;
+  
+  i {
+    font-size: 48px;
+    color: var(--success-color);
+    margin-bottom: var(--spacing-md);
+  }
+  
+  h4 {
+    font-size: 1.3rem;
+    font-weight: 600;
+    margin-bottom: var(--spacing-md);
+    color: var(--text-dark);
+  }
+  
+  p {
+    color: var(--text-light);
+  }
+}
+
+.form-error {
+  background-color: rgba(239, 68, 68, 0.1);
+  border: 1px solid var(--error-color);
+  border-radius: var(--border-radius-sm);
+  padding: var(--spacing-md);
+  margin-bottom: var(--spacing-lg);
+  
+  p {
+    color: var(--error-color);
+    font-weight: 500;
+    margin: 0;
+  }
+}
+
+/* ================= BUTTONS ================= */
+
+.btn-primary {
+  background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+  color: white;
+  border: none;
+  border-radius:  10px;
+  padding: 12px 24px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  box-shadow: 0 10px 25px rgba(99, 102, 241, 0.3);
+  position: relative;
+  overflow: hidden;
+  
+  &:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 15px 30px rgba(99, 102, 241, 0.4);
+  }
+  
+  &.large {
+    padding: 16px 32px;
+    font-size: 16px;
+  }
+}
+
+.btn-submit {
+  transition: transform var(--transition-speed) ease, 
+              box-shadow var(--transition-speed) ease;
+  
+  &:hover:not(:disabled) {
+    transform: translateY(-3px);
+    box-shadow: 0 10px 20px rgba(99, 102, 241, 0.3);
+  }
+}
+
+/* ================= RESPONSIVE DESIGN ================= */
+
+@media (max-width: 768px) {
+  .contact-content {
+    grid-template-columns: 1fr;
+  }
+  
+  /* Fix for social icons on mobile */
+  .social-icons {
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: flex-start;
+  }
+}
+
+/* Additional mobile breakpoint for smaller phones */
+
+@media (max-width: 480px) {
+  .social-icons {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--spacing-md);
+  }
+  
+  .social-icon {
+    width: 100%;
+    justify-self: center;
+  }
+}

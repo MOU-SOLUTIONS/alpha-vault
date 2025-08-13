@@ -1,0 +1,266 @@
+<!-- ================================================================
+              Coded by Mohamed Dhaoui for Alpha Vault
+================================================================ -->
+
+<div class="expense-evaluation-container" [class.loading]="loading">
+  <!-- Section: Loading State -->
+  <div *ngIf="loading" class="loading-overlay">
+    <div class="loading-content">
+      <div class="loading-spinner"></div>
+      <h3>Loading Expense Evaluation</h3>
+      <p>Analyzing your financial data...</p>
+    </div>
+  </div>
+
+  <!-- Section: No Data State -->
+  <div *ngIf="!loading && !hasData" class="no-data-overlay">
+    <div class="no-data-content">
+      <div class="no-data-icon">📊</div>
+      <h3>No Expense Data Available</h3>
+      <p>Start tracking your expenses to see detailed evaluation and insights.</p>
+      <div class="no-data-actions">
+        <button class="btn-secondary">Add Expense</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Section: Main Content -->
+  <main *ngIf="!loading && hasData" class="main-content" role="main">
+    <!-- Section: Header -->
+    <header class="premium-header" role="banner">
+      <div class="header-content">
+        <div class="title-section">
+          <h1 class="main-title">
+            <span class="title-accent">Expense</span>
+            <span class="title-main">Evaluation</span>
+          </h1>
+          <p class="subtitle">Comprehensive analysis of your expense patterns and performance</p>
+        </div>
+        <div class="header-stats">
+          <div class="stat-card">
+            <div class="stat-icon">💰</div>
+            <div class="stat-content">
+              <div class="stat-value">{{ (evolutionMetrics.totalExpense || 0) | currency:'USD':'symbol':'1.2-2' }}</div>
+              <div class="stat-label">Total Expenses</div>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon">📈</div>
+            <div class="stat-content">
+              <div class="stat-value">{{ (evolutionMetrics.growthRate || 0) | number:'1.2-2' }}%</div>
+              <div class="stat-label">Growth Rate</div>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon">🎯</div>
+            <div class="stat-content">
+              <div class="stat-value">{{ (evolutionMetrics.achievementRate || 0) | number:'1.2-2' }}%</div>
+              <div class="stat-label">Expense Performance</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="floating-elements">
+        <div class="floating-circle"></div>
+        <div class="floating-square"></div>
+        <div class="floating-triangle"></div>
+      </div>
+    </header>
+
+    <!-- Section: Content Grid -->
+    <div class="content-grid">
+      <!-- Section: Trends -->
+      <section class="trends-section" role="region" aria-labelledby="trends-title">
+        <header class="section-header">
+          <h2 id="trends-title" class="section-title">
+            <span class="title-icon">📊</span>
+            Expense Trends
+          </h2>
+          <div class="trend-indicator" [class]="getTrendClass(evolutionMetrics.trend)">
+            <span class="trend-arrow">{{ getTrendIcon(evolutionMetrics.trend) }}</span>
+            {{ evolutionMetrics.trend > 0 ? '+' : '' }}{{ (evolutionMetrics.trend || 0) | number:'1.2-2' }}%
+          </div>
+        </header>
+        <div class="trends-grid">
+          <article class="trend-card primary">
+            <header class="card-header">
+              <h3>Monthly Growth</h3>
+              <div class="card-icon">📈</div>
+            </header>
+            <div class="card-content">
+              <div class="metric-display">
+                <div class="metric-value">{{ (evolutionMetrics.monthlyGrowth || 0) | number:'1.2-2' }}%</div>
+                <div class="metric-change" [class]="getTrendClass(evolutionMetrics.monthlyGrowth)">
+                  {{ evolutionMetrics.monthlyGrowth > 0 ? '+' : '' }}{{ (evolutionMetrics.monthlyGrowth || 0) | number:'1.2-2' }}%
+                </div>
+              </div>
+              <div class="progress-bar">
+                <div class="progress-fill" [style.width.%]="calculateMetricScore(evolutionMetrics.monthlyGrowth, 20)"></div>
+              </div>
+            </div>
+          </article>
+
+          <article class="trend-card secondary">
+            <header class="card-header">
+              <h3>Consistency Score</h3>
+              <div class="card-icon">🎯</div>
+            </header>
+            <div class="card-content">
+              <div class="metric-display">
+                <div class="metric-value">{{ (evolutionMetrics.consistencyScore || 0) | number:'1.2-2' }}%</div>
+                <div class="metric-change" [class]="getTrendClass(evolutionMetrics.consistencyScore)">
+                  {{ evolutionMetrics.consistencyScore > 0 ? '+' : '' }}{{ (evolutionMetrics.consistencyScore || 0) | number:'1.2-2' }}%
+                </div>
+              </div>
+              <div class="progress-bar">
+                <div class="progress-fill" [style.width.%]="evolutionMetrics.consistencyScore || 0"></div>
+              </div>
+            </div>
+          </article>
+
+          <article class="trend-card accent">
+            <header class="card-header">
+              <h3>Diversification</h3>
+              <div class="card-icon">🌐</div>
+            </header>
+            <div class="card-content">
+              <div class="metric-display">
+                <div class="metric-value">{{ (evolutionMetrics.diversificationScore || 0) | number:'1.2-2' }}%</div>
+                <div class="metric-change" [class]="getTrendClass(evolutionMetrics.diversificationScore)">
+                  {{ evolutionMetrics.diversificationScore > 0 ? '+' : '' }}{{ (evolutionMetrics.diversificationScore || 0) | number:'1.2-2' }}%
+                </div>
+              </div>
+              <div class="progress-bar">
+                <div class="progress-fill" [style.width.%]="evolutionMetrics.diversificationScore || 0"></div>
+              </div>
+              <div *ngIf="evolutionMetrics.diversificationScore > 80" class="achievement-badge">
+                Excellent Diversification!
+              </div>
+            </div>
+          </article>
+        </div>
+      </section>
+
+      <!-- Section: Distribution -->
+      <section class="distribution-section" role="region" aria-labelledby="distribution-title">
+        <header class="section-header">
+          <h2 id="distribution-title" class="section-title">
+            <span class="title-icon">📊</span>
+            Expense Distribution
+          </h2>
+          <nav class="period-selector" role="tablist">
+            <button class="period-btn" [class.active]="currentPeriod === 'week'" (click)="onPeriodChange('week')" role="tab">Week</button>
+            <button class="period-btn" [class.active]="currentPeriod === 'month'" (click)="onPeriodChange('month')" role="tab">Month</button>
+            <button class="period-btn" [class.active]="currentPeriod === 'year'" (click)="onPeriodChange('year')" role="tab">Year</button>
+          </nav>
+        </header>
+
+        <div *ngIf="!hasDistributionData()" class="no-distribution-data">
+          <div class="no-data-icon">📊</div>
+          <h4>No Distribution Data</h4>
+          <p>No expense distribution data available for the selected period.</p>
+        </div>
+
+        <div *ngIf="hasDistributionData()" class="distribution-cards">
+          <article *ngFor="let key of getDistributionKeys(); trackBy: trackByDistribution" class="distribution-card">
+            <div class="card-visual">
+              <div class="pie-chart-placeholder" [style.background]="'conic-gradient(' + key + ' 0deg ' + (calculateDistributionPercentage(getDistributionValue(key), getTotalDistribution()) * 3.6) + 'deg, rgba(255, 255, 255, 0.1) ' + (calculateDistributionPercentage(getDistributionValue(key), getTotalDistribution()) * 3.6) + 'deg 360deg)'">
+                <div class="chart-center">
+                  <span class="chart-percentage">{{ calculateDistributionPercentage(getDistributionValue(key), getTotalDistribution()) | number:'1.2-2' }}%</span>
+                  <span class="chart-label">Share</span>
+                </div>
+              </div>
+            </div>
+            <div class="card-details">
+              <h3>{{ key }}</h3>
+              <div class="amount">{{ getDistributionValue(key) | currency:'USD':'symbol':'1.2-2' }}</div>
+              <span class="source-tag">{{ key }}</span>
+            </div>
+          </article>
+        </div>
+      </section>
+
+      <!-- Section: Performance Metrics -->
+      <section class="metrics-section" role="region" aria-labelledby="metrics-title">
+        <header class="section-header">
+          <h2 id="metrics-title" class="section-title">
+            <span class="title-icon">📊</span>
+            Performance Metrics
+          </h2>
+        </header>
+        <div class="metrics-grid">
+          <article class="metric-card">
+            <div class="metric-icon">💰</div>
+            <div class="metric-info">
+              <h3>Expense Efficiency</h3>
+              <div class="metric-score">
+                <div class="score-bar">
+                  <div class="score-fill" [style.width.%]="performanceMetrics.efficiency || 0"></div>
+                </div>
+                <div class="score-value">{{ (performanceMetrics.efficiency || 0) | number:'1.0-0' }}%</div>
+              </div>
+            </div>
+          </article>
+
+          <article class="metric-card">
+            <div class="metric-icon">📈</div>
+            <div class="metric-info">
+              <h3>Growth Potential</h3>
+              <div class="metric-score">
+                <div class="score-bar">
+                  <div class="score-fill" [style.width.%]="performanceMetrics.growthPotential || 0"></div>
+                </div>
+                <div class="score-value">{{ (performanceMetrics.growthPotential || 0) | number:'1.0-0' }}%</div>
+              </div>
+            </div>
+          </article>
+
+          <article class="metric-card">
+            <div class="metric-icon">🎯</div>
+            <div class="metric-info">
+              <h3>Goal Alignment</h3>
+              <div class="metric-score">
+                <div class="score-bar">
+                  <div class="score-fill" [style.width.%]="performanceMetrics.goalAlignment || 0"></div>
+                </div>
+                <div class="score-value">{{ (performanceMetrics.goalAlignment || 0) | number:'1.0-0' }}%</div>
+              </div>
+            </div>
+          </article>
+
+          <article class="metric-card">
+            <div class="metric-icon">📊</div>
+            <div class="metric-info">
+              <h3>Stability Index</h3>
+              <div class="metric-score">
+                <div class="score-bar">
+                  <div class="score-fill" [style.width.%]="performanceMetrics.stabilityIndex || 0"></div>
+                </div>
+                <div class="score-value">{{ (performanceMetrics.stabilityIndex || 0) | number:'1.0-0' }}%</div>
+              </div>
+            </div>
+          </article>
+        </div>
+      </section>
+
+      <!-- Section: Insights -->
+      <section class="insights-section" role="region" aria-labelledby="insights-title">
+        <header class="section-header">
+          <h2 id="insights-title" class="section-title">
+            <span class="title-icon">💡</span>
+            Smart Insights
+          </h2>
+        </header>
+        <div class="insights-grid">
+          <article *ngFor="let insight of insights; trackBy: trackByInsight" class="insight-card">
+            <div class="insight-icon">{{ insight.icon }}</div>
+            <div class="insight-content">
+              <h3>{{ insight.title }}</h3>
+              <p>{{ insight.description }}</p>
+            </div>
+          </article>
+        </div>
+      </section>
+    </div>
+  </main>
+</div>

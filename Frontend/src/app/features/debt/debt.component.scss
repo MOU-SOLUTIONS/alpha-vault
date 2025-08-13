@@ -1,0 +1,116 @@
+// ====================================================================
+//             Coded by Mohamed Dhaoui for Alpha Vault
+// ====================================================================
+
+// Basic styling for debt component
+.parent-container {
+
+}
+
+.first-row {
+  margin-bottom: 30px;
+}
+
+.second-row, .third-row, .fourth-row, .fifth-row {
+  margin-bottom: 30px;
+}
+
+// Height alignment for components in the same row
+.second-row {
+  .debt-progress,
+  .creditor-chart {
+
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .debt-progress app-debt-progress,
+  .creditor-chart app-debt-creditor-chart {
+
+    flex: 1;
+  }
+}
+
+.third-row {
+  .top-5-table,
+  .due-date-chart {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .top-5-table app-debt-top5,
+  .due-date-chart app-debt-due-date-chart {
+    height: 100%;
+    flex: 1;
+  }
+}
+
+.row {
+  margin: 0;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: stretch;
+}
+
+.col-12, .col-md-6 {
+  padding: 15px;
+}
+
+// Responsive height adjustments
+@media (max-width: 767px) {
+  .second-row,
+  .third-row {
+    .debt-progress,
+    .creditor-chart,
+    .top-5-table,
+    .due-date-chart {
+      height: auto;
+      min-height: 400px;
+    }
+  }
+}
+
+// Debug container styling
+.debug-container {
+  background: #f8f9fa;
+  border: 1px solid #dee2e6;
+  border-radius: 8px;
+  padding: 20px;
+  margin-bottom: 20px;
+}
+
+.debug-title {
+  font-weight: bold;
+  margin-bottom: 15px;
+  color: #495057;
+}
+
+.debug-buttons {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.debug-btn {
+  background: #007bff;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.debug-btn:hover {
+  background: #0056b3;
+}
+
+.debug-btn.inspect {
+  background: #ffc107;
+  color: #212529;
+}
+
+.debug-btn.inspect:hover {
+  background: #e0a800;
+}

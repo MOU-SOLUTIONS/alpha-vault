@@ -1,0 +1,160 @@
+/* ================= VARIABLES ================= */
+
+:host {
+  --primary-color: #6366f1;
+  --secondary-color: #8b5cf6;
+  --text-dark: #1a1a1a;
+  --text-light: #64748b;
+  --background-white: #ffffff;
+  --shadow-color: rgba(0, 0, 0, 0.1);
+  --primary-gradient: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+  --transition-standard: all 0.3s ease;
+  
+  /* Spacing variables */
+  --spacing-xs: 5px;
+  --spacing-sm: 10px;
+  --spacing-md: 20px;
+  --spacing-lg: 25px;
+}
+
+/* ================= NAVBAR CONTAINER ================= */
+
+.head-content {
+  margin: var(--spacing-sm);
+  height: calc(100% - 20px);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px var(--spacing-lg);
+  border-radius: 0.625rem;
+  width: calc(100% - 20px);
+  transition: var(--transition-standard);
+  background-color: var(--background-white);
+  box-shadow: 0 4px 10px var(--shadow-color);
+}
+
+/* ================= RIGHT SECTION ================= */
+
+.head-content-right {
+  display: flex;
+  align-items: center;
+}
+
+/* Menu container */
+
+.head-menu {
+  height: 100%;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  margin-right: var(--spacing-md);
+}
+
+/* Menu item */
+
+.head-menu-item {
+  height: 100%;
+}
+
+/* Menu buttons */
+
+.head-menu-item-btn {
+  width: 50px;
+  height: 50px;
+  margin-right: var(--spacing-sm);
+  font-size: 20px;
+  cursor: pointer;
+  color: var(--text-dark);
+  border-radius: 50%;
+  border: 1px solid transparent;
+  outline: 0;
+  transition: var(--transition-standard);
+  
+  &:hover,
+  &:focus {
+    background: rgba(99, 102, 241, 0.1);
+    color: var(--primary-color);
+  }
+}
+
+/* Flag image */
+
+.flag {
+  height: 17px;
+  margin-top: -4px;
+  border-radius: 3px;
+}
+
+/* ================= USER AVATAR ================= */
+
+.head-user-avatar-container {
+  height: 100%;
+  display: flex;
+  justify-content: center;
+}
+
+.head-user-avatar {
+  position: relative;
+}
+
+.user-avatar {
+  width: 50px;
+  height: 50px;
+  cursor: pointer;
+  border-radius: 10px;
+  box-shadow: 0 0 15px var(--shadow-color);
+}
+
+/* Status indicator */
+
+.circle-indicator {
+  position: absolute;
+  top: -2px;
+  right: -3px;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--primary-color);
+}
+
+/* Animation */
+
+.pulse {
+  animation: pulse-animation 1.2s infinite;
+}
+
+@keyframes pulse-animation {
+  0% {
+    box-shadow: 0 0 0 0 rgba(99, 102, 241, 0.6);
+  }
+  100% {
+    box-shadow: 0 0 0 13px rgba(99, 102, 241, 0);
+  }
+}
+
+/* ================= RESPONSIVE STYLES ================= */
+
+@media (max-width: 1024px) {
+  .head-content {
+    height: calc(100% - 25px);
+    padding: 8px;
+  }
+
+  .head-menu-item-btn {
+    width: 40px;
+    height: 40px;
+    margin-right: 5px;
+    font-size: 18px;
+  }
+
+  .flag {
+    height: 15px;
+  }
+
+  .user-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    box-shadow: 0 0 15px var(--shadow-color);
+  }
+}

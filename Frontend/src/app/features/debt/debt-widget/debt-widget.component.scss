@@ -1,0 +1,300 @@
+/* ===================================================================
+   Coded by Mohamed Dhaoui for Alpha Vault
+================================================================== */
+
+:host {
+  --primary-color: #EC4899;
+  --primary-light: #F472B6;
+  --primary-dark: #DB2777;
+  --accent-color: #F59E0B;
+  --success-color: #10B981;
+  --danger-color: #EF4444;
+  --info-color: #3B82F6;
+  --white: #FFFFFF;
+  --gray-50: #F9FAFB;
+  --gray-100: #F3F4F6;
+  --gray-200: #E5E7EB;
+  --gray-600: #4B5563;
+  --gray-900: #111827;
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  --shadow-2xl: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+  --border-radius-lg: 0.75rem;
+  --border-radius-xl: 1rem;
+  --transition-normal: 250ms cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-bounce: 400ms cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+
+.debt-widget-container {
+  width: 100%;
+  
+  .widget-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 1.5rem;
+    
+    .widget-card {
+      position: relative;
+      background: linear-gradient(135deg, var(--white) 0%, var(--gray-50) 100%);
+      border-radius: var(--border-radius-xl);
+      padding: 1.5rem;
+      box-shadow: var(--shadow-md);
+      border: 1px solid var(--gray-200);
+      transition: all var(--transition-normal);
+      display: flex;
+      align-items: flex-start;
+      gap: 1.5rem;
+      overflow: hidden;
+      cursor: pointer;
+      
+      &:hover {
+        transform: translateY(-8px) scale(1.02);
+        box-shadow: var(--shadow-2xl);
+        border-color: var(--primary-color);
+        
+        .widget-icon {
+          transform: scale(1.1) rotate(5deg);
+        }
+        
+        .widget-decoration {
+          transform: scale(1.2) rotate(15deg);
+          opacity: 0.8;
+        }
+        
+        .widget-value {
+          transform: scale(1.05);
+        }
+      }
+      
+      &:active {
+        transform: translateY(-4px) scale(1.01);
+        transition: all 150ms cubic-bezier(0.4, 0, 0.2, 1);
+      }
+      
+      &:focus-within {
+        outline: 2px solid var(--primary-color);
+        outline-offset: 2px;
+      }
+      
+      .widget-icon {
+        width: 64px;
+        height: 64px;
+        border-radius: var(--border-radius-lg);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--white);
+        flex-shrink: 0;
+        transition: all var(--transition-bounce);
+        position: relative;
+        z-index: 2;
+        box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
+        
+        svg {
+          width: 32px;
+          height: 32px;
+          filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.1));
+        }
+      }
+      
+      .widget-content {
+        flex: 1;
+        min-width: 0;
+        
+        .widget-title {
+          margin: 0 0 0.5rem 0;
+          font-size: 0.875rem;
+          font-weight: 600;
+          color: var(--gray-600);
+          text-transform: uppercase;
+          letter-spacing: 0.05em;
+          line-height: 1.2;
+        }
+        
+        .widget-value {
+          margin: 0;
+          font-size: 2rem;
+          font-weight: 800;
+          color: var(--gray-900);
+          line-height: 1.1;
+          transition: transform var(--transition-bounce);
+          font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        }
+      }
+      
+      .widget-decoration {
+        position: absolute;
+        top: -20px;
+        right: -20px;
+        width: 80px;
+        height: 80px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.05));
+        opacity: 0.3;
+        transition: all 350ms cubic-bezier(0.4, 0, 0.2, 1);
+        z-index: 1;
+      }
+      
+      &.total-debt {
+        .widget-icon {
+          background: linear-gradient(135deg, var(--primary-color), var(--primary-light));
+          box-shadow: 0 4px 12px rgba(236, 72, 153, 0.3);
+        }
+        
+        &:hover {
+          border-color: var(--primary-color);
+          box-shadow: 0 20px 40px rgba(236, 72, 153, 0.15);
+        }
+      }
+      
+      &.min-payments {
+        .widget-icon {
+          background: linear-gradient(135deg, var(--accent-color), #FBBF24);
+          box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3);
+        }
+        
+        &:hover {
+          border-color: var(--accent-color);
+          box-shadow: 0 20px 40px rgba(245, 158, 11, 0.15);
+        }
+      }
+      
+      &.overdue-debts {
+        .widget-icon {
+          background: linear-gradient(135deg, var(--danger-color), #DC2626);
+          box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+        }
+        
+        &:hover {
+          border-color: var(--danger-color);
+          box-shadow: 0 20px 40px rgba(239, 68, 68, 0.15);
+        }
+      }
+      
+      &.total-creditors {
+        .widget-icon {
+          background: linear-gradient(135deg, var(--success-color), #059669);
+          box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+        }
+        
+        &:hover {
+          border-color: var(--success-color);
+          box-shadow: 0 20px 40px rgba(16, 185, 129, 0.15);
+        }
+      }
+    }
+  }
+}
+
+@media (max-width: 1200px) {
+  .debt-widget-container .widget-grid {
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 1.25rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .debt-widget-container {
+    .widget-grid {
+      grid-template-columns: 1fr;
+      gap: 1rem;
+      
+      .widget-card {
+        padding: 1.5rem;
+        gap: 1.25rem;
+        
+        .widget-icon {
+          width: 56px;
+          height: 56px;
+          
+          svg {
+            width: 28px;
+            height: 28px;
+          }
+        }
+        
+        .widget-content .widget-value {
+          font-size: 1.75rem;
+        }
+        
+        .widget-decoration {
+          width: 60px;
+          height: 60px;
+          top: -15px;
+          right: -15px;
+        }
+      }
+    }
+  }
+}
+
+@media (max-width: 480px) {
+  .debt-widget-container .widget-grid .widget-card {
+    padding: 1.25rem;
+    gap: 1rem;
+    
+    .widget-icon {
+      width: 48px;
+      height: 48px;
+      
+      svg {
+        width: 24px;
+        height: 24px;
+      }
+    }
+    
+    .widget-content .widget-value {
+      font-size: 1.5rem;
+    }
+  }
+}
+
+.widget-card {
+  animation: slideInUp 0.6s cubic-bezier(0.4, 0, 0.2, 1) both;
+  
+  &:nth-child(1) { animation-delay: 0.1s; }
+  &:nth-child(2) { animation-delay: 0.2s; }
+  &:nth-child(3) { animation-delay: 0.3s; }
+  &:nth-child(4) { animation-delay: 0.4s; }
+}
+
+@keyframes slideInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.widget-card:focus-visible {
+  outline: 2px solid var(--primary-color);
+  outline-offset: 4px;
+  border-radius: var(--border-radius-xl);
+}
+
+@media (prefers-contrast: high) {
+  .widget-card {
+    border-width: 2px;
+    
+    .widget-icon {
+      box-shadow: none;
+      border: 2px solid var(--white);
+    }
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .widget-card,
+  .widget-icon,
+  .widget-value,
+  .widget-decoration {
+    transition: none;
+    animation: none;
+  }
+  
+  .widget-card:hover {
+    transform: none;
+  }
+}

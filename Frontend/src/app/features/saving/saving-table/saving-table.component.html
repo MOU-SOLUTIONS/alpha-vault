@@ -1,0 +1,327 @@
+<!-- ================================================================
+              Coded by Mohamed Dhaoui for Alpha Vault
+================================================================ -->
+
+<section class="filters-section">
+  <div class="filters-grid">
+    <div class="filter-group">
+      <label for="searchInput" class="filter-label">
+        <i class="fa fa-search" aria-hidden="true"></i>
+        Search Goals
+      </label>
+      <input
+        id="searchInput"
+        type="text"
+        class="filter-input"
+        placeholder="Search by name, category..."
+        [(ngModel)]="filters.search"
+        (ngModelChange)="onSearchChange($event)"
+      />
+    </div>
+
+    <div class="filter-group">
+      <label for="categoryFilter" class="filter-label">
+        <i class="fa fa-tag" aria-hidden="true"></i>
+        Category
+      </label>
+      <select id="categoryFilter" class="filter-select" [(ngModel)]="filters.category" (change)="applyFilters()">
+        <option value="">All Categories</option>
+        <option *ngFor="let category of categoryOptions" [value]="category.value">
+          {{ category.label }}
+        </option>
+      </select>
+    </div>
+
+    <div class="filter-group">
+      <label for="priorityFilter" class="filter-label">
+        <i class="fa fa-flag" aria-hidden="true"></i>
+        Priority
+      </label>
+      <select id="priorityFilter" class="filter-select" [(ngModel)]="filters.priority" (change)="applyFilters()">
+        <option value="">All Priorities</option>
+        <option value="HIGH">High Priority</option>
+        <option value="MEDIUM">Medium Priority</option>
+        <option value="LOW">Low Priority</option>
+      </select>
+    </div>
+
+    <div class="filter-group">
+      <label for="statusFilter" class="filter-label">
+        <i class="fa fa-info-circle" aria-hidden="true"></i>
+        Status
+      </label>
+      <select id="statusFilter" class="filter-select" [(ngModel)]="filters.status" (change)="applyFilters()">
+        <option value="">All Status</option>
+        <option value="active">Active</option>
+        <option value="completed">Completed</option>
+        <option value="overdue">Overdue</option>
+      </select>
+    </div>
+  </div>
+
+  <div class="sort-section">
+    <label for="sortSelect" class="sort-label">
+      <i class="fa fa-sort" aria-hidden="true"></i>
+      Sort by
+    </label>
+    <select id="sortSelect" class="sort-select" [(ngModel)]="filters.sortBy" (change)="applyFilters()">
+      <option value="name">Name</option>
+      <option value="deadline">Deadline</option>
+      <option value="progress">Progress</option>
+      <option value="priority">Priority</option>
+      <option value="targetAmount">Target Amount</option>
+    </select>
+    <button class="btn-sort-order" (click)="toggleSortOrder()">
+      <i class="fa" [ngClass]="filters.sortOrder === 'asc' ? 'fa-sort-up' : 'fa-sort-down'" aria-hidden="true"></i>
+    </button>
+  </div>
+</section>
+
+<!-- Section: Stats Cards -->
+<section class="stats-section">
+  <div class="stats-grid">
+    <div class="stat-card">
+      <div class="stat-icon completed">
+        <i class="fa fa-check-circle" aria-hidden="true"></i>
+      </div>
+      <div class="stat-content">
+        <div class="stat-value">{{ completedCount }}</div>
+        <div class="stat-label">Completed</div>
+      </div>
+    </div>
+
+    <div class="stat-card">
+      <div class="stat-icon active">
+        <i class="fa fa-clock" aria-hidden="true"></i>
+      </div>
+      <div class="stat-content">
+        <div class="stat-value">{{ activeCount }}</div>
+        <div class="stat-label">Active</div>
+      </div>
+    </div>
+
+    <div class="stat-card">
+      <div class="stat-icon overdue">
+        <i class="fa fa-exclamation-triangle" aria-hidden="true"></i>
+      </div>
+      <div class="stat-content">
+        <div class="stat-value">{{ overdueCount }}</div>
+        <div class="stat-label">Overdue</div>
+      </div>
+    </div>
+
+    <div class="stat-card">
+      <div class="stat-icon total">
+        <i class="fa fa-piggy-bank" aria-hidden="true"></i>
+      </div>
+      <div class="stat-content">
+        <div class="stat-value">{{ totalSaved | currency:'USD':'symbol':'1.0-0' }}</div>
+        <div class="stat-label">Total Saved</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Section: Table Container -->
+<section class="table-container">
+  <div class="table-wrapper" *ngIf="paginatedGoals.length > 0">
+    <table class="modern-table">
+      <thead>
+        <tr>
+          <th class="sortable" (click)="sortBy('name')">
+            <div class="th-content">
+              <span>Goal Name</span>
+            </div>
+          </th>
+          <th class="sortable" (click)="sortBy('category')">
+            <div class="th-content">
+              <span>Category</span>
+            </div>
+          </th>
+          <th class="sortable" (click)="sortBy('targetAmount')">
+            <div class="th-content">
+              <span>Target</span>
+            </div>
+          </th>
+          <th class="sortable" (click)="sortBy('currentAmount')">
+            <div class="th-content">
+              <span>Saved</span>
+            </div>
+          </th>
+          <th class="sortable" (click)="sortBy('deadline')">
+            <div class="th-content">
+              <span>Deadline</span>
+            </div>
+          </th>
+          <th class="sortable" (click)="sortBy('progress')">
+            <div class="th-content">
+              <span>Progress</span>
+            </div>
+          </th>
+          <th class="sortable" (click)="sortBy('priority')">
+            <div class="th-content">
+              <span>Priority</span>
+            </div>
+          </th>
+          <th>
+            <div class="th-content">
+              <span>Actions</span>
+            </div>
+          </th>
+        </tr>
+      </thead>
+
+      <tbody>
+        <tr
+          *ngFor="let goal of paginatedGoals; trackBy: trackByGoal"
+          class="table-row"
+          [ngClass]="{
+            'completed': isCompleted(goal),
+            'overdue': isOverdue(goal),
+            'active': !isCompleted(goal) && !isOverdue(goal)
+          }"
+          (click)="handleRowClick(goal)"
+          (keydown.enter)="handleRowClick(goal)"
+          (keydown.space)="handleRowClick(goal)"
+          tabindex="0"
+          role="button"
+          [attr.aria-label]="'View details for ' + goal.name + ' saving goal'"
+        >
+          <td class="goal-name">
+            <div class="name-content">
+              <div class="goal-icon">
+                <i class="fa" [ngClass]="getCategoryIcon(goal.category)" aria-hidden="true"></i>
+              </div>
+              <div class="name-details">
+                <div class="name">{{ goal.name }}</div>
+              </div>
+            </div>
+          </td>
+
+          <td class="category-cell">
+            <span class="category-badge" [ngClass]="goal.category.toLowerCase()">
+              <i class="fa" [ngClass]="getCategoryIcon(goal.category)" aria-hidden="true"></i>
+              {{ getCategoryLabel(goal.category) }}
+            </span>
+          </td>
+
+          <td class="amount-cell">
+            <div class="amount-value">{{ goal.targetAmount | currency:'USD':'symbol':'1.0-0' }}</div>
+          </td>
+
+          <td class="amount-cell">
+            <div class="amount-value">{{ goal.currentAmount | currency:'USD':'symbol':'1.0-0' }}</div>
+            <div class="amount-percentage">{{ calculateProgress(goal) }}%</div>
+          </td>
+
+          <td class="deadline-cell">
+            <div class="deadline-content">
+              <div class="deadline-date">{{ goal.deadline | date:'MMM dd, yyyy' }}</div>
+              <div class="days-left" *ngIf="!isCompleted(goal)">
+                <i class="fa fa-clock" aria-hidden="true"></i>
+                {{ getDaysLeft(goal) }} days left
+              </div>
+            </div>
+          </td>
+
+          <td class="progress-cell">
+            <div class="progress-container">
+              <div class="progress-bar">
+                <div
+                  class="progress-fill"
+                  [ngStyle]="{
+                    width: calculateProgress(goal) + '%',
+                    background: getProgressGradient(goal)
+                  }"
+                ></div>
+                <div class="progress-glow" [ngStyle]="{ width: calculateProgress(goal) + '%' }"></div>
+              </div>
+              <div class="progress-text">{{ calculateProgress(goal) }}%</div>
+            </div>
+          </td>
+
+          <td class="priority-cell">
+            <span class="priority-badge" [ngClass]="goal.priority.toLowerCase()">
+              <i class="fa fa-flag" aria-hidden="true"></i>
+              {{ goal.priority }}
+            </span>
+          </td>
+
+          <td class="actions-cell">
+            <div class="actions-container">
+              <button
+                class="btn-action edit"
+                (click)="edit(goal); $event.stopPropagation()"
+                title="Edit goal"
+                aria-label="Edit saving goal"
+              >
+                <i class="fa fa-edit" aria-hidden="true"></i>
+              </button>
+              <button
+                class="btn-action delete"
+                (click)="confirmDelete(goal); $event.stopPropagation()"
+                title="Delete goal"
+                aria-label="Delete saving goal"
+              >
+                <i class="fa fa-trash" aria-hidden="true"></i>
+              </button>
+              <button
+                class="btn-action view"
+                (click)="openOverlay.emit(goal); $event.stopPropagation()"
+                title="View details"
+                aria-label="View goal details"
+              >
+                <i class="fa fa-eye" aria-hidden="true"></i>
+              </button>
+            </div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Section: Empty State -->
+  <div class="empty-state" *ngIf="filteredGoals.length === 0">
+    <div class="empty-icon">
+      <i class="fa fa-search" aria-hidden="true"></i>
+    </div>
+    <h3>No Goals Found</h3>
+    <p>{{ getEmptyStateMessage() }}</p>
+    <button class="btn-clear-filters" (click)="clearFilters()" *ngIf="hasActiveFilters()">
+      <i class="fa fa-times" aria-hidden="true"></i>
+      Clear Filters
+    </button>
+  </div>
+</section>
+
+<!-- Section: Paginator -->
+<div class="paginator-container" *ngIf="filteredGoals.length > 0">
+  <mat-paginator
+    [length]="filteredGoals.length"
+    [pageSize]="pageSize"
+    [pageSizeOptions]="pageSizeOptions"
+    [pageIndex]="currentPage"
+    (page)="onPageChange($event)"
+    aria-label="Saving goals table pagination">
+  </mat-paginator>
+</div>
+
+<!-- Section: Delete Confirmation Modal -->
+<div class="modal-overlay" *ngIf="showDeleteModal" (click)="cancelDelete()">
+  <div class="modal-content" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3>Confirm Deletion</h3>
+      <button class="btn-close" (click)="cancelDelete()">
+        <i class="fa fa-times" aria-hidden="true"></i>
+      </button>
+    </div>
+    <div class="modal-body">
+      <p>Are you sure you want to delete "<strong>{{ goalToDelete?.name }}</strong>"?</p>
+      <p class="warning-text">This action cannot be undone.</p>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-cancel" (click)="cancelDelete()">Cancel</button>
+      <button class="btn-confirm" (click)="confirmDeleteAction()">Delete Goal</button>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,82 @@
+<!-- ====================================================================
+     Coded by Mohamed Dhaoui for Alpha Vault
+==================================================================== -->
+
+<div class="crypto-investment-container">
+  <!-- Header Section -->
+  <div class="crypto-header">
+    <div class="header-left">
+      <div class="header-icon">
+        <mat-icon>currency_bitcoin</mat-icon>
+      </div>
+      <div class="header-text">
+        <h1 class="header-title">Cryptocurrency Portfolio</h1>
+        <p class="header-subtitle">Track and manage your crypto investments with precision</p>
+      </div>
+    </div>
+    <div class="header-right">
+      <div class="mini-card">
+        <span class="label">Total Assets</span>
+        <span class="value">{{ filteredInvestments.length }}</span>
+      </div>
+      <div class="mini-card">
+        <span class="label">Total Value</span>
+        <span class="value">{{ getTotalValue() | currency }}</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Charts Section -->
+  <div class="charts-section">
+    <!-- Perfect Layout for Three Charts -->
+    <div class="charts-grid">
+      <!-- Crypto Data Grid -->
+      <div class="chart-container crypto-data-grid">
+        <app-crypto-data-grid></app-crypto-data-grid>
+      </div>
+      
+      <!-- Value Chart -->
+      <div class="chart-container value-chart">
+        <app-crypto-value-chart
+          [investments]="filteredInvestments"
+        ></app-crypto-value-chart>
+      </div>
+      
+      <!-- Portfolio Chart -->
+      <div class="chart-container portfolio-chart">
+        <app-crypto-portfolio-chart
+          [investments]="filteredInvestments"
+        ></app-crypto-portfolio-chart>
+      </div>
+    </div>
+  </div>
+
+  <!-- Table Section -->
+  <div class="table-section">
+    <div class="table-wrapper">
+      <app-crypto-investment-table
+        [investments]="filteredInvestments"
+        (modify)="openModify($event)"
+        (remove)="remove($event)"
+        (add)="openAdd()"
+      ></app-crypto-investment-table>
+    </div>
+  </div>
+
+  <!-- Overlay -->
+  <app-overlay-container
+    *ngIf="isOverlayVisible"
+    [title]="
+      mode === 'add' ? 'Add Crypto Investment' : 'Edit Crypto Investment'
+    "
+    [theme]="mode"
+    (cancel)="closeOverlay()"
+  >
+    <app-crypto-investment-form
+      [initialData]="selectedInvestment"
+      [mode]="mode"
+      (formSubmit)="handleSubmit($event)"
+      (cancelForm)="closeOverlay()"
+    ></app-crypto-investment-form>
+  </app-overlay-container>
+</div>
