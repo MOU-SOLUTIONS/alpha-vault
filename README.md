@@ -32,12 +32,3 @@ A **full-stack personal finance platform** built with **Spring Boot (Java)** and
 - Java 17, Spring Boot, Spring Data JPA, MySQL, JWT Security  
 **Frontend:**
 - Angular, RxJS, Bootstrap, Chart.js
-
----
-
-## 📦 Getting Started
-
-### 1️⃣ Clone the repository
-```bash
-git clone https://github.com/YOUR_USERNAME/Alpha-vault.git
-cd Alpha-vault
