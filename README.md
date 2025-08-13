@@ -1,4 +1,9 @@
 # Alpha Vault
+![License](https://img.shields.io/badge/License-Non--Commercial-blue)
+![Java](https://img.shields.io/badge/Java-17-orange)
+![Angular](https://img.shields.io/badge/Angular-17-red)
+![MySQL](https://img.shields.io/badge/MySQL-8.0-blue)
+![Build](https://img.shields.io/badge/Build-Passing-brightgreen)
 
 A **full-stack personal finance platform** built with **Spring Boot (Java)** and **Angular**, designed for tracking income, expenses, budgets, savings, debts, and investments — with powerful analytics and responsive UI.
 
@@ -32,3 +37,13 @@ A **full-stack personal finance platform** built with **Spring Boot (Java)** and
 - Java 17, Spring Boot, Spring Data JPA, MySQL, JWT Security  
 **Frontend:**
 - Angular, RxJS, Bootstrap, Chart.js
+
+---
+
+## 📦 Getting Started
+Follow these steps to run Alpha Vault locally:
+
+### 1️⃣ Clone the repository
+```bash
+git clone https://github.com/MOU-SOLUTIONS/Alpha-vault.git
+cd Alpha-vault
