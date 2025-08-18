@@ -1,68 +1,382 @@
-<div class="debt-table-container">
-  <div class="table-header">
-    <h3>Debt Management</h3>
-    <button type="button" class="btn btn-primary add-btn" (click)="onAdd.emit()">
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <path d="M12 5V19M5 12H19" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-      </svg>
-      Add New Debt
-    </button>
-  </div>
+<!-- ================================================================
+               Coded by Mohamed Dhaoui for Alpha Vault
+=============================================================== -->
 
-  <div class="table-responsive">
-    <table class="debt-table">
-      <thead>
-        <tr>
-          <th>Creditor</th>
-          <th>Total Amount</th>
-          <th>Remaining</th>
-          <th>Interest Rate</th>
-          <th>Due Date</th>
-          <th>Min Payment</th>
-          <th>Actions</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr *ngFor="let debt of debts" class="debt-row" [class.overdue]="isOverdue(debt.dueDate)">
-          <td class="creditor-name">{{ debt.creditorName }}</td>
-          <td class="amount total">${{ debt.totalAmount | number:'1.0-2' }}</td>
-          <td class="amount remaining">${{ debt.remainingAmount | number:'1.0-2' }}</td>
-          <td class="interest-rate">{{ debt.interestRate | number:'1.1-1' }}%</td>
-          <td class="due-date" [class.overdue]="isOverdue(debt.dueDate)">
-            {{ formatDate(debt.dueDate) }}
-          </td>
-          <td class="min-payment">${{ debt.minPayment | number:'1.0-2' }}</td>
-          <td class="actions">
-            <button type="button" class="btn btn-sm btn-outline-primary" (click)="onModify.emit(debt)" title="Edit">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M11 4H4C3.46957 4 2.96086 4.21071 2.58579 4.58579C2.21071 4.96086 2 5.46957 2 6V20C2 20.5304 2.21071 21.0391 2.58579 21.4142C2.96086 21.7893 3.46957 22 4 22H18C18.5304 22 19.0391 21.7893 19.4142 21.4142C19.7893 21.0391 20 20.5304 20 20V13" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                <path d="M18.5 2.5C18.8978 2.10217 19.4374 1.87868 20 1.87868C20.5626 1.87868 21.1022 2.10217 21.5 2.5C21.8978 2.89782 22.1213 3.43739 22.1213 4C22.1213 4.56261 21.8978 5.10217 21.5 5.5L12 15L8 16L9 12L18.5 2.5Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-              </svg>
-            </button>
-            <button type="button" class="btn btn-sm btn-outline-danger" (click)="onDelete.emit(debt.id)" title="Delete">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M3 6H5H21" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                <path d="M8 6V4C8 3.46957 8.21071 2.96086 8.58579 2.58579C8.96086 2.21071 9.46957 2 10 2H14C14.5304 2 15.0391 2.21071 15.4142 2.58579C15.7893 2.96086 16 3.46957 16 4V6M19 6V20C19 20.5304 18.7893 21.0391 18.4142 21.4142C18.0391 21.7893 17.5304 22 17 22H7C6.46957 22 5.96086 21.7893 5.58579 21.4142C5.21071 21.0391 5 20.5304 5 20V6H19Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-              </svg>
-            </button>
-          </td>
-        </tr>
-      </tbody>
-    </table>
-  </div>
-
-  <div class="table-footer" *ngIf="debts.length === 0">
-    <div class="empty-state">
-      <svg width="64" height="64" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <path d="M12 2L2 7L12 12L22 7L12 2Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-        <path d="M2 17L12 22L22 17" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-        <path d="M2 12L12 17L22 12" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-      </svg>
-      <h4>No Debts Found</h4>
-      <p>Start managing your debts by adding your first debt entry.</p>
-      <button type="button" class="btn btn-primary" (click)="onAdd.emit()">
-        Add Your First Debt
+<!-- Section: Debt Table Container -->
+<section class="debt-table-container" role="region" aria-labelledby="debtTableTitle">
+  
+  <!-- Section: Table Header -->
+  <header class="table-header">
+    <div class="header-content">
+      <div class="header-icon">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M9 12l2 2 4-4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M21 12c0 4.97-4.03 9-9 9s-9-4.03-9-9 4.03-9 9-9 9 4.03 9 9z" stroke="currentColor" stroke-width="2"/>
+        </svg>
+      </div>
+      <div class="header-text">
+        <h2 id="debtTableTitle">Debt Management</h2>
+        <p class="header-subtitle">Track and manage your outstanding debts</p>
+      </div>
+    </div>
+    
+    <div class="header-stats">
+      <div class="stat-item">
+        <span class="stat-label">Total Debts</span>
+        <span class="stat-value">{{ totalDebts }}</span>
+      </div>
+      <div class="stat-item">
+        <span class="stat-label">Active</span>
+        <span class="stat-value">{{ filteredDebts.length }}</span>
+      </div>
+    </div>
+    
+    <div class="header-actions">
+      <button class="btn btn-secondary" (click)="onExport.emit()">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          <polyline points="7,10 12,15 17,10" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          <line x1="12" y1="15" x2="12" y2="3" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        Export
+      </button>
+      <button class="btn btn-primary" (click)="onAdd.emit()">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <line x1="12" y1="5" x2="12" y2="19" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          <line x1="5" y1="12" x2="19" y2="12" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        Add New Debt
+      </button>
+    </div>
+  </header>
+  
+  <!-- Section: Table Controls -->
+  <div class="table-controls">
+    <div class="search-section">
+      <div class="search-input-wrapper">
+        <svg class="search-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="11" cy="11" r="8" stroke="currentColor" stroke-width="2"/>
+          <path d="m21 21-4.35-4.35" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        <input 
+          type="text" 
+          class="search-input" 
+          placeholder="Search debts..."
+          (input)="onSearchChange($event)"
+        >
+      </div>
+    </div>
+    
+    <div class="filter-section">
+      <button 
+        class="filter-btn" 
+        [class.active]="filters.showOverdueOnly"
+        (click)="onFilterToggle('showOverdueOnly')"
+      >
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/>
+          <polyline points="12,6 12,12 16,14" stroke="currentColor" stroke-width="2"/>
+        </svg>
+        Overdue Only
+      </button>
+      <button 
+        class="filter-btn" 
+        [class.active]="filters.showHighInterestOnly"
+        (click)="onFilterToggle('showHighInterestOnly')"
+      >
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" stroke="currentColor" stroke-width="2"/>
+        </svg>
+        High Interest
       </button>
     </div>
   </div>
-</div>
+  
+  <!-- Section: Bulk Actions -->
+  <div class="bulk-actions" *ngIf="showBulkActions" [@slideDown]>
+    <div class="bulk-info">
+      <span class="bulk-count">{{ selectedDebts.size }} selected</span>
+      <span class="bulk-total">Total: ${{ getSelectedDebtsTotal() | number:'1.0-0' }}</span>
+    </div>
+    <div class="bulk-buttons">
+      <button class="btn btn-danger" (click)="onBulkDelete()">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <polyline points="3,6 5,6 21,6" stroke="currentColor" stroke-width="2"/>
+          <path d="m19,6v14a2,2 0 0,1 -2,2H7a2,2 0 0,1 -2,-2V6m3,0V4a2,2 0 0,1 2,-2h4a2,2 0 0,1 2,2v2" stroke="currentColor" stroke-width="2"/>
+        </svg>
+        Delete Selected
+      </button>
+    </div>
+  </div>
+  
+     <!-- Section: Desktop Table -->
+   <div class="table-responsive desktop-table">
+     <table class="debt-table" role="table" aria-label="Debt management table">
+       <thead>
+         <tr>
+           <th class="checkbox-column">
+             <input 
+               type="checkbox" 
+               [checked]="selectedDebts.size === filteredDebts.length && filteredDebts.length > 0"
+               [indeterminate]="selectedDebts.size > 0 && selectedDebts.size < filteredDebts.length"
+               (change)="selectAllDebts()"
+             >
+           </th>
+           <th class="sortable" (click)="onSortChange('creditorName')">
+             <div class="th-content">
+               <span>Creditor</span>
+               <svg class="sort-icon" [class.asc]="filters.sortBy === 'creditorName' && filters.sortOrder === 'asc'" [class.desc]="filters.sortBy === 'creditorName' && filters.sortOrder === 'desc'" width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                 <path d="M7 14l5-5 5 5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+               </svg>
+             </div>
+           </th>
+           <th class="sortable" (click)="onSortChange('totalAmount')">
+             <div class="th-content">
+               <span>Total Amount</span>
+               <svg class="sort-icon" [class.asc]="filters.sortBy === 'totalAmount' && filters.sortOrder === 'asc'" [class.desc]="filters.sortBy === 'totalAmount' && filters.sortOrder === 'desc'" width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                 <path d="M7 14l5-5 5 5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+               </svg>
+             </div>
+           </th>
+           <th class="sortable" (click)="onSortChange('remainingAmount')">
+             <div class="th-content">
+               <span>Remaining</span>
+               <svg class="sort-icon" [class.asc]="filters.sortBy === 'remainingAmount' && filters.sortOrder === 'asc'" [class.desc]="filters.sortBy === 'remainingAmount' && filters.sortOrder === 'desc'" width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                 <path d="M7 14l5-5 5 5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+               </svg>
+             </div>
+           </th>
+           <th class="sortable" (click)="onSortChange('interestRate')">
+             <div class="th-content">
+               <span>Interest Rate</span>
+               <svg class="sort-icon" [class.asc]="filters.sortBy === 'interestRate' && filters.sortOrder === 'asc'" [class.desc]="filters.sortBy === 'interestRate' && filters.sortOrder === 'desc'" width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                 <path d="M7 14l5-5 5 5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+               </svg>
+             </div>
+           </th>
+           <th class="sortable" (click)="onSortChange('dueDate')">
+             <div class="th-content">
+               <span>Due Date</span>
+               <svg class="sort-icon" [class.asc]="filters.sortBy === 'dueDate' && filters.sortOrder === 'asc'" [class.desc]="filters.sortBy === 'dueDate' && filters.sortOrder === 'desc'" width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                 <path d="M7 14l5-5 5 5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+               </svg>
+             </div>
+           </th>
+           <th class="sortable" (click)="onSortChange('minPayment')">
+             <div class="th-content">
+               <span>Min Payment</span>
+               <svg class="sort-icon" [class.asc]="filters.sortBy === 'minPayment' && filters.sortOrder === 'asc'" [class.desc]="filters.sortBy === 'minPayment' && filters.sortOrder === 'desc'" width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                 <path d="M7 14l5-5 5 5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+               </svg>
+             </div>
+           </th>
+           <th>Progress</th>
+           <th>Actions</th>
+         </tr>
+       </thead>
+       <tbody>
+         <tr 
+           *ngFor="let debt of filteredDebts; trackBy: trackByDebt" 
+           class="debt-row" 
+           [class.overdue]="isOverdue(debt.dueDate)"
+           [class.selected]="selectedDebts.has(debt.id)"
+           [@fadeInUp]
+         >
+           <td class="checkbox-column">
+             <input 
+               type="checkbox" 
+               class="debt-checkbox"
+               [checked]="selectedDebts.has(debt.id)"
+               (change)="toggleDebtSelection(debt.id)"
+             >
+           </td>
+           <td class="creditor-name">
+             <div class="creditor-info">
+               <span class="creditor-text">{{ debt.creditorName }}</span>
+               <div class="creditor-badges">
+                 <span *ngIf="isOverdue(debt.dueDate)" class="badge overdue-badge">Overdue</span>
+                 <span *ngIf="debt.interestRate > 15" class="badge high-interest-badge">High Interest</span>
+               </div>
+             </div>
+           </td>
+           <td class="amount total">
+             <span class="amount-value">${{ debt.totalAmount | number:'1.0-0' }}</span>
+           </td>
+           <td class="amount remaining">
+             <span class="amount-value">${{ debt.remainingAmount | number:'1.0-0' }}</span>
+           </td>
+           <td class="interest-rate">
+             <span class="interest-value" [class]="getInterestRateClass(debt.interestRate)">
+               {{ debt.interestRate | number:'1.1-1' }}%
+             </span>
+           </td>
+           <td class="due-date" [class]="getUrgencyClass(debt.dueDate)">
+             <div class="due-date-content">
+               <span class="date-text">{{ formatDate(debt.dueDate) }}</span>
+               <span class="days-remaining" *ngIf="!isOverdue(debt.dueDate)">
+                 {{ getDaysUntilDue(debt.dueDate) }} days
+               </span>
+               <span class="days-overdue" *ngIf="isOverdue(debt.dueDate)">
+                 {{ getOverdueDays(debt.dueDate) }} days overdue
+               </span>
+             </div>
+           </td>
+           <td class="min-payment">
+             <span class="payment-value">${{ debt.minPayment | number:'1.0-0' }}</span>
+           </td>
+           <td class="progress-column">
+             <div class="progress-container">
+               <div class="progress-bar">
+                 <div class="progress-fill" [style.width.%]="getProgressPercentage(debt)"></div>
+               </div>
+               <span class="progress-text">{{ getProgressPercentage(debt) | number:'1.0-0' }}%</span>
+             </div>
+           </td>
+           <td class="actions">
+             <div class="action-buttons">
+               <button class="btn-icon btn-primary" (click)="onModify.emit(debt)" title="Edit debt">
+                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                   <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                   <path d="m18.5 2.5 3 3L12 15l-4 1 1-4 9.5-9.5z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                 </svg>
+               </button>
+               <button class="btn-icon btn-danger" (click)="onDelete.emit(debt.id)" title="Delete debt">
+                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                   <polyline points="3,6 5,6 21,6" stroke="currentColor" stroke-width="2"/>
+                   <path d="m19,6v14a2,2 0 0,1 -2,2H7a2,2 0 0,1 -2,-2V6m3,0V4a2,2 0 0,1 2,-2h4a2,2 0 0,1 2,2v2" stroke="currentColor" stroke-width="2"/>
+                 </svg>
+               </button>
+             </div>
+           </td>
+         </tr>
+       </tbody>
+     </table>
+   </div>
+
+   <!-- Section: Mobile Cards -->
+   <div class="mobile-cards">
+     <div 
+       *ngFor="let debt of filteredDebts; trackBy: trackByDebt" 
+       class="debt-card" 
+       [class.overdue]="isOverdue(debt.dueDate)"
+       [class.selected]="selectedDebts.has(debt.id)"
+       [@fadeInUp]
+     >
+       <!-- Card Header -->
+       <div class="card-header">
+         <div class="checkbox-wrapper">
+           <input 
+             type="checkbox" 
+             class="form-check-input"
+             [checked]="selectedDebts.has(debt.id)"
+             (change)="toggleDebtSelection(debt.id)"
+           >
+           <div class="creditor-info">
+             <h3 class="creditor-name">{{ debt.creditorName }}</h3>
+             <div class="creditor-badges">
+               <span *ngIf="isOverdue(debt.dueDate)" class="badge overdue">Overdue</span>
+               <span *ngIf="debt.interestRate > 15" class="badge priority-high">High Interest</span>
+               <span *ngIf="debt.interestRate <= 15 && debt.interestRate > 8" class="badge priority-medium">Medium Interest</span>
+               <span *ngIf="debt.interestRate <= 8" class="badge priority-low">Low Interest</span>
+             </div>
+           </div>
+         </div>
+       </div>
+
+       <!-- Card Content -->
+       <div class="card-content">
+         <div class="amount-row">
+           <div class="amount-item">
+             <span class="amount-label">Total Amount</span>
+             <span class="amount-value total">${{ debt.totalAmount | number:'1.0-0' }}</span>
+           </div>
+           <div class="amount-item">
+             <span class="amount-label">Remaining</span>
+             <span class="amount-value remaining">${{ debt.remainingAmount | number:'1.0-0' }}</span>
+           </div>
+         </div>
+
+         <div class="details-row">
+           <div class="detail-item">
+             <span class="detail-label">Interest Rate</span>
+             <span class="interest-value" [class]="getInterestRateClass(debt.interestRate)">
+               {{ debt.interestRate | number:'1.1-1' }}%
+             </span>
+           </div>
+           <div class="detail-item">
+             <span class="detail-label">Min Payment</span>
+             <span class="payment-value">${{ debt.minPayment | number:'1.0-0' }}</span>
+           </div>
+         </div>
+
+         <div class="due-date-section" [class]="getUrgencyClass(debt.dueDate)">
+           <span class="due-date-label">Due Date</span>
+           <div class="due-date-content">
+             <span class="date-text">{{ formatDate(debt.dueDate) }}</span>
+             <span class="days-remaining" *ngIf="!isOverdue(debt.dueDate)">
+               {{ getDaysUntilDue(debt.dueDate) }} days
+             </span>
+             <span class="days-overdue" *ngIf="isOverdue(debt.dueDate)">
+               {{ getOverdueDays(debt.dueDate) }} days overdue
+             </span>
+           </div>
+         </div>
+
+         <div class="progress-section">
+           <div class="progress-header">
+             <span class="progress-label">Payment Progress</span>
+             <span class="progress-percentage">{{ getProgressPercentage(debt) | number:'1.0-0' }}%</span>
+           </div>
+           <div class="progress-container">
+             <div class="progress-bar">
+               <div class="progress-fill" [style.width.%]="getProgressPercentage(debt)"></div>
+             </div>
+           </div>
+         </div>
+       </div>
+
+       <!-- Card Actions -->
+       <div class="card-actions">
+         <button class="btn-icon btn-primary" (click)="onModify.emit(debt)" title="Edit debt">
+           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+             <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+             <path d="m18.5 2.5 3 3L12 15l-4 1 1-4 9.5-9.5z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+           </svg>
+           Edit
+         </button>
+         <button class="btn-icon btn-danger" (click)="onDelete.emit(debt.id)" title="Delete debt">
+           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+             <polyline points="3,6 5,6 21,6" stroke="currentColor" stroke-width="2"/>
+             <path d="m19,6v14a2,2 0 0,1 -2,2H7a2,2 0 0,1 -2,-2V6m3,0V4a2,2 0 0,1 2,-2h4a2,2 0 0,1 2,2v2" stroke="currentColor" stroke-width="2"/>
+           </svg>
+           Delete
+         </button>
+       </div>
+     </div>
+   </div>
+  
+  <!-- Section: Table Footer -->
+  <footer class="table-footer" *ngIf="filteredDebts.length === 0 && !loading">
+    <div class="empty-state">
+      <div class="empty-icon">
+        <svg width="64" height="64" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M9 12l2 2 4-4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M21 12c0 4.97-4.03 9-9 9s-9-4.03-9-9 4.03-9 9-9 9 4.03 9 9z" stroke="currentColor" stroke-width="2"/>
+        </svg>
+      </div>
+      <h3>No Debts Found</h3>
+      <p *ngIf="filters.searchTerm || filters.showOverdueOnly || filters.showHighInterestOnly">
+        Try adjusting your search criteria or filters
+      </p>
+      <p *ngIf="!filters.searchTerm && !filters.showOverdueOnly && !filters.showHighInterestOnly">
+        Start by adding your first debt to begin tracking
+      </p>
+    </div>
+  </footer>
+  
+  <!-- Section: Loading State -->
+  <div class="loading-state" *ngIf="loading">
+    <div class="loading-spinner"></div>
+    <p>Loading debts...</p>
+  </div>
+</section>

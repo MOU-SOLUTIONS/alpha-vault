@@ -13,15 +13,19 @@ export class IncomeService {
 
   constructor(private http: HttpClient, private authService: AuthService) {
     this.authService.userId$.subscribe((id) => {
+      console.log(id)
       this.userId = id;
     });
   }
 
   saveIncome(dto: IncomeRequest): Observable<Income> {
     if (this.userId !== null) {
+      console.log(this.userId)
       dto.userId = this.userId;
+      console.log(dto);
       return this.http.post<Income>(this.base, dto);
     } else {
+      console.log('User ID is not available');
       return throwError(() => new Error('User ID is not available'));
     }
   }

@@ -1,181 +1,245 @@
-import { Component, Input, Output, EventEmitter, OnInit, ChangeDetectionStrategy } from '@angular/core';
+// ====================================================================
+//             Coded by Mohamed Dhaoui for Alpha Vault
+// ====================================================================
+
+import { Component, Input, Output, EventEmitter, ChangeDetectionStrategy, OnInit } from '@angular/core';
+import { FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
-import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
-import { Debt, DebtRequest } from '../../../models/debt.model';
+import { Meta } from '@angular/platform-browser';
 
 @Component({
-  selector: 'app-debt-form',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
-  changeDetection: ChangeDetectionStrategy.OnPush,
+  selector: 'app-debt-form',
   template: `
-    <div class="debt-form-container">
-      <div class="form-header">
-        <h3>{{ isAddMode ? 'Add New Debt' : 'Edit Debt' }}</h3>
-        <button type="button" class="close-btn" (click)="onCancel.emit()">
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M18 6L6 18M6 6L18 18" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-          </svg>
-        </button>
-      </div>
+    <section>
+      <form
+        [formGroup]="formGroup"
+        (ngSubmit)="onSubmit()"
+        class="debt-form"
+        role="form"
+        aria-labelledby="debtFormTitle"
+      >
+        <p class="form-text">
+          {{ mode === 'add'
+            ? 'Please add the details of the new debt.'
+            : 'Please update the details of the debt record below.' }}
+        </p>
 
-      <form [formGroup]="debtForm" (ngSubmit)="submitForm()" class="debt-form">
-        <div class="form-row">
-          <div class="form-group">
-            <label for="creditorName">Creditor Name *</label>
-            <input 
-              type="text" 
-              id="creditorName" 
-              formControlName="creditorName"
-              placeholder="Enter creditor name"
-              class="form-control"
-            >
-            <div class="error-message" *ngIf="debtForm.get('creditorName')?.invalid && debtForm.get('creditorName')?.touched">
-              Creditor name is required
+        <div class="row">
+          <div class="col-12 col-md-6">
+            <div class="form-group">
+              <label for="debtCreditor-{{ mode }}" class="required-field">Creditor Name</label>
+              <div class="input-wrapper">
+                <input
+                  id="debtCreditor-{{ mode }}"
+                  type="text"
+                  formControlName="creditorName"
+                  placeholder="Bank, Credit Card..."
+                  aria-required="true"
+                />
+                <div class="input-icon" *ngIf="formGroup.get('creditorName')?.valid">
+                  <i class="fa fa-check-circle"></i>
+                </div>
+              </div>
+              <div
+                class="error"
+                *ngIf="formGroup.get('creditorName')?.touched && formGroup.get('creditorName')?.invalid"
+                role="alert"
+              >
+                Please enter a creditor name.
+              </div>
             </div>
           </div>
-
-          <div class="form-group">
-            <label for="totalAmount">Total Amount *</label>
-            <input 
-              type="number" 
-              id="totalAmount" 
-              formControlName="totalAmount"
-              placeholder="0.00"
-              step="0.01"
-              min="0"
-              class="form-control"
-            >
-            <div class="error-message" *ngIf="debtForm.get('totalAmount')?.invalid && debtForm.get('totalAmount')?.touched">
-              Valid total amount is required
-            </div>
-          </div>
-        </div>
-
-        <div class="form-row">
-          <div class="form-group">
-            <label for="remainingAmount">Remaining Amount *</label>
-            <input 
-              type="number" 
-              id="remainingAmount" 
-              formControlName="remainingAmount"
-              placeholder="0.00"
-              step="0.01"
-              min="0"
-              class="form-control"
-            >
-            <div class="error-message" *ngIf="debtForm.get('remainingAmount')?.invalid && debtForm.get('remainingAmount')?.touched">
-              Valid remaining amount is required
-            </div>
-          </div>
-
-          <div class="form-group">
-            <label for="interestRate">Interest Rate (%)</label>
-            <input 
-              type="number" 
-              id="interestRate" 
-              formControlName="interestRate"
-              placeholder="0.00"
-              step="0.01"
-              min="0"
-              max="100"
-              class="form-control"
-            >
-          </div>
-        </div>
-
-        <div class="form-row">
-          <div class="form-group">
-            <label for="dueDate">Due Date *</label>
-            <input 
-              type="date" 
-              id="dueDate" 
-              formControlName="dueDate"
-              class="form-control"
-            >
-            <div class="error-message" *ngIf="debtForm.get('dueDate')?.invalid && debtForm.get('dueDate')?.touched">
-              Due date is required
-            </div>
-          </div>
-
-          <div class="form-group">
-            <label for="minPayment">Minimum Payment *</label>
-            <input 
-              type="number" 
-              id="minPayment" 
-              formControlName="minPayment"
-              placeholder="0.00"
-              step="0.01"
-              min="0"
-              class="form-control"
-            >
-            <div class="error-message" *ngIf="debtForm.get('minPayment')?.invalid && debtForm.get('minPayment')?.touched">
-              Valid minimum payment is required
+          <div class="col-12 col-md-6">
+            <div class="form-group">
+              <label for="debtTotalAmount-{{ mode }}" class="required-field">Total Amount</label>
+              <div class="input-wrapper amount-wrapper">
+                <span class="currency-symbol">$</span>
+                <input
+                  id="debtTotalAmount-{{ mode }}"
+                  type="number"
+                  formControlName="totalAmount"
+                  placeholder="1000"
+                  aria-required="true"
+                  step="0.01"
+                  min="0"
+                />
+                <div class="input-icon" *ngIf="formGroup.get('totalAmount')?.valid">
+                  <i class="fa fa-check-circle"></i>
+                </div>
+              </div>
+              <div
+                class="error"
+                *ngIf="formGroup.get('totalAmount')?.touched && formGroup.get('totalAmount')?.invalid"
+                role="alert"
+              >
+                Please enter a valid total amount.
+              </div>
             </div>
           </div>
         </div>
 
-        <div class="form-actions">
-          <button type="button" class="btn btn-secondary" (click)="onCancel.emit()">
-            Cancel
+        <div class="row">
+          <div class="col-12 col-md-6">
+            <div class="form-group">
+              <label for="debtRemainingAmount-{{ mode }}" class="required-field">Remaining Amount</label>
+              <div class="input-wrapper amount-wrapper">
+                <span class="currency-symbol">$</span>
+                <input
+                  id="debtRemainingAmount-{{ mode }}"
+                  type="number"
+                  formControlName="remainingAmount"
+                  placeholder="750"
+                  aria-required="true"
+                  step="0.01"
+                  min="0"
+                />
+                <div class="input-icon" *ngIf="formGroup.get('remainingAmount')?.valid">
+                  <i class="fa fa-check-circle"></i>
+                </div>
+              </div>
+              <div
+                class="error"
+                *ngIf="formGroup.get('remainingAmount')?.touched && formGroup.get('remainingAmount')?.invalid"
+                role="alert"
+              >
+                Please enter a valid remaining amount.
+              </div>
+            </div>
+          </div>
+          <div class="col-12 col-md-6">
+            <div class="form-group">
+              <label for="debtInterestRate-{{ mode }}">Interest Rate (%)</label>
+              <div class="input-wrapper">
+                <input
+                  id="debtInterestRate-{{ mode }}"
+                  type="number"
+                  formControlName="interestRate"
+                  placeholder="5.99"
+                  step="0.01"
+                  min="0"
+                  max="100"
+                />
+                <div class="input-icon" *ngIf="formGroup.get('interestRate')?.valid">
+                  <i class="fa fa-check-circle"></i>
+                </div>
+              </div>
+              <div
+                class="error"
+                *ngIf="formGroup.get('interestRate')?.touched && formGroup.get('interestRate')?.invalid"
+                role="alert"
+              >
+                Please enter a valid interest rate (0-100%).
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="col-12 col-md-6">
+            <div class="form-group">
+              <label for="debtDueDate-{{ mode }}" class="required-field">Due Date</label>
+              <div class="input-wrapper date-wrapper">
+                <input
+                  id="debtDueDate-{{ mode }}"
+                  type="date"
+                  formControlName="dueDate"
+                  aria-required="true"
+                />
+                <div class="input-icon" *ngIf="formGroup.get('dueDate')?.valid">
+                  <i class="fa fa-check-circle"></i>
+                </div>
+              </div>
+              <div
+                class="error"
+                *ngIf="formGroup.get('dueDate')?.touched && formGroup.get('dueDate')?.invalid"
+                role="alert"
+              >
+                Please select a due date.
+              </div>
+            </div>
+          </div>
+          <div class="col-12 col-md-6">
+            <div class="form-group">
+              <label for="debtMinPayment-{{ mode }}" class="required-field">Minimum Payment</label>
+              <div class="input-wrapper amount-wrapper">
+                <span class="currency-symbol">$</span>
+                <input
+                  id="debtMinPayment-{{ mode }}"
+                  type="number"
+                  formControlName="minPayment"
+                  placeholder="25"
+                  aria-required="true"
+                  step="0.01"
+                  min="0"
+                />
+                <div class="input-icon" *ngIf="formGroup.get('minPayment')?.valid">
+                  <i class="fa fa-check-circle"></i>
+                </div>
+              </div>
+              <div
+                class="error"
+                *ngIf="formGroup.get('minPayment')?.touched && formGroup.get('minPayment')?.invalid"
+                role="alert"
+              >
+                Please enter a valid minimum payment.
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="d-flex justify-content-end gap-3 mt-4">
+          <button class="btn btn-secondary" type="button" (click)="cancel.emit()">
+            <i class="fa fa-times me-2"></i>Cancel
           </button>
-          <button type="submit" class="btn btn-primary" [disabled]="debtForm.invalid">
-            {{ isAddMode ? 'Add Debt' : 'Update Debt' }}
+          <button
+            class="btn"
+            [ngClass]="mode === 'add' ? 'btn-add' : 'btn-modify'"
+            type="submit"
+            [disabled]="formGroup.invalid"
+          >
+            <i class="fa" [ngClass]="mode === 'add' ? 'fa-plus' : 'fa-save'"></i>
+            <span class="ms-2">{{ mode === 'add' ? 'Add' : 'Modify' }}</span>
           </button>
         </div>
       </form>
-    </div>
+    </section>
   `,
-  styleUrls: ['./debt-form.component.scss']
+  styleUrls: ['./debt-form.component.scss'],
+  imports: [CommonModule, ReactiveFormsModule],
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class DebtFormComponent implements OnInit {
-  @Input() isVisible: boolean = false;
-  @Input() isAddMode: boolean = true;
-  @Input() debt: Debt | null = null;
-  
-  @Output() onSubmit = new EventEmitter<DebtRequest>();
-  @Output() onCancel = new EventEmitter<void>();
+  @Input() formGroup!: FormGroup;
+  @Input() mode: 'add' | 'edit' = 'add';
 
-  debtForm: FormGroup;
+  @Output() formSubmit = new EventEmitter<void>();
+  @Output() cancel = new EventEmitter<void>();
 
-  constructor(private fb: FormBuilder) {
-    this.debtForm = this.fb.group({
-      creditorName: ['', [Validators.required, Validators.minLength(2)]],
-      totalAmount: [0, [Validators.required, Validators.min(0)]],
-      remainingAmount: [0, [Validators.required, Validators.min(0)]],
-      interestRate: [0, [Validators.min(0), Validators.max(100)]],
-      dueDate: ['', Validators.required],
-      minPayment: [0, [Validators.required, Validators.min(0)]]
-    });
+  constructor(
+    private meta: Meta,
+  ) {
+    this.meta.addTags([
+      { name: 'description', content: 'Add or modify a debt record in Alpha Vault. Secure, accessible, and efficient debt management.' },
+      { name: 'robots', content: 'index,follow' },
+      { name: 'viewport', content: 'width=device-width, initial-scale=1' },
+    ]);
   }
 
   ngOnInit(): void {
-    if (this.debt && !this.isAddMode) {
-      this.debtForm.patchValue({
-        creditorName: this.debt.creditorName,
-        totalAmount: this.debt.totalAmount,
-        remainingAmount: this.debt.remainingAmount,
-        interestRate: this.debt.interestRate,
-        dueDate: this.debt.dueDate,
-        minPayment: this.debt.minPayment
-      });
+    if (this.mode === 'add' && !this.formGroup.get('dueDate')?.value) {
+      const today = new Date();
+      const nextMonth = new Date(today.getFullYear(), today.getMonth() + 1, today.getDate());
+      const nextMonthStr = nextMonth.toISOString().split('T')[0];
+      this.formGroup.get('dueDate')?.setValue(nextMonthStr);
     }
   }
 
-  submitForm(): void {
-    if (this.debtForm.valid) {
-      const formValue = this.debtForm.value;
-      const debtRequest: DebtRequest = {
-        userId: 0, // Will be set by the service
-        creditorName: formValue.creditorName,
-        totalAmount: formValue.totalAmount,
-        remainingAmount: formValue.remainingAmount,
-        interestRate: formValue.interestRate,
-        dueDate: formValue.dueDate,
-        minPayment: formValue.minPayment
-      };
-      
-      this.onSubmit.emit(debtRequest);
+  onSubmit(): void {
+    if (this.formGroup.valid) {
+      this.formSubmit.emit();
+    } else {
+      this.formGroup.markAllAsTouched();
     }
   }
 }

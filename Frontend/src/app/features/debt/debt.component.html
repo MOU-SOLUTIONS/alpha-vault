@@ -1,10 +1,16 @@
+<!-- ================================================================
+              Coded by Mohamed Dhaoui for Alpha Vault
+================================================================ -->
+
 <!-- Section: Debt Dashboard -->
 <main class="parent-container" role="main">
+  <h1 class="sr-only">Debt Dashboard</h1>
   
   <!-- Section: Summary Widget Overview -->
   <section class="first-row" aria-labelledby="debtSummary">
+    <h2 id="debtSummary" class="sr-only">Debt Summary</h2>
     <app-debt-widget
-      [totalDebt]="calculatedTotalDebt"
+      [totalDebt]="totalDebt"
       [totalMinPayments]="totalMinPayments"
       [overdueDebts]="overdueDebts.length"
       [totalCreditors]="getCreditorCount()"
@@ -18,18 +24,39 @@
       <div class="col-12 col-md-4">
         <div class="debt-card quick-action-card">
           <div class="card-header">
-            <h3>🚀 Quick Actions</h3>
+            <div class="header-icon">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M12 2L13.09 8.26L20 9L13.09 9.74L12 16L10.91 9.74L4 9L10.91 8.26L12 2Z" fill="currentColor"/>
+              </svg>
+            </div>
+            <h3>Quick Actions</h3>
+            <div class="header-accent"></div>
           </div>
           <div class="card-content">
             <div class="quick-action-buttons">
-              <button class="btn btn-primary" (click)="onAddDebt()">
-                ➕ Add New Debt
+              <button class="action-btn btn-add" (click)="onAddDebt()">
+                <div class="btn-icon">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M12 4V20M4 12H20" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                  </svg>
+                </div>
+                <span>Add New Debt</span>
               </button>
-              <button class="btn btn-info" (click)="showPaymentCalculator()">
-                🧮 Payment Calculator
+              <button class="action-btn btn-calculator" (click)="showPaymentCalculator()">
+                <div class="btn-icon">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M9 7H15M9 11H15M9 15H15M7 21H17C18.1046 21 19 20.1046 19 19V5C19 3.89543 18.1046 3 17 3H7C5.89543 3 5 3.89543 5 5V19C5 20.1046 5.89543 21 7 21Z" stroke="currentColor" stroke-width="2"/>
+                  </svg>
+                </div>
+                <span>Payment Calculator</span>
               </button>
-              <button class="btn btn-success" (click)="showDebtSnowball()">
-                ❄️ Debt Snowball
+              <button class="action-btn btn-snowball" (click)="showDebtSnowball()">
+                <div class="btn-icon">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M12 2L13.09 8.26L20 9L13.09 9.74L12 16L10.91 9.74L4 9L10.91 8.26L12 2Z" fill="currentColor"/>
+                  </svg>
+                </div>
+                <span>Debt Snowball</span>
               </button>
             </div>
           </div>
@@ -39,22 +66,45 @@
       <div class="col-12 col-md-4">
         <div class="debt-card insight-card">
           <div class="card-header">
-            <h3>💡 Smart Insights</h3>
+            <div class="header-icon">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </div>
+            <h3>Smart Insights</h3>
+            <div class="header-accent"></div>
           </div>
           <div class="card-content">
             <div class="insight-item" *ngIf="getDebtInsights().length > 0">
-              <div class="insight-icon">🎯</div>
+              <div class="insight-icon">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/>
+                  <path d="M12 6V12L16 14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                </svg>
+              </div>
               <div class="insight-text">
                 <strong>{{ getDebtInsights()[0].title }}</strong>
                 <p>{{ getDebtInsights()[0].description }}</p>
               </div>
             </div>
             <div class="insight-item" *ngIf="getDebtInsights().length > 1">
-              <div class="insight-icon">⚡</div>
+              <div class="insight-icon">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M13 2L3 14H12L11 22L21 10H12L13 2Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+              </div>
               <div class="insight-text">
                 <strong>{{ getDebtInsights()[1].title }}</strong>
                 <p>{{ getDebtInsights()[1].description }}</p>
               </div>
+            </div>
+            <div class="insight-placeholder" *ngIf="getDebtInsights().length === 0">
+              <div class="placeholder-icon">
+                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+              </div>
+              <p>No insights available yet</p>
             </div>
           </div>
         </div>
@@ -63,22 +113,36 @@
       <div class="col-12 col-md-4">
         <div class="debt-card progress-card">
           <div class="card-header">
-            <h3>📈 Progress Overview</h3>
+            <div class="header-icon">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M9 19V6L21 3V16M9 19C9 20.1046 8.10457 21 7 21C5.89543 21 5 20.1046 5 19C5 17.8954 5.89543 17 7 17C8.10457 17 9 17.8954 9 19ZM21 16C21 17.1046 20.1046 18 19 18C17.8954 18 17 17.1046 17 16C17 14.8954 17.8954 14 19 14C20.1046 14 21 14.8954 21 16ZM9 9L21 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </div>
+            <h3>Progress Overview</h3>
+            <div class="header-accent"></div>
           </div>
           <div class="card-content">
             <div class="progress-item">
-              <div class="progress-label">Debt Reduction</div>
-              <div class="progress-container">
-                <div class="progress-bar" [style.width.%]="getDebtReductionPercentage()"></div>
+              <div class="progress-header">
+                <span class="progress-label">Debt Reduction</span>
+                <span class="progress-value">{{ getDebtReductionPercentage() | number:'1.0-1' }}%</span>
               </div>
-              <div class="progress-value">{{ getDebtReductionPercentage() | number:'1.0-1' }}%</div>
+              <div class="progress-container">
+                <div class="progress-bar" [style.width.%]="getDebtReductionPercentage()">
+                  <div class="progress-glow"></div>
+                </div>
+              </div>
             </div>
             <div class="progress-item">
-              <div class="progress-label">Payment Consistency</div>
-              <div class="progress-container">
-                <div class="progress-bar" [style.width.%]="getPaymentConsistencyScore()"></div>
+              <div class="progress-header">
+                <span class="progress-label">Payment Consistency</span>
+                <span class="progress-value">{{ getPaymentConsistencyScore() | number:'1.0-1' }}%</span>
               </div>
-              <div class="progress-value">{{ getPaymentConsistencyScore() | number:'1.0-1' }}%</div>
+              <div class="progress-container">
+                <div class="progress-bar" [style.width.%]="getPaymentConsistencyScore()">
+                  <div class="progress-glow"></div>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -86,13 +150,16 @@
     </div>
   </section>
 
-  <!-- Section: Debt Progress and Creditor Chart -->
-  <section class="second-row row" aria-labelledby="debtOverview">
-    <h2 id="debtOverview" class="sr-only">Debt Overview</h2>
+  <!-- Section: Progress and Creditor Chart -->
+  <section class="second-row row" aria-labelledby="debtProgress">
+    <h2 id="debtProgress" class="sr-only">Debt Progress</h2>
     <div class="debt-progress col-12 col-md-6">
-      <app-debt-progress [totalDebt]="calculatedTotalDebt" [totalPaid]="totalPaid"></app-debt-progress>
+      <app-debt-progress
+        [totalDebt]="totalDebt"
+        [totalPaid]="totalPaid"
+      ></app-debt-progress>
     </div>
-    <div class="creditor-chart col-12 col-md-6">
+    <div class="debt-creditor-chart col-12 col-md-6">
       <app-debt-creditor-chart [creditorData]="creditorSummary"></app-debt-creditor-chart>
     </div>
   </section>
@@ -112,12 +179,10 @@
   <section class="fourth-row" aria-labelledby="debtEvaluation">
     <h2 id="debtEvaluation" class="sr-only">Debt Evaluation</h2>
     <app-debt-evaluation
-      [totalDebt]="calculatedTotalDebt"
-      [totalPaid]="totalPaid"
+      [totalDebt]="totalDebt"
       [overdueDebts]="overdueDebts"
       [creditorSummary]="creditorSummary"
       [top5LargestDebts]="top5LargestDebts"
-      [debts]="debts"
     ></app-debt-evaluation>
   </section>
 
@@ -133,66 +198,57 @@
   </section>
 </main>
 
-<!-- Enhanced Overlay for Forms -->
-<div *ngIf="isAddOverlayVisible || isModifyOverlayVisible || isDeleteOverlayVisible" 
-     class="overlay-backdrop fade-in" 
-     (click)="closeOverlay()">
-  <div class="overlay-content form-container slide-up" (click)="$event.stopPropagation()">
-    <!-- Add Debt Form -->
-    <app-debt-form
-      *ngIf="isAddOverlayVisible"
-      [isVisible]="isAddOverlayVisible"
-      [isAddMode]="true"
-      [debt]="null"
-      (onSubmit)="addDebt($event)"
-      (onCancel)="closeOverlay()"
-    ></app-debt-form>
+<!-- Section: Add Overlay -->
+<app-overlay-container
+  *ngIf="isAddOverlayVisible"
+  [title]="'Add Debt'"
+  [theme]="'add'"
+  (cancel)="closeOverlay()"
+>
+  <app-debt-form
+    [formGroup]="debtForm"
+    [mode]="'add'"
+    (formSubmit)="addDebt()"
+    (cancel)="closeOverlay()"
+  />
+</app-overlay-container>
 
-    <!-- Modify Debt Form -->
-    <app-debt-form
-      *ngIf="isModifyOverlayVisible"
-      [isVisible]="isModifyOverlayVisible"
-      [isAddMode]="false"
-      [debt]="selectedDebt"
-      (onSubmit)="modifyDebt($event)"
-      (onCancel)="closeOverlay()"
-    ></app-debt-form>
+<!-- Section: Modify Overlay -->
+<app-overlay-container
+  *ngIf="isModifyOverlayVisible"
+  [title]="'Modify Debt'"
+  [theme]="'modify'"
+  (cancel)="closeOverlay()"
+>
+  <app-debt-form
+    [formGroup]="debtForm"
+    [mode]="'edit'"
+    (formSubmit)="modifyDebt()"
+    (cancel)="closeOverlay()"
+  />
+</app-overlay-container>
 
-    <!-- Enhanced Delete Confirmation -->
-    <div *ngIf="isDeleteOverlayVisible" class="delete-confirmation">
-      <div class="delete-header">
-        <div class="delete-icon">🗑️</div>
-        <h3>Confirm Deletion</h3>
-      </div>
-      <p>Are you sure you want to delete this debt? This action cannot be undone.</p>
-      <div class="debt-info">
-        <div class="debt-name">
-          <strong>{{ selectedDebt.creditorName }}</strong>
-        </div>
-        <div class="debt-amount">
-          Remaining: ${{ selectedDebt.remainingAmount | number:'1.2-2' }}
-        </div>
-        <div class="debt-due-date">
-          Due: {{ selectedDebt.dueDate | date:'mediumDate' }}
-        </div>
-      </div>
-      <div class="button-group">
-        <button class="btn btn-danger" (click)="deleteDebt()">
-          🗑️ Delete Permanently
-        </button>
-        <button class="btn btn-secondary" (click)="closeOverlay()">
-          ❌ Cancel
-        </button>
-      </div>
-    </div>
+<!-- Section: Delete Confirmation Overlay -->
+<app-overlay-container
+  *ngIf="isDeleteOverlayVisible"
+  [title]="'Confirm Deletion'"
+  [theme]="'delete'"
+  (cancel)="closeOverlay()"
+>
+  <p class="delete-text">
+    Are you sure you want to delete this debt record?
+  </p>
+  <div class="delete-button-group d-flex justify-content-end gap-2">
+    <button class="btn btn-secondary" (click)="closeOverlay()">Cancel</button>
+    <button class="btn btn-danger" (click)="deleteDebt()">Delete</button>
   </div>
-</div>
+</app-overlay-container>
 
-<!-- Payment Calculator Modal -->
+<!-- Section: Payment Calculator Modal -->
 <div *ngIf="isPaymentCalculatorVisible" class="overlay-backdrop fade-in" (click)="closePaymentCalculator()">
   <div class="overlay-content form-container slide-up" (click)="$event.stopPropagation()">
     <div class="form-header">
-      <h3>🧮 Payment Calculator</h3>
+      <h3>Payment Calculator</h3>
       <p>Calculate your debt payoff strategy and monthly payments</p>
     </div>
     
@@ -213,7 +269,7 @@
       </div>
       
       <div class="calculator-results" *ngIf="calculatorResults">
-        <h4>📊 Calculation Results</h4>
+        <h4>Calculation Results</h4>
         <div class="result-item">
           <span>Time to Payoff:</span>
           <strong>{{ calculatorResults.monthsToPayoff }} months</strong>
@@ -230,50 +286,50 @@
       
       <div class="form-actions">
         <button class="btn btn-primary" (click)="calculatePayment()">
-          🧮 Calculate
+          Calculate
         </button>
         <button class="btn btn-secondary" (click)="closePaymentCalculator()">
-          ❌ Close
+          Close
         </button>
       </div>
     </div>
   </div>
 </div>
 
-<!-- Debt Snowball Modal -->
+<!-- Section: Debt Snowball Modal -->
 <div *ngIf="isDebtSnowballVisible" class="overlay-backdrop fade-in" (click)="closeDebtSnowball()">
   <div class="overlay-content form-container slide-up" (click)="$event.stopPropagation()">
     <div class="form-header">
-      <h3>❄️ Debt Snowball Strategy</h3>
-      <p>Optimize your debt payoff order for maximum motivation</p>
+      <h3>Debt Snowball Calculator</h3>
+      <p>Optimize your debt payoff strategy with the snowball method</p>
     </div>
     
-    <div class="snowball-strategy">
-      <div class="strategy-info">
-        <p><strong>Strategy:</strong> Pay off debts from smallest to largest balance to build momentum.</p>
-        <p><strong>Monthly Budget:</strong> ${{ snowballData.monthlyBudget | number:'1.2-2' }}</p>
+    <div class="snowball-form">
+      <div class="form-group">
+        <label for="monthlyBudget">Monthly Budget for Debt ($)</label>
+        <input type="number" id="monthlyBudget" [(ngModel)]="snowballData.monthlyBudget" placeholder="500">
       </div>
       
-      <div class="snowball-order" *ngIf="snowballOrder.length > 0">
-        <h4>🎯 Recommended Payoff Order</h4>
-        <div class="debt-item" *ngFor="let debt of snowballOrder; let i = index">
-          <div class="debt-rank">{{ i + 1 }}</div>
-                   <div class="debt-details">
-           <div class="debt-name">{{ debt.creditor }}</div>
-           <div class="debt-amount">${{ debt.remainingAmount | number:'1.2-2' }}</div>
-         </div>
-          <div class="debt-payment">
-            ${{ debt.recommendedPayment | number:'1.2-2' }}/month
+      <div class="snowball-results" *ngIf="snowballOrder.length > 0">
+        <h4>Recommended Payoff Order</h4>
+        <div class="snowball-list">
+          <div *ngFor="let debt of snowballOrder; let i = index" class="snowball-item">
+            <div class="priority">{{ i + 1 }}</div>
+            <div class="debt-info">
+              <div class="creditor">{{ debt.creditor }}</div>
+              <div class="amount">${{ debt.remainingAmount | number:'1.2-2' }}</div>
+            </div>
+            <div class="payment">${{ debt.recommendedPayment | number:'1.2-2' }}/month</div>
           </div>
         </div>
       </div>
       
       <div class="form-actions">
         <button class="btn btn-primary" (click)="generateSnowballStrategy()">
-          🎯 Generate Strategy
+          Calculate Snowball
         </button>
         <button class="btn btn-secondary" (click)="closeDebtSnowball()">
-          ❌ Close
+          Close
         </button>
       </div>
     </div>

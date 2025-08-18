@@ -1,10 +1,15 @@
 /* ================= VARIABLES ================= */
 
 :host {
-  --primary-color: #6366f1;
-  --secondary-color: #8b5cf6;
-  --primary-dark: #4f46e5;
-  --secondary-dark: #7c3aed;
+  --sidebar-primary: #6366f1;
+  --sidebar-secondary: #8b5cf6;
+  --sidebar-primary-dark: #4f46e5;
+  --sidebar-secondary-dark: #7c3aed;
+  --sidebar-accent: #a855f7;
+  --sidebar-glow: rgba(139, 92, 246, 0.3);
+  --sidebar-background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+  --sidebar-background-hover: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+  
   --text-dark: #1a1a1a;
   --text-light: #ffffff;
   --text-muted: rgba(255, 255, 255, 0.7);
@@ -12,10 +17,8 @@
   --background-darker: #0f0f20;
   --background-light: #fafafa;
   --shadow-color: rgba(0, 0, 0, 0.2);
-  --primary-gradient: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
-  --primary-gradient-dark: linear-gradient(135deg, var(--primary-dark) 0%, var(--secondary-dark) 100%);
-  --transition-standard: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  --transition-bounce: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+  --transition-standard: all 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-bounce: all 1s cubic-bezier(0.34, 1.56, 0.64, 1);
   --spacing-sm: 8px;
   --spacing-md: 16px;
   --spacing-lg: 24px;
@@ -27,16 +30,20 @@
 .nav-container {
   width: 100%;
   height: 100%;
-  background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+  background: var(--sidebar-background);
   border-radius: 0 var(--border-radius) var(--border-radius) 0;
-  box-shadow: 0 8px 30px var(--shadow-color);
+  box-shadow: 
+    0 8px 30px var(--shadow-color),
+    0 0 0 1px rgba(255, 255, 255, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
   display: flex;
   flex-direction: column;
   overflow: hidden;
   position: relative;
+  transition: var(--transition-standard);
 }
 
-/* Add animated background particles */
+/* Living Gradient Mesh Effect - Multiple Color Layers */
 .nav-container::before {
   content: '';
   position: absolute;
@@ -44,21 +51,214 @@
   left: 0;
   width: 100%;
   height: 100%;
-  background-image: 
-    radial-gradient(circle at 25% 25%, rgba(255, 255, 255, 0.2) 1px, transparent 1px),
-    radial-gradient(circle at 75% 75%, rgba(255, 255, 255, 0.2) 1px, transparent 1px);
-  background-size: 40px 40px;
-  opacity: 0.3;
-  animation: backgroundShift 120s linear infinite;
+  background: 
+    /* Primary color mesh - varying intensities with smoother gradients */
+    radial-gradient(circle at 15% 15%, var(--sidebar-primary) 0%, transparent 45%),
+    radial-gradient(circle at 85% 85%, var(--sidebar-secondary) 0%, transparent 55%),
+    radial-gradient(circle at 35% 65%, var(--sidebar-primary-dark) 0%, transparent 50%),
+    radial-gradient(circle at 65% 35%, var(--sidebar-secondary-dark) 0%, transparent 40%),
+    
+    /* Accent color highlights - lighter areas with smoother transitions */
+    radial-gradient(circle at 25% 75%, var(--sidebar-accent) 0%, transparent 35%),
+    radial-gradient(circle at 75% 25%, rgba(255, 255, 255, 0.12) 0%, transparent 30%),
+    
+    /* Darker shadow areas for depth with smoother edges */
+    radial-gradient(circle at 8% 92%, rgba(0, 0, 0, 0.18) 0%, transparent 45%),
+    radial-gradient(circle at 92% 8%, rgba(0, 0, 0, 0.12) 0%, transparent 40%),
+    
+    /* Additional smooth color layers for ultra-fluid movement */
+    radial-gradient(circle at 45% 20%, rgba(139, 92, 246, 0.3) 0%, transparent 40%),
+    radial-gradient(circle at 20% 45%, rgba(99, 102, 241, 0.25) 0%, transparent 35%),
+    radial-gradient(circle at 80% 55%, rgba(168, 85, 247, 0.2) 0%, transparent 30%),
+    radial-gradient(circle at 55% 80%, rgba(79, 70, 229, 0.15) 0%, transparent 25%);
+  
+  background-size: 160% 160%, 180% 180%, 170% 170%, 140% 140%, 150% 150%, 130% 130%, 145% 145%, 135% 135%, 155% 155%, 165% 165%, 175% 175%, 185% 185%;
+  opacity: 0.85;
+  animation: 
+    livingColorMesh 35s ease-in-out infinite,
+    colorBreathing 12s ease-in-out infinite,
+    meshShift 25s ease-in-out infinite,
+    smoothFlow 40s ease-in-out infinite;
   pointer-events: none;
+  transition: opacity 1.2s cubic-bezier(0.4, 0, 0.2, 1);
+  mix-blend-mode: soft-light;
+  filter: blur(0.5px);
 }
 
-@keyframes backgroundShift {
-  0% {
-    background-position: 0 0;
+.nav-container:hover::before {
+  opacity: 1;
+  animation-duration: 28s, 10s, 20s, 32s;
+  filter: blur(0px);
+}
+
+/* Ultra-Smooth Living Color Mesh Animation - Colors breathing and moving */
+@keyframes livingColorMesh {
+  0%, 100% {
+    background-position: 
+      0% 0%, 100% 100%, 50% 50%, 0% 100%,
+      100% 0%, 0% 50%, 50% 100%, 100% 50%,
+      25% 75%, 75% 25%, 60% 40%, 40% 60%;
   }
-  100% {
-    background-position: 1000px 1000px;
+  16.66% {
+    background-position: 
+      100% 0%, 0% 100%, 100% 50%, 100% 0%,
+      0% 100%, 100% 50%, 0% 0%, 50% 100%,
+      75% 25%, 25% 75%, 40% 60%, 60% 40%;
+  }
+  33.33% {
+    background-position: 
+      100% 100%, 0% 0%, 50% 100%, 0% 50%,
+      50% 0%, 100% 100%, 100% 50%, 0% 0%,
+      50% 100%, 100% 50%, 25% 75%, 75% 25%;
+  }
+  50% {
+    background-position: 
+      50% 0%, 100% 50%, 0% 100%, 50% 50%,
+      100% 100%, 0% 0%, 50% 0%, 100% 100%,
+      0% 50%, 50% 100%, 100% 25%, 25% 100%;
+  }
+  66.66% {
+    background-position: 
+      0% 100%, 50% 0%, 100% 50%, 100% 100%,
+      0% 50%, 50% 100%, 100% 0%, 0% 50%,
+      75% 75%, 25% 25%, 40% 40%, 60% 60%;
+  }
+  83.33% {
+    background-position: 
+      50% 100%, 0% 50%, 50% 0%, 0% 0%,
+      100% 50%, 0% 100%, 50% 50%, 100% 0%,
+      25% 25%, 75% 75%, 60% 60%, 40% 40%;
+  }
+}
+
+/* Ultra-Smooth Color Breathing Effect - Intensities pulsing */
+@keyframes colorBreathing {
+  0%, 100% {
+    opacity: 0.8;
+    filter: brightness(1) contrast(1) saturate(1);
+    transform: scale(1);
+  }
+  25% {
+    opacity: 0.9;
+    filter: brightness(1.1) contrast(1.05) saturate(1.1);
+    transform: scale(1.005);
+  }
+  50% {
+    opacity: 1;
+    filter: brightness(1.15) contrast(1.08) saturate(1.15);
+    transform: scale(1.01);
+  }
+  75% {
+    opacity: 0.95;
+    filter: brightness(1.05) contrast(1.03) saturate(1.05);
+    transform: scale(1.002);
+  }
+}
+
+/* Ultra-Smooth Mesh Shift - Subtle movement for living feel */
+@keyframes meshShift {
+  0%, 100% {
+    transform: translateX(0px) translateY(0px) scale(1) rotate(0deg);
+  }
+  20% {
+    transform: translateX(-0.5px) translateY(-0.3px) scale(1.002) rotate(0.1deg);
+  }
+  40% {
+    transform: translateX(0.3px) translateY(-0.5px) scale(1.005) rotate(-0.1deg);
+  }
+  60% {
+    transform: translateX(0.5px) translateY(0.3px) scale(1.003) rotate(0.05deg);
+  }
+  80% {
+    transform: translateX(-0.3px) translateY(0.5px) scale(0.998) rotate(-0.05deg);
+  }
+}
+
+/* New Ultra-Smooth Flow Animation */
+@keyframes smoothFlow {
+  0%, 100% {
+    background-size: 160% 160%, 180% 180%, 170% 170%, 140% 140%, 150% 150%, 130% 130%, 145% 145%, 135% 135%, 155% 155%, 165% 165%, 175% 175%, 185% 185%;
+  }
+  25% {
+    background-size: 165% 165%, 175% 175%, 180% 180%, 145% 145%, 155% 155%, 135% 135%, 150% 150%, 140% 140%, 160% 160%, 170% 170%, 180% 180%, 190% 190%;
+  }
+  50% {
+    background-size: 170% 170%, 170% 170%, 175% 175%, 150% 150%, 160% 160%, 140% 140%, 155% 155%, 145% 145%, 165% 165%, 175% 175%, 185% 185%, 195% 195%;
+  }
+  75% {
+    background-size: 175% 175%, 165% 165%, 170% 170%, 155% 155%, 165% 165%, 145% 145%, 160% 160%, 150% 150%, 170% 170%, 180% 180%, 190% 190%, 200% 200%;
+  }
+}
+
+/* Enhanced Glow Effect with Living Colors - Ultra Smooth */
+.nav-container::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: 
+    radial-gradient(circle at 50% 50%, var(--sidebar-glow) 0%, transparent 75%),
+    radial-gradient(circle at 25% 25%, rgba(255, 255, 255, 0.08) 0%, transparent 55%),
+    radial-gradient(circle at 75% 75%, var(--sidebar-accent) 0%, transparent 65%),
+    radial-gradient(circle at 40% 60%, rgba(139, 92, 246, 0.15) 0%, transparent 45%),
+    radial-gradient(circle at 60% 40%, rgba(99, 102, 241, 0.12) 0%, transparent 40%);
+  opacity: 0;
+  transition: opacity 1.2s cubic-bezier(0.4, 0, 0.2, 1);
+  pointer-events: none;
+  filter: blur(45px);
+  animation: 
+    glowPulse 15s ease-in-out infinite,
+    glowShift 20s ease-in-out infinite,
+    glowFlow 30s ease-in-out infinite;
+  mix-blend-mode: screen;
+}
+
+.nav-container:hover::after {
+  opacity: 0.7;
+  animation-duration: 12s, 18s, 25s;
+}
+
+/* Enhanced Ultra-Smooth Glow Animations */
+@keyframes glowPulse {
+  0%, 100% {
+    opacity: 0;
+    transform: scale(1);
+  }
+  25% {
+    opacity: 0.3;
+    transform: scale(1.1);
+  }
+  50% {
+    opacity: 0.7;
+    transform: scale(1.25);
+  }
+  75% {
+    opacity: 0.4;
+    transform: scale(1.15);
+  }
+}
+
+@keyframes glowShift {
+  0%, 100% {
+    background-position: 50% 50%, 25% 25%, 75% 75%, 40% 60%, 60% 40%;
+  }
+  33% {
+    background-position: 75% 25%, 50% 75%, 25% 50%, 60% 40%, 40% 60%;
+  }
+  66% {
+    background-position: 25% 75%, 75% 25%, 50% 50%, 20% 80%, 80% 20%;
+  }
+}
+
+/* New Ultra-Smooth Glow Flow */
+@keyframes glowFlow {
+  0%, 100% {
+    background-size: 100% 100%, 120% 120%, 140% 140%, 110% 110%, 130% 130%;
+  }
+  50% {
+    background-size: 120% 120%, 140% 140%, 160% 160%, 130% 130%, 150% 150%;
   }
 }
 
@@ -86,6 +286,7 @@
   opacity: 0.7;
   border-radius: 2px;
   box-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+  transition: all 0.8s ease;
 }
 
 .image-container::before {
@@ -97,11 +298,17 @@
   height: 100%;
   background: rgba(0, 0, 0, 0.1);
   opacity: 0;
-  transition: opacity 0.3s ease;
+  transition: opacity 0.6s ease;
 }
 
 .image-container:hover::before {
   opacity: 1;
+}
+
+.image-container:hover::after {
+  box-shadow: 0 0 20px var(--sidebar-accent);
+  opacity: 1;
+  transform: scaleX(1.1);
 }
 
 .logo {
@@ -123,7 +330,7 @@
   flex: 1;
   display: flex;
   flex-direction: column;
-  padding: 30px  0;
+  padding: 30px 0;
   gap: var(--spacing-lg);
   overflow-y: auto;
   position: relative;
@@ -137,8 +344,8 @@
 
 /* Hide scrollbar for IE, Edge and Firefox */
 .button-container {
-  -ms-overflow-style: none;  /* IE and Edge */
-  scrollbar-width: none;  /* Firefox */
+  -ms-overflow-style: none;
+  scrollbar-width: none;
 }
 
 /* ================= NAVIGATION BUTTONS ================= */
@@ -158,6 +365,7 @@ button {
   z-index: 1;
 }
 
+/* Living Color Effect for Buttons */
 button::before {
   content: '';
   position: absolute;
@@ -169,6 +377,17 @@ button::before {
   transform: scaleY(0);
   opacity: 0;
   border-radius: 0 4px 4px 0;
+  transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+  animation: buttonGlow 4s ease-in-out infinite;
+}
+
+@keyframes buttonGlow {
+  0%, 100% {
+    box-shadow: 0 0 5px var(--sidebar-accent);
+  }
+  50% {
+    box-shadow: 0 0 15px var(--sidebar-accent), 0 0 25px var(--sidebar-accent);
+  }
 }
 
 button::after {
@@ -178,10 +397,22 @@ button::after {
   top: 0;
   height: 100%;
   width: 100%;
-  background: linear-gradient(90deg, rgba(255, 255, 255, 0.15) 0%, rgba(255, 255, 255, 0) 100%);
+  background: 
+    linear-gradient(90deg, rgba(255, 255, 255, 0.15) 0%, rgba(255, 255, 255, 0) 100%),
+    radial-gradient(circle at 50% 50%, var(--sidebar-accent) 0%, transparent 70%);
   opacity: 0;
-  transition: opacity 0.3s ease;
+  transition: opacity 0.6s ease;
   z-index: -1;
+  animation: buttonMesh 6s ease-in-out infinite;
+}
+
+@keyframes buttonMesh {
+  0%, 100% {
+    background-position: 0% 50%, 50% 50%;
+  }
+  50% {
+    background-position: 100% 50%, 50% 50%;
+  }
 }
 
 button:hover {
@@ -191,6 +422,8 @@ button:hover {
 button:hover::before {
   transform: scaleY(0.7);
   opacity: 1;
+  background: var(--sidebar-accent);
+  box-shadow: 0 0 20px var(--sidebar-accent);
 }
 
 button:hover::after {
@@ -202,46 +435,113 @@ button:hover .nav-icon {
   transform: translateY(-2px) scale(1.1);
 }
 
+/* Active button state with Living Colors */
+button.active {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 0 12px 12px 0;
+  margin-right: 8px;
+  animation: activeButtonGlow 3s ease-in-out infinite;
+  position: relative;
+}
 
+button.active::before {
+  transform: scaleY(1);
+  opacity: 1;
+  background: var(--sidebar-accent);
+  box-shadow: 0 0 25px var(--sidebar-accent);
+}
 
-@keyframes pulseLight {
-  0% {
-    box-shadow: 0 0 5px rgba(255, 255, 255, 0.5);
+button.active .nav-icon {
+  color: var(--text-light);
+  transform: scale(1.1);
+  filter: drop-shadow(0 0 15px var(--sidebar-accent));
+}
+
+/* Living Color Active Button Effect */
+button.active::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: 
+    var(--sidebar-accent),
+    radial-gradient(circle at 30% 30%, rgba(255, 255, 255, 0.2) 0%, transparent 50%),
+    radial-gradient(circle at 70% 70%, var(--sidebar-primary) 0%, transparent 40%);
+  opacity: 0.15;
+  border-radius: 0 12px 12px 0;
+  animation: 
+    activeGlow 3s ease-in-out infinite,
+    activeMesh 5s ease-in-out infinite;
+  background-size: 100% 100%, 150% 150%, 120% 120%;
+}
+
+@keyframes activeButtonGlow {
+  0%, 100% {
+    box-shadow: 0 0 15px rgba(255, 255, 255, 0.2);
   }
-  100% {
-    box-shadow: 0 0 15px rgba(255, 255, 255, 0.8), 0 0 20px rgba(255, 255, 255, 0.4);
+  50% {
+    box-shadow: 0 0 25px rgba(255, 255, 255, 0.3);
   }
 }
 
+@keyframes activeGlow {
+  0% {
+    opacity: 0.1;
+    box-shadow: 0 0 15px var(--sidebar-accent);
+  }
+  50% {
+    opacity: 0.2;
+    box-shadow: 0 0 25px var(--sidebar-accent), 0 0 35px var(--sidebar-accent);
+  }
+  100% {
+    opacity: 0.1;
+    box-shadow: 0 0 15px var(--sidebar-accent);
+  }
+}
+
+@keyframes activeMesh {
+  0%, 100% {
+    background-position: 0% 0%, 30% 30%, 70% 70%;
+  }
+  50% {
+    background-position: 100% 100%, 70% 70%, 30% 30%;
+  }
+}
 
 /* ================= ICON STYLING ================= */
 
 .nav-icon {
   font-size: 22px;
   color: var(--text-muted);
-  transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+  transition: var(--transition-standard);
   position: relative;
 }
 
-
-@keyframes ripple {
-  to {
-    transform: scale(2);
-    opacity: 0;
-  }
+button:hover .nav-icon,
+button.active .nav-icon {
+  color: var(--text-light);
 }
 
-/* ================= ANIMATIONS ================= */
+/* Living Icon Animation */
+button.active .nav-icon {
+  animation: iconPulse 3s ease-in-out infinite;
+}
 
 @keyframes iconPulse {
   0% {
     opacity: 0.9;
     transform: scale(1);
   }
-  100% {
+  50% {
     opacity: 1;
-    transform: scale(1.2);
-    filter: drop-shadow(0 0 15px rgba(255, 255, 255, 1));
+    transform: scale(1.1);
+    filter: drop-shadow(0 0 15px var(--sidebar-accent));
+  }
+  100% {
+    opacity: 0.9;
+    transform: scale(1);
   }
 }
 
@@ -264,4 +564,49 @@ button:hover .nav-icon {
   .nav-icon {
     font-size: 18px;
   }
+}
+
+/* ================= COLOR TRANSITION ANIMATIONS ================= */
+
+/* Ultra-smooth color transitions with Living Mesh */
+.nav-container,
+.nav-container::before,
+.nav-container::after,
+.image-container::after,
+button::before,
+button.active::before,
+button.active::after {
+  transition: var(--transition-standard);
+}
+
+/* Enhanced hover effects with Living Colors */
+.nav-container:hover {
+  background: var(--sidebar-background-hover);
+  transform: translateY(-2px);
+  box-shadow: 
+    0 12px 40px var(--shadow-color),
+    0 0 0 1px rgba(255, 255, 255, 0.15),
+    inset 0 1px 0 rgba(255, 255, 255, 0.3);
+}
+
+/* Button hover effects with Living Color Mesh */
+button:hover::before {
+  background: var(--sidebar-accent);
+  box-shadow: 0 0 25px var(--sidebar-accent);
+}
+
+button.active::before {
+  background: var(--sidebar-accent);
+  box-shadow: 0 0 30px var(--sidebar-accent);
+}
+
+/* Living Color Active Button */
+button.active::after {
+  background: 
+    var(--sidebar-accent),
+    radial-gradient(circle at 30% 30%, rgba(255, 255, 255, 0.2) 0%, transparent 50%),
+    radial-gradient(circle at 70% 70%, var(--sidebar-primary) 0%, transparent 40%);
+  animation: 
+    activeGlow 3s ease-in-out infinite,
+    activeMesh 5s ease-in-out infinite;
 }

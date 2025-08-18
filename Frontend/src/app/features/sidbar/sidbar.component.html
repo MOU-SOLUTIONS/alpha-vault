@@ -1,5 +1,5 @@
 <!-- Navigation container, positioned on the left side of the screen -->
-<div class="nav-container">
+<div class="nav-container" [style.background]="getCurrentColors().background">
   <!-- Container for the logo inside the navigation bar -->
   <div class="image-container">
     <!-- Logo image with alternative text for accessibility -->
@@ -11,10 +11,7 @@
   </div>
 
   <!-- Container for the navigation buttons -->
-  <div
-    [ngClass]="{ active: isRouteActive('main/body/income') }"
-    class="button-container"
-  >
+  <div class="button-container">
     <!-- Navigation button with a dashboard icon -->
     <button
       [ngClass]="{ active: isRouteActive('main/body/income') }"
@@ -37,7 +34,7 @@
 
     <!-- Navigation button with an expense icon -->
     <button
-      [ngClass]="{ active: isRouteActive('main/body/income') }"
+      [ngClass]="{ active: isRouteActive('main/body/expense') }"
       (click)="navigateToExpense()"
       aria-label="Expense"
     >
@@ -47,7 +44,7 @@
 
     <!-- Navigation button with a budget icon -->
     <button
-      [ngClass]="{ active: isRouteActive('main/body/income') }"
+      [ngClass]="{ active: isRouteActive('main/body/budget') }"
       (click)="navigateToBudget()"
       aria-label="Budget"
     >
@@ -57,7 +54,7 @@
 
     <!-- Navigation button with a saving icon -->
     <button
-      [ngClass]="{ active: isRouteActive('main/body/income') }"
+      [ngClass]="{ active: isRouteActive('main/body/saving') }"
       (click)="navigateToSaving()"
       aria-label="Saving"
     >
@@ -67,7 +64,7 @@
 
     <!-- Navigation button with an investment icon -->
     <button
-      [ngClass]="{ active: isRouteActive('main/body/income') }"
+      [ngClass]="{ active: isRouteActive('main/body/investment') }"
       (click)="navigateToInvestment()"
       aria-label="Investment"
     >

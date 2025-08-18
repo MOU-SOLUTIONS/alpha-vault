@@ -1,20 +1,14 @@
 <!-- ================================================================
-              Coded by Mohamed Dhaoui for Alpha Vault
-================================================================ -->
+               Coded by Mohamed Dhaoui for Alpha Vault
+=============================================================== -->
 
 <!-- Section: Debt Due Date Chart Container -->
 <section class="due-date-chart-container" role="region" aria-labelledby="dueDateChartTitle">
   
-  <!-- Section: Chart Header -->
+  <!-- Section: Enhanced Chart Header -->
   <header class="chart-header">
-    <h3 id="dueDateChartTitle">Debt Due Dates</h3>
-    <div class="chart-subtitle">Upcoming payment deadlines</div>
-  </header>
-  
-  <!-- Section: Chart Content -->
-  <div class="chart-content">
-    <div *ngIf="!hasDebtData()" class="no-data">
-      <div class="no-data-icon" role="img" aria-label="Calendar icon">
+    <div class="header-content">
+      <div class="header-icon">
         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
           <rect x="3" y="4" width="18" height="18" rx="2" ry="2" stroke="currentColor" stroke-width="2"/>
           <line x1="16" y1="2" x2="16" y2="6" stroke="currentColor" stroke-width="2"/>
@@ -22,46 +16,126 @@
           <line x1="3" y1="10" x2="21" y2="10" stroke="currentColor" stroke-width="2"/>
         </svg>
       </div>
-      <p>No debt data available</p>
+      <div class="header-text">
+        <h3 id="dueDateChartTitle">Payment Deadlines</h3>
+        <p class="chart-subtitle">Track your upcoming debt payments</p>
+      </div>
+    </div>
+  </header>
+  
+  <!-- Section: Enhanced Chart Content -->
+  <div class="chart-content">
+    <div *ngIf="!hasDebtData()" class="no-data">
+      <div class="no-data-icon" role="img" aria-label="Empty calendar">
+        <svg width="64" height="64" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <rect x="3" y="4" width="18" height="18" rx="2" ry="2" stroke="currentColor" stroke-width="2" fill="none"/>
+          <line x1="16" y1="2" x2="16" y2="6" stroke="currentColor" stroke-width="2"/>
+          <line x1="8" y1="2" x2="8" y2="6" stroke="currentColor" stroke-width="2"/>
+          <line x1="3" y1="10" x2="21" y2="10" stroke="currentColor" stroke-width="2"/>
+          <circle cx="12" cy="16" r="1" fill="currentColor"/>
+          <circle cx="8" cy="16" r="1" fill="currentColor"/>
+          <circle cx="16" cy="16" r="1" fill="currentColor"/>
+        </svg>
+      </div>
+      <h4>No Debts Found</h4>
+      <p>No data to show</p>
     </div>
     
     <div *ngIf="hasDebtData()" class="due-date-list">
       <div 
-        *ngFor="let debt of getSortedDebts(); trackBy: trackByDebt" 
+        *ngFor="let debt of getSortedDebts(); trackBy: trackByDebt; let i = index" 
         class="due-date-item"
         [class.overdue]="isOverdue(debt.dueDate)"
         [class.urgent]="isUrgent(debt.dueDate)"
         [class.warning]="isWarning(debt.dueDate)"
+        [class.normal]="!isOverdue(debt.dueDate) && !isUrgent(debt.dueDate) && !isWarning(debt.dueDate)"
+        [@slideInUp]="{ value: '*', params: { delay: i * 100 } }"
       >
+        <div class="item-priority">
+          <div class="priority-indicator" [class]="getStatusClass(debt.dueDate)"></div>
+        </div>
+        
         <div class="due-date-info">
           <div class="creditor-name">{{ debt.creditorName }}</div>
-          <div class="due-date">{{ debt.dueDate | date:'MMM dd, yyyy' }}</div>
+          <div class="due-date">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <rect x="3" y="4" width="18" height="18" rx="2" ry="2" stroke="currentColor" stroke-width="2"/>
+              <line x1="16" y1="2" x2="16" y2="6" stroke="currentColor" stroke-width="2"/>
+              <line x1="8" y1="2" x2="8" y2="6" stroke="currentColor" stroke-width="2"/>
+              <line x1="3" y1="10" x2="21" y2="10" stroke="currentColor" stroke-width="2"/>
+            </svg>
+            {{ debt.dueDate | date:'MMM dd, yyyy' }}
+          </div>
         </div>
         
         <div class="debt-amount">
-          ${{ debt.remainingAmount | number:'1.0-2' }}
+          <span class="amount-label">Amount</span>
+          <span class="amount-value">${{ debt.remainingAmount | number:'1.0-2' }}</span>
         </div>
         
-        <div class="status-badge" [class]="getStatusClass(debt.dueDate)">
-          {{ getStatusText(debt.dueDate) }}
+        <div class="status-section">
+          <div class="status-badge" [class]="getStatusClass(debt.dueDate)">
+            <span class="badge-icon" [innerHTML]="getStatusIcon(debt.dueDate)"></span>
+            {{ getStatusText(debt.dueDate) }}
+          </div>
+          <div class="days-remaining" [class]="getStatusClass(debt.dueDate)">
+            {{ getDaysRemaining(debt.dueDate) }}
+          </div>
         </div>
       </div>
     </div>
   </div>
   
-  <!-- Section: Chart Summary -->
+  <!-- Section: Enhanced Chart Summary -->
   <footer class="chart-summary" *ngIf="hasDebtData()">
-    <div class="summary-item">
-      <span class="summary-label">Overdue:</span>
-      <span class="summary-value overdue">{{ getOverdueCount() }}</span>
+    <div class="summary-header">
+      <h4>Payment Overview</h4>
+      <div class="summary-total">
+        <span class="total-label">Total Debts:</span>
+        <span class="total-value">{{ debts.length }}</span>
+      </div>
     </div>
-    <div class="summary-item">
-      <span class="summary-label">Due Soon:</span>
-      <span class="summary-value urgent">{{ getUrgentCount() }}</span>
-    </div>
-    <div class="summary-item">
-      <span class="summary-label">Upcoming:</span>
-      <span class="summary-value upcoming">{{ getUpcomingCount() }}</span>
+    
+    <div class="summary-grid">
+      <div class="summary-item overdue">
+        <div class="summary-icon">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/>
+            <polyline points="12,6 12,12 16,14" stroke="currentColor" stroke-width="2"/>
+          </svg>
+        </div>
+        <div class="summary-content">
+          <span class="summary-label">Overdue</span>
+          <span class="summary-value">{{ getOverdueCount() }}</span>
+        </div>
+      </div>
+      
+      <div class="summary-item urgent">
+        <div class="summary-icon">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" fill="currentColor"/>
+          </svg>
+        </div>
+        <div class="summary-content">
+          <span class="summary-label">Due Soon</span>
+          <span class="summary-value">{{ getUrgentCount() }}</span>
+        </div>
+      </div>
+      
+      <div class="summary-item upcoming">
+        <div class="summary-icon">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M9 11H1v8a2 2 0 0 0 2 2h6v-10z" fill="currentColor"/>
+            <path d="M23 11h-8v10h6a2 2 0 0 0 2-2v-8z" fill="currentColor"/>
+            <path d="M13 1H1v8h12V1z" fill="currentColor"/>
+            <path d="M23 1h-8v8h8V1z" fill="currentColor"/>
+          </svg>
+        </div>
+        <div class="summary-content">
+          <span class="summary-label">Upcoming</span>
+          <span class="summary-value">{{ getUpcomingCount() }}</span>
+        </div>
+      </div>
     </div>
   </footer>
 </section>

@@ -6,63 +6,93 @@
 <section class="debt-widget-container" role="region" aria-labelledby="debt-widget-heading">
   <h2 id="debt-widget-heading" class="sr-only">Debt Summary Overview</h2>
   
-  <div class="widget-grid">
-    <article class="widget-card total-debt" role="article" aria-labelledby="total-debt-title">
-      <div class="widget-icon" aria-hidden="true">
-        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <article class="debt-card total-debt" role="article" aria-labelledby="total-debt-title">
+    <div class="card-header">
+      <div class="icon total-debt" aria-hidden="true">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
           <path d="M12 2L2 7L12 12L22 7L12 2Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
           <path d="M2 17L12 22L22 17" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
           <path d="M2 12L12 17L22 12" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
         </svg>
       </div>
-      <div class="widget-content">
-        <h3 id="total-debt-title" class="widget-title">Total Debt</h3>
-        <p class="widget-value" aria-label="Total debt amount">${{ totalDebt | number:'1.0-2' }}</p>
+      <h3 id="total-debt-title" class="title">Total Debt</h3>
+    </div>
+    <div class="card-content">
+      <p class="value" aria-label="Total debt amount">${{ totalDebt | number:'1.0-2' }}</p>
+      <p class="subtitle">Outstanding Balance</p>
+    </div>
+    <div class="card-footer">
+      <div class="trend">
+        <span class="trend-value neutral">Current</span>
+        <span class="trend-icon">📊</span>
       </div>
-      <div class="widget-decoration"></div>
-    </article>
+    </div>
+  </article>
 
-    <article class="widget-card min-payments" role="article" aria-labelledby="min-payments-title">
-      <div class="widget-icon" aria-hidden="true">
-        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <article class="debt-card total-paid" role="article" aria-labelledby="min-payments-title">
+    <div class="card-header">
+      <div class="icon total-paid" aria-hidden="true">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
           <path d="M12 2V6M12 18V22M4.93 4.93L7.76 7.76M16.24 16.24L19.07 19.07M2 12H6M18 12H22M4.93 19.07L7.76 16.24M16.24 7.76L19.07 4.93" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
         </svg>
       </div>
-      <div class="widget-content">
-        <h3 id="min-payments-title" class="widget-title">Min Payments</h3>
-        <p class="widget-value" aria-label="Total minimum payments">${{ totalMinPayments | number:'1.0-2' }}</p>
+      <h3 id="min-payments-title" class="title">Min Payments</h3>
+    </div>
+    <div class="card-content">
+      <p class="value currency" aria-label="Total minimum payments">${{ totalMinPayments | number:'1.0-2' }}</p>
+      <p class="subtitle">Monthly Required</p>
+    </div>
+    <div class="card-footer">
+      <div class="trend">
+        <span class="trend-value neutral">Required</span>
+        <span class="trend-icon">💰</span>
       </div>
-      <div class="widget-decoration"></div>
-    </article>
+    </div>
+  </article>
 
-    <article class="widget-card overdue-debts" role="article" aria-labelledby="overdue-debts-title">
-      <div class="widget-icon" aria-hidden="true">
-        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <article class="debt-card overdue" role="article" aria-labelledby="overdue-debts-title">
+    <div class="card-header">
+      <div class="icon overdue" aria-hidden="true">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
           <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/>
           <polyline points="12,6 12,12 16,14" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
         </svg>
       </div>
-      <div class="widget-content">
-        <h3 id="overdue-debts-title" class="widget-title">Overdue</h3>
-        <p class="widget-value" aria-label="Number of overdue debts">{{ overdueDebts }}</p>
+      <h3 id="overdue-debts-title" class="title">Overdue</h3>
+    </div>
+    <div class="card-content">
+      <p class="value" aria-label="Number of overdue debts">{{ overdueDebts }}</p>
+      <p class="subtitle">Past Due</p>
+    </div>
+    <div class="card-footer">
+      <div class="trend">
+        <span class="trend-value negative">Urgent</span>
+        <span class="trend-icon">⚠️</span>
       </div>
-      <div class="widget-decoration"></div>
-    </article>
+    </div>
+  </article>
 
-    <article class="widget-card total-creditors" role="article" aria-labelledby="total-creditors-title">
-      <div class="widget-icon" aria-hidden="true">
-        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <article class="debt-card creditors" role="article" aria-labelledby="total-creditors-title">
+    <div class="card-header">
+      <div class="icon creditors" aria-hidden="true">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
           <path d="M17 21V19C17 17.9391 16.5786 16.9217 15.8284 16.1716C15.0783 15.4214 14.0609 15 13 15H5C3.93913 15 2.92172 15.4214 2.17157 16.1716C1.42143 16.9217 1 17.9391 1 19V21" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
           <circle cx="9" cy="7" r="4" stroke="currentColor" stroke-width="2"/>
           <path d="M23 21V19C22.9993 18.1137 22.7044 17.2528 22.1614 16.5523C21.6184 15.8519 20.8581 15.3516 20 15.13" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
           <path d="M16 3.13C16.8604 3.35031 17.623 3.85071 18.1676 4.55232C18.7122 5.25392 19.0078 6.11683 19.0078 7.005C19.0078 7.89317 18.7122 8.75608 18.1676 9.45768C17.623 10.1593 16.8604 10.6597 16 10.88" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
         </svg>
       </div>
-      <div class="widget-content">
-        <h3 id="total-creditors-title" class="widget-title">Creditors</h3>
-        <p class="widget-value" aria-label="Total number of creditors">{{ totalCreditors }}</p>
+      <h3 id="total-creditors-title" class="title">Creditors</h3>
+    </div>
+    <div class="card-content">
+      <p class="value" aria-label="Total number of creditors">{{ totalCreditors }}</p>
+      <p class="subtitle">Active Accounts</p>
+    </div>
+    <div class="card-footer">
+      <div class="trend">
+        <span class="trend-value neutral">Total</span>
+        <span class="trend-icon">👥</span>
       </div>
-      <div class="widget-decoration"></div>
-    </article>
-  </div>
+    </div>
+  </article>
 </section>
