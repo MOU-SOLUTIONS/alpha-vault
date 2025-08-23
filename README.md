@@ -34,7 +34,8 @@ A **full-stack personal finance platform** built with **Spring Boot (Java)** and
 
 ## 🛠️ Tech Stack
 **Backend:**
-- Java 17, Spring Boot, Spring Data JPA, MySQL, JWT Security  
+- Java 17, Spring Boot, Spring Data JPA, MySQL, JWT Security
+   
 **Frontend:**
 - Angular, RxJS, Bootstrap, Chart.js
 
