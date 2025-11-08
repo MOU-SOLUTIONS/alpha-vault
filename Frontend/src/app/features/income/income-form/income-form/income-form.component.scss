@@ -76,7 +76,8 @@
         box-shadow: var(--shadow-sm);
 
         &:focus {
-          outline: none;
+          outline: 2px solid var(--border-focus);
+          outline-offset: 2px;
           border-color: var(--border-focus);
           box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15);
         }
@@ -174,7 +175,8 @@
         }
         
         &:focus ~ .checkmark {
-          box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15);
+          outline: 2px solid var(--border-focus);
+          outline-offset: 2px;
         }
       }
       
@@ -223,12 +225,12 @@
     transition: all var(--transition-normal);
     box-shadow: var(--shadow-sm);
     
-    &:hover {
+    &:hover:not(:disabled) {
       transform: translateY(-1px);
       box-shadow: var(--shadow-md);
     }
     
-    &:active {
+    &:active:not(:disabled) {
       transform: translateY(0);
     }
     
@@ -237,6 +239,11 @@
       cursor: not-allowed;
       transform: none;
     }
+
+    &:focus {
+      outline: 2px solid var(--border-focus);
+      outline-offset: 2px;
+    }
   }
 
   .btn-add {
@@ -244,7 +251,7 @@
     border: none;
     color: white;
 
-    &:hover {
+    &:hover:not(:disabled) {
       background: linear-gradient(135deg, var(--primary-hover) 0%, var(--secondary-color) 100%);
     }
   }
@@ -254,7 +261,7 @@
     border: none;
     color: white;
 
-    &:hover {
+    &:hover:not(:disabled) {
       background: linear-gradient(135deg, #059669 0%, #047857 100%);
     }
   }
@@ -264,7 +271,7 @@
     border: 1px solid var(--border-color);
     color: var(--text-medium);
 
-    &:hover {
+    &:hover:not(:disabled) {
       background-color: #e2e8f0;
       color: var(--text-dark);
     }
@@ -280,6 +287,20 @@
   overflow: hidden;
   clip: rect(0 0 0 0);
   border: 0;
+}
+
+// Reduced motion support
+@media (prefers-reduced-motion: reduce) {
+  .income-form {
+    * {
+      transition: none !important;
+      animation: none !important;
+    }
+    
+    .btn:hover:not(:disabled) {
+      transform: none !important;
+    }
+  }
 }
 
 @media (max-width: 767px) {

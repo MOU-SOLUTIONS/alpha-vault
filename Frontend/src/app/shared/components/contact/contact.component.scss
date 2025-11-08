@@ -35,6 +35,14 @@
   background: white;
 }
 
+/* ================= CONTAINER ================= */
+
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 var(--spacing-md);
+}
+
 /* ================= SECTION HEADER ================= */
 
 .section-header {
@@ -123,22 +131,26 @@
 }
 
 .social-icon {
-  width: 40px;
-  height: 40px;
-  border-radius: var(--border-radius-full);
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
   background: var(--background-light);
   display: flex;
   align-items: center;
   justify-content: center;
   color: var(--primary-color);
-  transition: transform var(--transition-speed) ease, 
-              background var(--transition-speed) ease, 
-              color var(--transition-speed) ease;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 2px 8px rgba(99, 102, 241, 0.15);
   
   &:hover {
-    background: var(--primary-color);
+    background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
     color: white;
-    transform: translateY(-5px) scale(1.1);
+    transform: translateY(-4px) scale(1.08);
+    box-shadow: 0 6px 20px rgba(99, 102, 241, 0.35);
+  }
+  
+  &:active {
+    transform: translateY(-2px) scale(1.05);
   }
 }
 
@@ -175,6 +187,12 @@
     &:focus {
       border-color: var(--primary-color);
       outline: none;
+    }
+    
+    &:focus-visible {
+      outline: 3px solid var(--primary-color);
+      outline-offset: 2px;
+      box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2);
     }
   }
 }
@@ -257,6 +275,13 @@
     box-shadow: 0 15px 30px rgba(99, 102, 241, 0.4);
   }
   
+  &:focus-visible {
+    outline: 3px solid var(--primary-color);
+    outline-offset: 2px;
+    box-shadow: 0 10px 25px rgba(99, 102, 241, 0.3),
+                0 0 0 3px rgba(99, 102, 241, 0.3);
+  }
+  
   &.large {
     padding: 16px 32px;
     font-size: 16px;
@@ -273,32 +298,259 @@
   }
 }
 
-/* ================= RESPONSIVE DESIGN ================= */
+/* ================= ACCESSIBILITY ENHANCEMENTS ================= */
 
-@media (max-width: 768px) {
+@media (prefers-reduced-motion: reduce) {
   .contact-content {
-    grid-template-columns: 1fr;
+    animation: none;
+    transition: none;
   }
   
-  /* Fix for social icons on mobile */
-  .social-icons {
-    flex-direction: row;
-    flex-wrap: wrap;
-    justify-content: flex-start;
+  .social-icon {
+    transition: none;
+    
+    &:hover {
+      transform: none;
+    }
+    
+    &:active {
+      transform: none;
+    }
+  }
+  
+  .btn-primary {
+    transition: none;
+    
+    &:hover {
+      transform: none;
+    }
+  }
+  
+  .form-success {
+    animation: none;
+  }
+  
+  input,
+  textarea {
+    transition: none;
   }
 }
 
-/* Additional mobile breakpoint for smaller phones */
+/* ================= RESPONSIVE DESIGN ================= */
+
+@media (max-width: 768px) {
+  .container {
+    padding: 0 var(--spacing-md);
+  }
+
+  .contact {
+    padding: 60px 0;
+  }
+
+  .section-header {
+    margin-bottom: 40px;
+    
+    h2 {
+      font-size: 1.75rem;
+    }
+    
+    p {
+      font-size: 1rem;
+    }
+  }
+
+  .contact-content {
+    grid-template-columns: 1fr;
+    gap: 30px;
+  }
+
+  .info-item {
+    margin-bottom: 25px;
+    
+    i {
+      font-size: 20px;
+      margin-right: 15px;
+    }
+    
+    h3 {
+      font-size: 1.1rem;
+    }
+    
+    p {
+      font-size: 0.95rem;
+    }
+  }
+
+  .social-links {
+    h3 {
+      font-size: 1.1rem;
+      margin-bottom: 15px;
+    }
+  }
+
+  .social-icons {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+    width: 100%;
+    max-width: 100%;
+  }
+
+  .social-icon {
+    width: 100%;
+    height: 50px;
+    font-size: 18px;
+    border-radius: 12px;
+    background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+    color: white;
+    box-shadow: 0 4px 12px rgba(99, 102, 241, 0.25);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    
+    &:hover {
+      transform: translateY(-3px) scale(1.05);
+      box-shadow: 0 6px 20px rgba(99, 102, 241, 0.4);
+      background: linear-gradient(135deg, var(--secondary-color) 0%, var(--primary-color) 100%);
+    }
+    
+    &:active {
+      transform: translateY(-1px) scale(1.02);
+    }
+  }
+
+  .contact-form {
+    h3 {
+      font-size: 1.3rem;
+      margin-bottom: 20px;
+    }
+  }
+
+  .form-group {
+    margin-bottom: 18px;
+    
+    label {
+      font-size: 0.9rem;
+      margin-bottom: 8px;
+    }
+    
+    input,
+    textarea {
+      padding: 10px 12px;
+      font-size: 0.95rem;
+    }
+  }
+
+  .btn-primary.large {
+    padding: 14px 28px;
+    font-size: 15px;
+    width: 100%;
+  }
+}
 
 @media (max-width: 480px) {
+  .container {
+    padding: 0 20px;
+  }
+
+  .contact {
+    padding: 40px 0;
+  }
+
+  .section-header {
+    margin-bottom: 30px;
+    
+    h2 {
+      font-size: 1.5rem;
+    }
+    
+    p {
+      font-size: 0.9rem;
+    }
+  }
+
+  .contact-content {
+    gap: 25px;
+  }
+
+  .info-item {
+    margin-bottom: 20px;
+    flex-direction: column;
+    align-items: flex-start;
+    
+    i {
+      margin-bottom: 8px;
+      margin-right: 0;
+    }
+    
+    h3 {
+      font-size: 1rem;
+    }
+    
+    p {
+      font-size: 0.9rem;
+    }
+  }
+
+  .social-links {
+    h3 {
+      font-size: 1rem;
+    }
+  }
+
   .social-icons {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
-    gap: var(--spacing-md);
+    gap: 10px;
+    width: 100%;
   }
   
   .social-icon {
     width: 100%;
-    justify-self: center;
+    height: 48px;
+    font-size: 16px;
+    border-radius: 10px;
+    background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+    color: white;
+    box-shadow: 0 3px 10px rgba(99, 102, 241, 0.25);
+    
+    &:hover {
+      transform: translateY(-2px) scale(1.03);
+      box-shadow: 0 5px 15px rgba(99, 102, 241, 0.35);
+    }
+    
+    &:active {
+      transform: translateY(0) scale(1);
+    }
+  }
+
+  .contact-form {
+    h3 {
+      font-size: 1.2rem;
+    }
+  }
+
+  .form-group {
+    margin-bottom: 16px;
+    
+    input,
+    textarea {
+      padding: 10px;
+      font-size: 0.9rem;
+    }
+  }
+
+  .form-success {
+    padding: 20px 15px;
+    
+    i {
+      font-size: 40px;
+    }
+    
+    h4 {
+      font-size: 1.1rem;
+    }
+    
+    p {
+      font-size: 0.9rem;
+    }
   }
 }

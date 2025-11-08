@@ -1,0 +1,40 @@
+/*
+  Alpha Vault Financial System
+  
+  @author Mohamed Dhaoui
+  @component IncomeTablePaginatorComponent
+  @description Comprehensive styling for income table paginator component
+*/
+
+/* CSS Variables */
+:host {
+  --paginator-padding: 1rem 1.5rem;
+  --paginator-padding-mobile: 1rem;
+  --paginator-border: 1px solid var(--border-color);
+  --paginator-background: #f8fafc;
+}
+
+/* Paginator Container */
+.paginator-container {
+  padding: var(--paginator-padding);
+  border-top: var(--paginator-border);
+  display: flex;
+  justify-content: center;
+
+  .mat-paginator {
+    background: transparent;
+  }
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .paginator-container {
+    padding: var(--paginator-padding-mobile);
+    justify-content: center;
+
+    ::ng-deep .mat-mdc-paginator-container {
+      justify-content: center !important;
+      display: flex !important;
+    }
+  }
+}

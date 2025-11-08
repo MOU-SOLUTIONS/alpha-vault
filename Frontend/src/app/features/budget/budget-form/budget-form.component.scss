@@ -1,19 +1,24 @@
-/* ====================================================================
-   Coded by Mohamed Dhaoui for Alpha Vault
-=================================================================== */
+/*
+  Alpha Vault Financial System
+  
+  @author Mohamed Dhaoui
+  @component BudgetFormComponent
+  @description Budget form component styles for adding and modifying budget allocations
+*/
 
 :host {
-  --primary-color: #4dabf7;
-  --primary-hover: #0d6efd;
-  --secondary-color: #2f9e44;
-  --success-color: #28a745;
+  --primary-color: #065f46;
+  --primary-hover: #047857;
+  --primary-light: rgba(6, 95, 70, 0.1);
+  --secondary-color: #059669;
+  --success-color: #10b981;
   --danger-color: #e03131;
   --warning-color: #f59e0b;
   --text-dark: #1e293b;
   --text-medium: #475569;
   --text-light: #94a3b8;
   --border-color: #cbd5e1;
-  --border-focus: #4dabf7;
+  --border-focus: #065f46;
   --bg-light: #f8fafc;
   --bg-white: #ffffff;
   --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
@@ -78,7 +83,7 @@
         &:focus {
           outline: none;
           border-color: var(--border-focus);
-          box-shadow: 0 0 0 3px rgba(77, 171, 247, 0.15);
+          box-shadow: 0 0 0 3px rgba(6, 95, 70, 0.15);
         }
         
         &:disabled {
@@ -210,6 +215,11 @@
     transition: all var(--transition-normal);
     box-shadow: var(--shadow-sm);
     
+    &:focus {
+      outline: 2px solid var(--primary-color);
+      outline-offset: 2px;
+    }
+    
     &:hover {
       transform: translateY(-1px);
       box-shadow: var(--shadow-md);
@@ -232,7 +242,7 @@
     color: white;
 
     &:hover {
-      background: linear-gradient(135deg, var(--primary-hover) 0%, #0b5ed7 100%);
+      background: linear-gradient(135deg, var(--primary-hover) 0%, #047857 100%);
     }
   }
 
@@ -242,7 +252,7 @@
     color: white;
 
     &:hover {
-      background: linear-gradient(135deg, var(--secondary-color) 0%, #218838 100%);
+      background: linear-gradient(135deg, var(--secondary-color) 0%, var(--primary-hover) 100%);
     }
   }
 
@@ -277,6 +287,23 @@
   overflow: hidden;
   clip: rect(0 0 0 0);
   border: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .btn {
+    transition: none;
+    
+    &:hover {
+      transform: none;
+    }
+  }
+  
+  .budget-form {
+    .input-wrapper input,
+    .input-wrapper select {
+      transition: none;
+    }
+  }
 }
 
 @media (max-width: 767px) {

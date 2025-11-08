@@ -1,3 +1,11 @@
+/*
+  Alpha Vault Financial System
+  
+  @author Mohamed Dhaoui
+  @component InvestmentComponent
+  @description Test suite for main investment dashboard component
+*/
+
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { InvestmentComponent } from './investment.component';

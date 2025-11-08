@@ -1,0 +1,19 @@
+{
+  "extends": ["stylelint-config-standard-scss"],
+  "plugins": ["stylelint-order"],
+  "rules": {
+    "order/properties-alphabetical-order": true,
+    "selector-max-id": 0,
+    "no-descending-specificity": null,
+    "color-function-notation": null,
+    "color-hex-length": null,
+    "alpha-value-notation": null,
+    "font-family-name-quotes": null,
+    "declaration-empty-line-before": null,
+    "rule-empty-line-before": null,
+    "keyframes-name-pattern": null,
+    "media-feature-range-notation": null,
+    "declaration-block-no-redundant-longhand-properties": null,
+    "declaration-block-single-line-max-declarations": null
+  }
+}

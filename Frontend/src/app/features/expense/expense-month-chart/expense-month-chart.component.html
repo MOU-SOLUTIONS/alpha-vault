@@ -1,55 +1,54 @@
-<!-- ================================================================
-              Coded by Mohamed Dhaoui for Alpha Vault
-================================================================ -->
+<!--
+  Alpha Vault Financial System
+  
+  @author Mohamed Dhaoui
+  @component ExpenseMonthChartComponent
+  @description Expense month chart template for displaying expense data
+-->
 
-<div class="row" role="region" aria-labelledby="monthChartTitle">
+<section class="row" role="region" aria-labelledby="monthChartTitle">
   <div class="col-12">
-    <div class="chart-box" [class.loading]="isLoading">
-      <div class="chart-header">
+    <div class="chart-box">
+      <header class="chart-header">
         <h3 id="monthChartTitle" class="chart-title">Monthly Expense Overview</h3>
-        <div class="chart-actions" *ngIf="!isLoading">
-          <button class="toggle-btn" (click)="toggleChartType()" aria-label="Toggle chart type">
-            <span class="toggle-icon">{{ isLineChart ? 'Bar' : 'Line' }}</span>
+        <nav class="chart-actions">
+          <button 
+            class="toggle-btn" 
+            (click)="toggleChartType()" 
+            (keydown)="onToggleKeydown($event)"
+            [attr.aria-label]="'Switch to ' + (isLineChart() ? 'bar' : 'line') + ' chart'"
+            [attr.aria-pressed]="isLineChart()">
+            <span class="toggle-icon">{{ isLineChart() ? 'Bar' : 'Line' }}</span>
           </button>
-          <button class="refresh-btn" (click)="refreshData()" aria-label="Refresh data">
-            <i class="refresh-icon">↻</i>
-          </button>
-        </div>
-      </div>
+        </nav>
+      </header>
 
-      <div class="loading-indicator" *ngIf="isLoading">
-        <div class="spinner"></div>
-        <p>Loading data...</p>
-      </div>
-
-      <div class="chart-container" [class.hidden]="isLoading">
+      <div class="chart-container">
         <canvas
           baseChart
-          [data]="chartData"
+          [data]="chartData()"
           [options]="chartOptions"
-          [type]="chartType"
+          [type]="chartType()"
           class="chart-canvas"
           role="img"
-          aria-label="Monthly expense chart"
+          [attr.aria-label]="'Chart showing monthly expense data: ' + monthlyTotal() + ' total, ' + monthlyAverage() + ' average'"
         ></canvas>
-        <p class="no-data-message" *ngIf="!isLoading && (!chartData || chartData.datasets[0].data.length === 0)">
-          No data available for this period
-        </p>
+
       </div>
 
-      <div class="chart-summary">
-        <ng-container *ngIf="!isLoading && monthlyTotal > 0">
+      <footer class="chart-summary">
+        <ng-container *ngIf="monthlyTotal() > 0">
           <div class="summary-item">
             <span class="summary-label">Total</span>
-            <span class="summary-value">{{ monthlyTotal | currency }}</span>
+            <span class="summary-value">{{ monthlyTotal() | currency }}</span>
           </div>
           <div class="summary-item">
             <span class="summary-label">Average</span>
-            <span class="summary-value">{{ monthlyAverage | currency }}</span>
+            <span class="summary-value">{{ monthlyAverage() | currency }}</span>
           </div>
         </ng-container>
         
-        <ng-container *ngIf="isLoading || monthlyTotal <= 0">
+        <ng-container *ngIf="monthlyTotal() <= 0">
           <div class="summary-item">
             <span class="summary-label">Total</span>
             <span class="summary-value">--</span>
@@ -59,7 +58,7 @@
             <span class="summary-value">--</span>
           </div>
         </ng-container>
-      </div>
+      </footer>
     </div>
   </div>
-</div>
+</section>

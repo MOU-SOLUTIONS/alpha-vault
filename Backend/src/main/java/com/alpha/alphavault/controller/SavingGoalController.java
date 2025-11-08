@@ -1,135 +1,166 @@
+/**
+ * ================================================================
+ *  Coded by Mohamed Dhaoui for Alpha Vault - Financial System
+ *  Controller: SavingGoalController — CRUD + money ops + filters
+ * ================================================================
+ */
 package com.alpha.alphavault.controller;
 
-import com.alpha.alphavault.dto.SavingGoalRequestDTO;
-import com.alpha.alphavault.dto.SavingGoalResponseDTO;
-import com.alpha.alphavault.mapper.SavingGoalMapper;
-import com.alpha.alphavault.model.SavingGoal;
+import com.alpha.alphavault.dto.common.ApiResponse;
+import com.alpha.alphavault.dto.savinggoal.SavingGoalRequestDTO;
+import com.alpha.alphavault.dto.savinggoal.SavingGoalResponseDTO;
+import com.alpha.alphavault.enums.SavingGoalPriority;
+import com.alpha.alphavault.enums.SavingGoalCategory;
+import com.alpha.alphavault.enums.SavingGoalStatus;
 import com.alpha.alphavault.service.SavingGoalService;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
+import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.*;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
-import java.util.stream.Collectors;
+import java.util.Map;
 
+@RequiredArgsConstructor
 @RestController
-@RequestMapping("/api/saving-goal")
+@RequestMapping("/api/saving-goals")
 public class SavingGoalController {
 
-    private final SavingGoalService savingGoalService;
-    private final SavingGoalMapper savingGoalMapper;
+    private final SavingGoalService service;
 
-    @Autowired
-    public SavingGoalController(SavingGoalService savingGoalService, SavingGoalMapper savingGoalMapper) {
-        this.savingGoalService = savingGoalService;
-        this.savingGoalMapper = savingGoalMapper;
-    }
+    // =============== CRUD ===============
 
-    // CREATE or UPDATE
     @PostMapping
-    public ResponseEntity<SavingGoalResponseDTO> saveSavingGoal(@RequestBody SavingGoalRequestDTO dto) {
-        SavingGoal saved = savingGoalService.saveSavingGoal(savingGoalMapper.toEntity(dto));
-        return ResponseEntity.status(HttpStatus.CREATED).body(savingGoalMapper.fromEntity(saved));
+    public ResponseEntity<ApiResponse<SavingGoalResponseDTO>> create(@Valid @RequestBody SavingGoalRequestDTO dto) {
+        var data = service.create(dto);
+        return ResponseEntity.status(201).body(ApiResponse.created("Saving goal created", data, "/api/saving-goals"));
     }
 
     @PutMapping("/{id}")
-public ResponseEntity<SavingGoalResponseDTO> updateSavingGoal(@PathVariable Long id,
-                                                               @RequestBody SavingGoalRequestDTO dto) {
-    SavingGoal updated = savingGoalService.updateSavingGoal(id, savingGoalMapper.toEntity(dto));
-    return ResponseEntity.ok(savingGoalMapper.fromEntity(updated));
-}
+    public ResponseEntity<ApiResponse<SavingGoalResponseDTO>> update(@PathVariable Long id,
+                                                                     @RequestBody SavingGoalRequestDTO dto) {
+        // Note: @Valid removed to allow partial updates (null fields = no change)
+        // Validation is handled in the service layer for updates
+        try {
+            var data = service.update(id, dto);
+            return ResponseEntity.ok(ApiResponse.ok("Saving goal updated", data, "/api/saving-goals/" + id));
+        } catch (Exception e) {
+            // Log at controller level for debugging
+            org.slf4j.LoggerFactory.getLogger(SavingGoalController.class)
+                .error("Error in PUT /api/saving-goals/{}: {}", id, e.getMessage(), e);
+            throw e; // Re-throw to let GlobalExceptionHandler handle it
+        }
+    }
 
-
-    // DELETE
-   @DeleteMapping("/{id}")
-public ResponseEntity<Void> deleteSavingGoal(@PathVariable Long id) {
-    savingGoalService.deleteSavingGoal(id);
-    return ResponseEntity.noContent().build(); // ✅ No body
-}
-
-
-    // GET by ID
     @GetMapping("/{id}")
-    public ResponseEntity<SavingGoalResponseDTO> getSavingGoalById(@PathVariable Long id) {
-        return ResponseEntity.ok(savingGoalMapper.fromEntity(savingGoalService.getSavingGoalById(id)));
+    public ResponseEntity<ApiResponse<SavingGoalResponseDTO>> get(@PathVariable Long id) {
+        var data = service.get(id);
+        return ResponseEntity.ok(ApiResponse.ok("Saving goal fetched", data, "/api/saving-goals/" + id));
     }
 
-    // GET all saving goals for a user
     @GetMapping("/user/{userId}")
-    public ResponseEntity<List<SavingGoalResponseDTO>> getAllSavingGoals(@PathVariable Long userId) {
-        return ResponseEntity.ok(
-                savingGoalService.getSavingGoalsByUserId(userId)
-                        .stream()
-                        .map(savingGoalMapper::fromEntity)
-                        .collect(Collectors.toList())
-        );
+    public ResponseEntity<ApiResponse<Page<SavingGoalResponseDTO>>> list(@PathVariable Long userId,
+                                                                         @PageableDefault(size = 20, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable) {
+        var page = service.listByUser(userId, pageable);
+        return ResponseEntity.ok(ApiResponse.ok("Saving goals fetched", page, "/api/saving-goals/user/" + userId));
     }
 
-    @GetMapping("/user/{userId}/ordered")
-    public ResponseEntity<List<SavingGoalResponseDTO>> getSavingGoalsOrdered(@PathVariable Long userId) {
-        return ResponseEntity.ok(
-                savingGoalService.getSavingGoalsByUserIdOrderByCreationDateDesc(userId)
-                        .stream()
-                        .map(savingGoalMapper::fromEntity)
-                        .collect(Collectors.toList())
-        );
+    @DeleteMapping("/{id}")
+    public ResponseEntity<ApiResponse<Void>> delete(@PathVariable Long id) {
+        service.delete(id);
+        return ResponseEntity.ok(ApiResponse.ok("Saving goal deleted", null, "/api/saving-goals/" + id));
     }
 
-    @GetMapping("/user/{userId}/deadline")
-    public ResponseEntity<List<SavingGoalResponseDTO>> getSavingGoalsBeforeDeadline(@PathVariable Long userId,
-                                                                                    @RequestParam("date") String date) {
-        LocalDate deadline = LocalDate.parse(date);
-        return ResponseEntity.ok(
-                savingGoalService.getSavingGoalsByUserIdAndDeadlineBefore(userId, deadline)
-                        .stream()
-                        .map(savingGoalMapper::fromEntity)
-                        .collect(Collectors.toList())
-        );
+    @PostMapping("/{id}/restore")
+    public ResponseEntity<ApiResponse<Void>> restore(@PathVariable Long id) {
+        service.restore(id);
+        return ResponseEntity.ok(ApiResponse.ok("Saving goal restored", null, "/api/saving-goals/" + id + "/restore"));
     }
 
-    @GetMapping("/user/{userId}/category")
-    public ResponseEntity<List<SavingGoalResponseDTO>> getByCategory(@PathVariable Long userId,
-                                                                     @RequestParam("category") String category) {
-        return ResponseEntity.ok(
-                savingGoalService.getSavingGoalsByUserIdAndCategory(userId, category)
-                        .stream()
-                        .map(savingGoalMapper::fromEntity)
-                        .collect(Collectors.toList())
-        );
+    // =============== Money Ops ===============
+
+    @PostMapping("/{id}/contribute")
+    public ResponseEntity<ApiResponse<SavingGoalResponseDTO>> contribute(@PathVariable Long id,
+                                                                         @RequestParam("amount") BigDecimal amount) {
+        var data = service.contribute(id, amount);
+        return ResponseEntity.ok(ApiResponse.ok("Contribution added", data, "/api/saving-goals/" + id + "/contribute"));
     }
 
-    @GetMapping("/user/{userId}/priority")
-    public ResponseEntity<List<SavingGoalResponseDTO>> getByPriority(@PathVariable Long userId,
-                                                                     @RequestParam("priority") String priority) {
-        return ResponseEntity.ok(
-                savingGoalService.getSavingGoalsByUserIdAndPriority(userId, priority)
-                        .stream()
-                        .map(savingGoalMapper::fromEntity)
-                        .collect(Collectors.toList())
-        );
+    @PostMapping("/{id}/withdraw")
+    public ResponseEntity<ApiResponse<SavingGoalResponseDTO>> withdraw(@PathVariable Long id,
+                                                                       @RequestParam("amount") BigDecimal amount) {
+        var data = service.withdraw(id, amount);
+        return ResponseEntity.ok(ApiResponse.ok("Withdrawal applied", data, "/api/saving-goals/" + id + "/withdraw"));
     }
 
-    @GetMapping("/user/{userId}/target-gt")
-    public ResponseEntity<List<SavingGoalResponseDTO>> getByTargetAmountGreaterThan(@PathVariable Long userId,
-                                                                                    @RequestParam("amount") Double amount) {
-        return ResponseEntity.ok(
-                savingGoalService.getSavingGoalsByUserIdAndTargetAmountGreaterThan(userId, amount)
-                        .stream()
-                        .map(savingGoalMapper::fromEntity)
-                        .collect(Collectors.toList())
-        );
+    // =============== Status / Attributes ===============
+
+    @PatchMapping("/{id}/status")
+    public ResponseEntity<ApiResponse<SavingGoalResponseDTO>> setStatus(@PathVariable Long id,
+                                                                        @RequestParam("value") SavingGoalStatus status) {
+        var data = service.setStatus(id, status);
+        return ResponseEntity.ok(ApiResponse.ok("Status updated", data, "/api/saving-goals/" + id + "/status"));
     }
 
-    @GetMapping("/user/{userId}/current-lt")
-    public ResponseEntity<List<SavingGoalResponseDTO>> getByCurrentAmountLessThan(@PathVariable Long userId,
-                                                                                  @RequestParam("amount") Double amount) {
-        return ResponseEntity.ok(
-                savingGoalService.getSavingGoalsByUserIdAndCurrentAmountLessThan(userId, amount)
-                        .stream()
-                        .map(savingGoalMapper::fromEntity)
-                        .collect(Collectors.toList())
-        );
+    @PatchMapping("/{id}/deadline")
+    public ResponseEntity<ApiResponse<SavingGoalResponseDTO>> moveDeadline(@PathVariable Long id,
+                                                                           @RequestParam("date") String isoDate) {
+        var data = service.moveDeadline(id, LocalDate.parse(isoDate));
+        return ResponseEntity.ok(ApiResponse.ok("Deadline moved", data, "/api/saving-goals/" + id + "/deadline"));
+    }
+
+    @PatchMapping("/{id}/rename")
+    public ResponseEntity<ApiResponse<SavingGoalResponseDTO>> rename(@PathVariable Long id,
+                                                                     @RequestParam("name") String name) {
+        var data = service.rename(id, name);
+        return ResponseEntity.ok(ApiResponse.ok("Name updated", data, "/api/saving-goals/" + id + "/rename"));
+    }
+
+    // =============== Filters / Windows ===============
+
+    @GetMapping("/user/{userId}/status/{status}")
+    public ResponseEntity<ApiResponse<List<SavingGoalResponseDTO>>> byStatus(@PathVariable Long userId,
+                                                                             @PathVariable SavingGoalStatus status) {
+        var data = service.listByStatus(userId, status);
+        return ResponseEntity.ok(ApiResponse.ok("Goals by status", data, "/api/saving-goals/user/" + userId + "/status/" + status));
+    }
+
+    @GetMapping("/user/{userId}/category/{category}")
+    public ResponseEntity<ApiResponse<List<SavingGoalResponseDTO>>> byCategory(@PathVariable Long userId,
+                                                                               @PathVariable SavingGoalCategory category) {
+        var data = service.listByCategory(userId, category);
+        return ResponseEntity.ok(ApiResponse.ok("Goals by category", data, "/api/saving-goals/user/" + userId + "/category/" + category));
+    }
+
+    @GetMapping("/user/{userId}/priority/{priority}")
+    public ResponseEntity<ApiResponse<List<SavingGoalResponseDTO>>> byPriority(@PathVariable Long userId,
+                                                                               @PathVariable SavingGoalPriority priority) {
+        var data = service.listByPriority(userId, priority);
+        return ResponseEntity.ok(ApiResponse.ok("Goals by priority", data, "/api/saving-goals/user/" + userId + "/priority/" + priority));
+    }
+
+    @GetMapping("/user/{userId}/overdue")
+    public ResponseEntity<ApiResponse<List<SavingGoalResponseDTO>>> overdue(@PathVariable Long userId) {
+        var data = service.overdue(userId);
+        return ResponseEntity.ok(ApiResponse.ok("Overdue goals", data, "/api/saving-goals/user/" + userId + "/overdue"));
+    }
+
+    @GetMapping("/user/{userId}/due-in")
+    public ResponseEntity<ApiResponse<List<SavingGoalResponseDTO>>> dueWithin(@PathVariable Long userId,
+                                                                              @RequestParam("days") int days) {
+        var data = service.dueWithinDays(userId, days);
+        return ResponseEntity.ok(ApiResponse.ok("Goals due within window", data, "/api/saving-goals/user/" + userId + "/due-in?days=" + days));
+    }
+
+    // =============== Aggregates ===============
+
+    @GetMapping("/user/{userId}/totals")
+    public ResponseEntity<ApiResponse<Map<String, Object>>> totals(@PathVariable Long userId) {
+        var data = service.totals(userId);
+        return ResponseEntity.ok(ApiResponse.ok("Saving goals totals", data, "/api/saving-goals/user/" + userId + "/totals"));
     }
 }

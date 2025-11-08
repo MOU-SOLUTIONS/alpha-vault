@@ -1,0 +1,78 @@
+<!--
+  Alpha Vault Financial System
+  
+  @author Mohamed Dhaoui
+  @component NotificationContainerComponent
+  @description Notification container template with dropdown and list
+-->
+
+<!-- Toast Notifications -->
+<app-toast-notification></app-toast-notification>
+
+<div class="notification-container">
+  <!-- Notification Bell Button -->
+  <button type="button" 
+          class="notification-bell"
+          (click)="toggleVisibility()"
+          [attr.aria-label]="'Notifications'"
+          [attr.aria-expanded]="isVisible"
+          title="View notifications">
+    
+    <i class="fas fa-bell" aria-hidden="true"></i>
+    
+    <!-- Unread Count Badge -->
+    <span class="notification-badge" 
+          *ngIf="unreadCount > 0"
+          [attr.aria-label]="unreadCount + ' unread notifications'">
+      {{ unreadCount > 99 ? '99+' : unreadCount }}
+    </span>
+  </button>
+
+  <!-- Notification Dropdown -->
+  <div class="notification-dropdown" 
+       [class.visible]="isVisible"
+       role="dialog"
+       [attr.aria-label]="'Notifications panel'">
+    
+    <!-- Dropdown Header -->
+    <div class="notification-header">
+      <h3 class="notification-title">Notifications</h3>
+      <div class="notification-actions">
+        <button type="button" 
+                class="action-button mark-all-read"
+                (click)="markAllAsRead()"
+                [disabled]="unreadCount === 0"
+                title="Mark all as read">
+          <i class="fas fa-check-double" aria-hidden="true"></i>
+        </button>
+        <button type="button" 
+                class="action-button clear-all"
+                (click)="clearAll()"
+                [disabled]="notifications.length === 0"
+                title="Clear all notifications">
+          <i class="fas fa-trash" aria-hidden="true"></i>
+        </button>
+      </div>
+    </div>
+
+    <!-- Notifications List -->
+    <div class="notification-list" role="list">
+      <ng-container *ngIf="notifications.length > 0; else noNotifications">
+        <app-notification 
+          *ngFor="let notification of notifications; trackBy: trackByNotificationId"
+          [notification]="notification"
+          [autoClose]="false"
+          role="listitem">
+        </app-notification>
+      </ng-container>
+      
+      <ng-template #noNotifications>
+        <div class="no-notifications">
+          <i class="fas fa-bell-slash" aria-hidden="true"></i>
+          <p>No notifications yet</p>
+          <small>You'll see updates about your financial activities here</small>
+        </div>
+      </ng-template>
+    </div>
+  </div>
+</div>

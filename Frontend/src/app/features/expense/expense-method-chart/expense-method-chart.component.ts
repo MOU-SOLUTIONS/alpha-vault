@@ -1,12 +1,16 @@
-// ====================================================================
-//             Coded by Mohamed Dhaoui for Alpha Vault
-// ====================================================================
+/*
+  Alpha Vault Financial System
+  
+  @author Mohamed Dhaoui
+  @component ExpenseMethodChartComponent
+  @description Expense method chart component for displaying expense data
+*/  
 
-import { Component, Input, ChangeDetectionStrategy, OnChanges, SimpleChanges } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { NgChartsModule } from 'ng2-charts';
-import { ChartData, ChartOptions } from 'chart.js';
+import { ChangeDetectionStrategy, Component, computed, inject, Input, OnChanges, OnInit, signal, SimpleChanges } from '@angular/core';
 import { Meta } from '@angular/platform-browser';
+import { ChartOptions } from 'chart.js';
+import { NgChartsModule } from 'ng2-charts';
 
 @Component({
   selector: 'app-expense-method-chart',
@@ -16,24 +20,71 @@ import { Meta } from '@angular/platform-browser';
   styleUrls: ['./expense-method-chart.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class ExpenseMethodChartComponent implements OnChanges {
-  @Input() methodData: { [key: string]: number } = {};
+export class ExpenseMethodChartComponent implements OnInit, OnChanges {
+  @Input() methodData: Record<string, number> = {};
 
-  rawData: { [key: string]: number } = {};
-  isLoading = true;
-  hasData = false;
+  private readonly methodDataSignal = signal<Record<string, number>>({});
+  
+  readonly rawData = computed(() => this.methodDataSignal());
+  readonly hasData = computed(() => {
+    const data = this.rawData();
+    const labels = Object.keys(data);
+    const values = Object.values(data);
+    return labels.length > 0 && values.some(v => v > 0);
+  });
+  
+  readonly pieChartLabels = computed(() => {
+    const data = this.rawData();
+    const labels = Object.keys(data);
+    const values = Object.values(data);
+    
+    if (labels.length === 0 || !values.some(v => v > 0)) {
+      return [];
+    }
+    
+    const sorted = labels.map((label, i) => ({ label, value: values[i] }))
+                         .sort((a, b) => b.value - a.value);
+    return sorted.map(d => d.label);
+  });
 
-  pieChartLabels: string[] = [];
-  colorPalette = ['#3f51b5','#5c6bc0','#7986cb', '#9fa8da','#c5cae9','#e8eaf6', '#536dfe'];
+  readonly pieChartData = computed(() => {
+    const data = this.rawData();
+    const labels = Object.keys(data);
+    const values = Object.values(data);
+    
+    if (labels.length === 0 || !values.some(v => v > 0)) {
+      return { labels: [], datasets: [] };
+    }
+    
+    const sorted = labels.map((label, i) => ({ label, value: values[i] }))
+                         .sort((a, b) => b.value - a.value);
+    const newLabels = sorted.map(d => d.label);
+    const newData = sorted.map(d => d.value);
 
-  pieChartData: ChartData<'doughnut'> = {
-    labels: [],
-    datasets: []
-  };
+    return {
+      labels: newLabels,
+      datasets: [
+        {
+          data: newData,
+          backgroundColor: this.colorPalette,
+          hoverBackgroundColor: this.colorPalette.map(color =>
+            this.adjustBrightness(color, 20)
+          ),
+          borderWidth: 2,
+          borderColor: '#ffffff',
+          hoverBorderColor: '#ffffff',
+          hoverOffset: 7,
+        }
+      ]
+    };
+  });
 
-  pieChartOptions: ChartOptions<'doughnut'> = {
+  readonly colorPalette = ['#3f51b5', '#8b5cf6', '#a78bfa', '#c4b5fd', '#818cf8', '#93c5fd', '#bfdbfe'];
+
+  readonly pieChartOptions: ChartOptions<'doughnut'> = {
     responsive: true,
     maintainAspectRatio: false,
+    aspectRatio: 1,
     cutout: '70%',
     plugins: {
       legend: { display: false },
@@ -58,67 +109,45 @@ export class ExpenseMethodChartComponent implements OnChanges {
     },
   };
 
-  constructor( private meta: Meta) {
+  private meta = inject(Meta);
+
+  constructor() {
     this.meta.addTags([
-      { name: 'description', content: 'Visual breakdown of this month’s expenses categorized by payment method in Alpha Vault.' },
+      { name: 'description', content: 'Visual breakdown of current month expenses categorized by payment method in Alpha Vault.' },
       { name: 'robots', content: 'index,follow' },
       { name: 'viewport', content: 'width=device-width, initial-scale=1' }
     ]);
   }
 
+  ngOnInit(): void {
+    this.methodDataSignal.set(this.methodData || {});
+  }
+
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['methodData']) {
-      this.updateChart();
+      this.methodDataSignal.set(this.methodData || {});
     }
   }
 
-  updateChart(): void {
-    this.isLoading = true;
-    this.rawData = this.methodData || {};
-
-    const labels = Object.keys(this.rawData);
-    const values = Object.values(this.rawData);
-    this.hasData = labels.length > 0 && values.some(v => v > 0);
-
-    if (this.hasData) {
-      const sorted = labels.map((label, i) => ({ label, value: values[i] }))
-                           .sort((a, b) => b.value - a.value);
-      const newLabels = sorted.map(d => d.label);
-      const newData = sorted.map(d => d.value);
-
-      this.pieChartLabels = newLabels;
-      this.pieChartData = {
-        labels: newLabels,
-        datasets: [
-          {
-            data: newData,
-            backgroundColor: this.colorPalette,
-            hoverBackgroundColor: this.colorPalette.map(color =>
-              this.adjustBrightness(color, 20)
-            ),
-            borderWidth: 2,
-            borderColor: '#ffffff',
-            hoverBorderColor: '#ffffff',
-            hoverOffset: 7,
-          }
-        ]
-      };
-    } else {
-      this.pieChartData = {
-        labels: [],
-        datasets: []
-      };
-    }
-
-    this.isLoading = false;
-  }
+  trackByLabel = (index: number, label: string): string => label;
 
   getBackgroundColor(i: number): string {
     return this.colorPalette[i % this.colorPalette.length];
   }
 
   getValueForLabel(label: string): number {
-    return this.rawData[label] || 0;
+    return this.rawData()[label] || 0;
+  }
+
+  onLegendItemActivate(event: Event, label: string): void {
+    if (event instanceof KeyboardEvent) {
+      if (event.key === 'Enter' || event.key === ' ') {
+        event.preventDefault();
+        // Handle legend item activation if needed
+      }
+    } else {
+      // Handle click event
+    }
   }
 
   private adjustBrightness(hex: string, percent: number): string {

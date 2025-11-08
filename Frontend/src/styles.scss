@@ -1,3 +1,6 @@
+/* ========== SHARED CHART STYLES ========== */
+@use 'styles/charts';
+
 /* ========== ANGULAR MATERIAL THEMES ========== */
 @import '@angular/material/prebuilt-themes/indigo-pink.css';
 
@@ -13,6 +16,75 @@
   transform: translateY(0) !important;
 }
 
-html, body { height: 100%;
- }
-body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
+/* ========== GLOBAL VIEWPORT STYLES ========== */
+html, body { 
+  height: 100%;
+  min-height: 100vh;
+  overflow-x: hidden;
+  overflow-y: auto;
+  margin: 0;
+  padding: 0;
+}
+
+body { 
+  font-family: Roboto, "Helvetica Neue", sans-serif;
+  position: relative;
+}
+
+/* ========== ROOT APP CONTAINER ========== */
+app-root {
+  height: 100%;
+  min-height: 100vh;
+  display: block;
+  overflow-x: hidden;
+  overflow-y: auto;
+}
+
+
+
+/* ================================================================
+   ROUTER OUTLET HEIGHT FIX
+   ================================================================ */
+router-outlet + * {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ================================================================
+   GLOBAL ACCESSIBILITY STYLES
+   ================================================================ */
+
+/* Focus-visible styles for all interactive elements */
+/* WCAG 2.2 AA compliance - visible focus indicators */
+button,
+a,
+input,
+textarea,
+select,
+[role="button"],
+[tabindex]:not([tabindex="-1"]) {
+  &:focus-visible {
+    outline: 3px solid var(--primary-color, #7E57C2);
+    outline-offset: 2px;
+    border-radius: 2px;
+  }
+  
+  /* Remove default focus outline for mouse users */
+  &:focus:not(:focus-visible) {
+    outline: none;
+  }
+}
+
+/* Reduced motion support for accessibility */
+/* Respects user's motion preferences */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

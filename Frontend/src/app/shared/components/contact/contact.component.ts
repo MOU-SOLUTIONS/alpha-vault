@@ -1,19 +1,28 @@
-import { Component, OnInit } from '@angular/core';
+import { CommonModule, isPlatformBrowser } from '@angular/common';
+import { ChangeDetectionStrategy, Component, inject, OnDestroy, OnInit, PLATFORM_ID } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { CommonModule } from '@angular/common';
 
 /**
  * ContactComponent provides the contact form and information section
  * for users to get in touch with Alpha Vault.
+ * 
+ * Features:
+ * - Contact form with validation
+ * - Contact information display
+ * - Social media links
+ * 
+ * @component
+ * @standalone
  */
 @Component({
   selector: 'app-contact',
   standalone: true,
   imports: [FormsModule, CommonModule],
   templateUrl: './contact.component.html',
-  styleUrls: ['./contact.component.scss']
+  styleUrls: ['./contact.component.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class ContactComponent implements OnInit {
+export class ContactComponent implements OnInit, OnDestroy {
   // ================= INPUTS / OUTPUTS =================
   
   // ================= PUBLIC PROPERTIES =================
@@ -28,6 +37,11 @@ export class ContactComponent implements OnInit {
   public isSubmitted = false;
   public submitError = '';
   
+  // ================= PRIVATE PROPERTIES =================
+  private readonly platformId = inject(PLATFORM_ID);
+  private readonly isBrowser = isPlatformBrowser(this.platformId);
+  private timeoutId?: number;
+  
   // ================= CONSTRUCTOR =================
   constructor() {}
   
@@ -37,6 +51,15 @@ export class ContactComponent implements OnInit {
    */
   public ngOnInit(): void {
     // Component initialization logic
+  }
+
+  /**
+   * Cleanup on component destruction
+   */
+  public ngOnDestroy(): void {
+    if (this.timeoutId && this.isBrowser) {
+      clearTimeout(this.timeoutId);
+    }
   }
   
   // ================= PUBLIC METHODS =================
@@ -56,17 +79,32 @@ export class ContactComponent implements OnInit {
     this.submitError = '';
     
     // Simulate sending email (replace with actual email service in production)
-    setTimeout(() => {
-      // In a real implementation, you would call your email service here
-      // this.emailService.sendEmail(this.formData).subscribe(...)
-      
-      console.log('Email sent:', this.formData);
-      this.isSubmitting = false;
-      this.isSubmitted = true;
-      
-      // Reset form after successful submission
-      this.resetForm();
-    }, 1500);
+    if (this.isBrowser) {
+      this.timeoutId = window.setTimeout(() => {
+        // In a real implementation, you would call your email service here
+        // this.emailService.sendEmail(this.formData).subscribe(...)
+        
+        this.isSubmitting = false;
+        this.isSubmitted = true;
+        
+        // Reset form after successful submission
+        this.resetForm();
+      }, 1500);
+    }
+  }
+
+  /**
+   * Handles form submission via keyboard (Enter key)
+   * @param event Keyboard event
+   */
+  public onFormKeydown(event: KeyboardEvent): void {
+    if (event.key === 'Enter' && (event.ctrlKey || event.metaKey)) {
+      const form = (event.target as HTMLElement).closest('form');
+      if (form) {
+        event.preventDefault();
+        this.onSubmit(new Event('submit'));
+      }
+    }
   }
   
   // ================= PRIVATE METHODS =================

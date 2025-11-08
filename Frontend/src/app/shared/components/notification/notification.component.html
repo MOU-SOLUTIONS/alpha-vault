@@ -1,0 +1,50 @@
+<!--
+  Alpha Vault Financial System
+  
+  @author Mohamed Dhaoui
+  @component NotificationComponent
+  @description Notification template with toast-style design
+-->
+
+<div class="notification-toast" 
+     [ngClass]="'notification-' + notification.type"
+     [attr.aria-live]="notification.type === 'error' ? 'assertive' : 'polite'"
+     role="alert"
+     (click)="markAsRead()">
+  
+  <div class="notification-content">
+    <div class="notification-icon">
+      <i [ngClass]="getIconClass()" aria-hidden="true"></i>
+    </div>
+    
+    <div class="notification-body">
+      <div class="notification-header">
+        <h4 class="notification-title">{{ notification.title }}</h4>
+        <span class="notification-time">{{ formatTimestamp() }}</span>
+      </div>
+      
+      <p class="notification-message">{{ notification.message }}</p>
+      
+      <div class="notification-meta" *ngIf="notification.category">
+        <i [ngClass]="getCategoryIcon()" class="category-icon" aria-hidden="true"></i>
+        <span class="category-label">{{ notification.category | titlecase }}</span>
+      </div>
+    </div>
+    
+    <div class="notification-actions">
+      <button type="button" 
+              class="notification-close" 
+              (click)="close(); $event.stopPropagation()"
+              [attr.aria-label]="'Close notification'"
+              title="Close notification">
+        <i class="fas fa-times" aria-hidden="true"></i>
+      </button>
+    </div>
+  </div>
+  
+  <div class="notification-progress" *ngIf="autoClose">
+    <div class="progress-bar" 
+         [style.animation-duration]="duration + 'ms'"
+         [attr.aria-hidden]="true"></div>
+  </div>
+</div>

@@ -1,6 +1,10 @@
-<!-- ================================================================
-              Coded by Mohamed Dhaoui for Alpha Vault
-================================================================ -->
+<!--
+  Alpha Vault Financial System
+  
+  @author Mohamed Dhaoui
+  @component ExpenseTop5Component
+  @description Expense top 5 component for displaying expense data
+-->
 
 <section class="row justify-content-center g-2 h-100" role="region" aria-labelledby="top5Title">
   <div class="col-12 h-100">
@@ -10,31 +14,36 @@
         <div class="top5-badge">Monthly</div>
       </header>
 
-      <ng-container *ngIf="topExpenses && topExpenses.length > 0; else noData">
+      <ng-container *ngIf="sortedExpenses().length > 0; else noData">
         <div class="top5-table-wrapper flex-grow-1">
           <table class="top5-table" role="table" aria-describedby="top5Title">
             <thead>
               <tr>
-                <th scope="col" class="top5-th">Category</th>
-                <th scope="col" class="top5-th text-end">Amount</th>
+                <th scope="col" class="top5-th" aria-sort="none">Category</th>
+                <th scope="col" class="top5-th text-end" aria-sort="descending">Amount</th>
               </tr>
             </thead>
             <tbody>
               <tr
                 class="top5-tr"
-                *ngFor="let expense of topExpenses; let i = index; trackBy: trackByIndex"
+                *ngFor="let expense of sortedExpenses(); let i = index; trackBy: trackByCategory"
                 [attr.data-index]="i"
+                [attr.aria-rowindex]="i + 2"
+                role="row"
+                tabindex="0"
+                (keydown)="onRowKeydown($event, expense)"
               >
-                <td class="top5-td">
+                <td class="top5-td" role="gridcell">
                   <div class="category-wrapper">
                     <div
                       class="category-indicator"
-                      [ngStyle]="{ 'background-color': getCategoryColor(expense.category) }"
+                      [style.background-color]="getCategoryColor(expense.category)"
+                      [attr.aria-label]="'Color indicator for ' + expense.category"
                     ></div>
-                    <span>{{ getCategoryLabel(expense.category) }}</span>
+                    <span>{{ expense.category }}</span>
                   </div>
                 </td>
-                <td class="top5-td text-end" [class.pulse]="shouldPulse">
+                <td class="top5-td text-end" [class.pulse]="shouldPulse()" role="gridcell">
                   {{ expense.amount | currency }}
                 </td>
               </tr>
@@ -44,8 +53,8 @@
       </ng-container>
 
       <ng-template #noData>
-        <div class="no-data-message flex-grow-1">
-          <div class="no-data-icon">📊</div>
+        <div class="no-data-message flex-grow-1" role="status" aria-live="polite">
+          <div class="no-data-icon" aria-hidden="true">📈</div>
           <p>No expense data available for this month</p>
           <p class="no-data-hint">Add some expenses to see your top categories here</p>
         </div>

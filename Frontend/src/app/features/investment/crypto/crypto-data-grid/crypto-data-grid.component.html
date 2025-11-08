@@ -1,6 +1,10 @@
-<!-- ====================================================================
-     Coded by Mohamed Dhaoui for Alpha Vault
-==================================================================== -->
+<!--
+  Alpha Vault Financial System
+  
+  @author Mohamed Dhaoui
+  @component CryptoDataGridComponent
+  @description Crypto data grid template for displaying crypto data
+-->
 
 <div class="crypto-data-container" [@fadeInUp]>
   <div class="header-section" [@glowPulse]="'glowing'">
@@ -11,7 +15,7 @@
           <div class="icon-glow"></div>
         </div>
         <div class="header-text">
-          <h1 class="header-title">Crypto Market Overview</h1>
+          <h2 class="header-title">Crypto Market Overview</h2>
           <p class="header-subtitle">Real-time cryptocurrency data and market insights</p>
         </div>
       </div>
@@ -20,8 +24,12 @@
         <button 
           class="action-btn view-toggle"
           (click)="toggleViewMode()"
+          (keydown.enter)="toggleViewMode()"
+          (keydown.space)="toggleViewMode(); $event.preventDefault()"
           [class.active]="viewMode === 'grid'"
           matTooltip="Toggle view mode"
+          aria-label="Toggle between grid and list view"
+          type="button"
         >
           <mat-icon>{{ viewMode === 'grid' ? 'view_list' : 'grid_view' }}</mat-icon>
         </button>
@@ -29,19 +37,29 @@
         <button 
           class="action-btn refresh-btn"
           (click)="refreshData()"
-          [disabled]="isLoading"
+          (keydown.enter)="refreshData()"
+          (keydown.space)="refreshData(); $event.preventDefault()"
+          [disabled]="isLoading()"
+          [attr.aria-busy]="isLoading()"
           matTooltip="Refresh data"
+          aria-label="Refresh cryptocurrency data"
+          type="button"
         >
-          <mat-icon [class.spinning]="isLoading">refresh</mat-icon>
+          <mat-icon [class.spinning]="isLoading()">refresh</mat-icon>
         </button>
         
         <button 
           class="action-btn auto-refresh"
           (click)="toggleAutoRefresh()"
-          [class.active]="autoRefresh"
+          (keydown.enter)="toggleAutoRefresh()"
+          (keydown.space)="toggleAutoRefresh(); $event.preventDefault()"
+          [class.active]="autoRefresh()"
+          [attr.aria-pressed]="autoRefresh()"
           matTooltip="Toggle auto-refresh"
+          aria-label="Toggle automatic data refresh"
+          type="button"
         >
-          <mat-icon>{{ autoRefresh ? 'pause' : 'play_arrow' }}</mat-icon>
+          <mat-icon>{{ autoRefresh() ? 'pause' : 'play_arrow' }}</mat-icon>
         </button>
       </div>
     </div>
@@ -52,86 +70,117 @@
       <span class="sort-label">Sort by:</span>
       <button 
         class="sort-btn"
-        [class.active]="sortBy === 'market_cap'"
+        [class.active]="sortBy() === 'market_cap'"
         (click)="sortData('market_cap')"
+        (keydown.enter)="sortData('market_cap')"
+        (keydown.space)="sortData('market_cap'); $event.preventDefault()"
         matTooltip="Sort by market cap"
+        aria-label="Sort by market cap"
+        type="button"
       >
         Market Cap
-        <mat-icon>{{ sortBy === 'market_cap' ? (sortOrder === 'asc' ? 'arrow_upward' : 'arrow_downward') : 'unfold_more' }}</mat-icon>
+        <mat-icon>{{ sortBy() === 'market_cap' ? (sortOrder() === 'asc' ? 'arrow_upward' : 'arrow_downward') : 'unfold_more' }}</mat-icon>
       </button>
       
       <button 
         class="sort-btn"
-        [class.active]="sortBy === 'price'"
+        [class.active]="sortBy() === 'price'"
         (click)="sortData('price')"
+        (keydown.enter)="sortData('price')"
+        (keydown.space)="sortData('price'); $event.preventDefault()"
         matTooltip="Sort by price"
+        aria-label="Sort by price"
+        type="button"
       >
         Price
-        <mat-icon>{{ sortBy === 'price' ? (sortOrder === 'asc' ? 'arrow_upward' : 'arrow_downward') : 'unfold_more' }}</mat-icon>
+        <mat-icon>{{ sortBy() === 'price' ? (sortOrder() === 'asc' ? 'arrow_upward' : 'arrow_downward') : 'unfold_more' }}</mat-icon>
       </button>
       
       <button 
         class="sort-btn"
-        [class.active]="sortBy === 'change_24h'"
+        [class.active]="sortBy() === 'change_24h'"
         (click)="sortData('change_24h')"
+        (keydown.enter)="sortData('change_24h')"
+        (keydown.space)="sortData('change_24h'); $event.preventDefault()"
         matTooltip="Sort by 24h change"
+        aria-label="Sort by 24 hour change"
+        type="button"
       >
         24h Change
-        <mat-icon>{{ sortBy === 'change_24h' ? (sortOrder === 'asc' ? 'arrow_upward' : 'arrow_downward') : 'unfold_more' }}</mat-icon>
+        <mat-icon>{{ sortBy() === 'change_24h' ? (sortOrder() === 'asc' ? 'arrow_upward' : 'arrow_downward') : 'unfold_more' }}</mat-icon>
       </button>
       
       <button 
         class="sort-btn"
-        [class.active]="sortBy === 'volume'"
+        [class.active]="sortBy() === 'volume'"
         (click)="sortData('volume')"
+        (keydown.enter)="sortData('volume')"
+        (keydown.space)="sortData('volume'); $event.preventDefault()"
         matTooltip="Sort by volume"
+        aria-label="Sort by volume"
+        type="button"
       >
         Volume
-        <mat-icon>{{ sortBy === 'volume' ? (sortOrder === 'asc' ? 'arrow_upward' : 'arrow_downward') : 'unfold_more' }}</mat-icon>
+        <mat-icon>{{ sortBy() === 'volume' ? (sortOrder() === 'asc' ? 'arrow_upward' : 'arrow_downward') : 'unfold_more' }}</mat-icon>
       </button>
     </div>
     
     <div class="last-updated">
-      <mat-icon>schedule</mat-icon>
-      <span>Last updated: {{ getTimeAgo(lastUpdated) }}</span>
+      <mat-icon aria-hidden="true">schedule</mat-icon>
+      <span>Last updated: <time [dateTime]="lastUpdated() | date:'yyyy-MM-ddTHH:mm:ss'">{{ timeAgo() }}</time></span>
     </div>
   </div>
 
-  <div *ngIf="isLoading" class="loading-state" [@fadeInUp]>
+  <div *ngIf="isLoading()" class="loading-state" [@fadeInUp] aria-live="polite" aria-busy="true">
     <div class="loading-content">
-      <mat-spinner diameter="60"></mat-spinner>
+      <mat-spinner diameter="60" aria-label="Loading"></mat-spinner>
       <h3>Updating market data...</h3>
       <p>Fetching the latest cryptocurrency information</p>
     </div>
   </div>
 
-  <div *ngIf="error && !isLoading" class="error-state" [@fadeInUp]>
+  <div *ngIf="error() && !isLoading() && cryptoData().length === 0" class="error-state" [@fadeInUp] role="alert">
     <div class="error-content">
-      <mat-icon class="error-icon">error_outline</mat-icon>
+      <mat-icon class="error-icon" aria-hidden="true">error_outline</mat-icon>
       <h3>Data Update Failed</h3>
-      <p>{{ error }}</p>
-      <button class="retry-btn" (click)="refreshData()">
-        <mat-icon>refresh</mat-icon>
+      <p>{{ error() }}</p>
+      <button class="retry-btn" (click)="refreshData()" (keydown.enter)="refreshData()" (keydown.space)="refreshData(); $event.preventDefault()" type="button" aria-label="Retry loading data">
+        <mat-icon aria-hidden="true">refresh</mat-icon>
         Try Again
       </button>
     </div>
   </div>
 
-  <div *ngIf="!isLoading && viewMode === 'grid'" class="grid-view" [@staggerList]="getPaginatedData().length">
+  <div *ngIf="!isLoading() && viewMode === 'grid'" class="grid-view" [@staggerList]="paginatedData().length">
     <div 
-      *ngFor="let crypto of getPaginatedData(); trackBy: trackByCrypto"
+      *ngFor="let crypto of paginatedData(); trackBy: trackByCrypto"
       class="crypto-card"
+      [class.selected]="selectedCrypto?.id === crypto.id"
+      role="button"
+      tabindex="0"
+      [attr.aria-label]="'View details for ' + crypto.name + ', rank ' + crypto.market_cap_rank"
       [@cardHover]="'normal'"
-      (mouseenter)="onCardHover($event)"
-      (mouseleave)="onCardLeave($event)"
       (click)="selectCrypto(crypto)"
+      (keydown.enter)="selectCrypto(crypto)"
+      (keydown.space)="selectCrypto(crypto); $event.preventDefault()"
     >
       <div class="card-header">
-        <div class="rank-badge" [style.background-color]="getRankColor(crypto.market_cap_rank)">
+        <div class="rank-badge" [style.background-color]="getRankColor(crypto.market_cap_rank)" [attr.aria-label]="'Rank ' + crypto.market_cap_rank">
           #{{ crypto.market_cap_rank }}
+          <span class="sr-only">Rank {{ crypto.market_cap_rank }}</span>
         </div>
         <div class="crypto-info">
-          <img [src]="crypto.image" [alt]="crypto.name" class="crypto-icon">
+          <img 
+            ngOptimizedImage
+            [src]="crypto.image" 
+            [alt]="'Logo for ' + crypto.name" 
+            class="crypto-icon"
+            width="28"
+            height="28"
+            loading="lazy"
+            decoding="async"
+            [attr.sizes]="'(max-width: 768px) 100vw, 28px'"
+          >
           <div class="crypto-details">
             <h3 class="crypto-name">{{ crypto.name }}</h3>
             <span class="crypto-symbol">{{ crypto.symbol }}</span>
@@ -144,8 +193,8 @@
           <span class="price-value" [@pricePulse]="crypto.price">
             {{ crypto.price | currency:'USD':'symbol':'1.2-6' }}
           </span>
-          <div class="price-change" [class]="crypto.price_change_percentage_24h > 0 ? 'positive' : 'negative'">
-            <mat-icon>{{ getChangeIcon(crypto.price_change_percentage_24h) }}</mat-icon>
+          <div class="price-change" [class]="getChangeClass(crypto.price_change_percentage_24h)" [attr.aria-label]="'24 hour change: ' + (crypto.price_change_percentage_24h > 0 ? '+' : '') + crypto.price_change_percentage_24h.toFixed(2) + ' percent'">
+            <mat-icon aria-hidden="true">{{ getChangeIcon(crypto.price_change_percentage_24h) }}</mat-icon>
             <span>{{ crypto.price_change_percentage_24h > 0 ? '+' : '' }}{{ crypto.price_change_percentage_24h.toFixed(2) }}%</span>
           </div>
         </div>
@@ -173,34 +222,139 @@
         </div>
       </div>
     </div>
+
+    <!-- In-grid overlay for details -->
+    <div 
+      *ngIf="showDetails && selectedCrypto && viewMode === 'grid'" 
+      class="details-overlay-inline"
+      (click)="closeDetails()"
+      (keydown.escape)="closeDetails()"
+      tabindex="-1"
+      [@fadeInUp]
+    >
+      <div class="details-card" (click)="$event.stopPropagation()">
+        <div class="details-header">
+          <div class="details-title">
+            <img 
+              ngOptimizedImage
+              [src]="selectedCrypto.image" 
+              [alt]="'Logo for ' + selectedCrypto.name" 
+              class="details-icon"
+              width="48"
+              height="48"
+              loading="eager"
+              decoding="async"
+              [attr.sizes]="'(max-width: 768px) 100vw, 48px'"
+            >
+            <div class="title-content">
+              <h3 [id]="'inline-title-' + selectedCrypto.id">{{ selectedCrypto.name }}</h3>
+              <span class="symbol">{{ selectedCrypto.symbol }}</span>
+            </div>
+          </div>
+          <button 
+            class="close-btn" 
+            (click)="closeDetails()"
+            (keydown.enter)="closeDetails()"
+            (keydown.space)="closeDetails(); $event.preventDefault()"
+            aria-label="Close cryptocurrency details"
+            type="button"
+          >
+            <mat-icon aria-hidden="true">close</mat-icon>
+          </button>
+        </div>
+        
+        <div class="details-content">
+          <div class="price-section-details">
+            <div class="current-price">
+              <span class="price-label">Current Price</span>
+              <span class="price-value-large">{{ selectedCrypto.price | currency:'USD':'symbol':'1.2-6' }}</span>
+            </div>
+            <div class="price-change-large" [class]="getChangeClass(selectedCrypto.price_change_percentage_24h)" [attr.aria-label]="'24 hour change: ' + (selectedCrypto.price_change_percentage_24h > 0 ? '+' : '') + selectedCrypto.price_change_percentage_24h.toFixed(2) + ' percent'">
+              <mat-icon aria-hidden="true">{{ getChangeIcon(selectedCrypto.price_change_percentage_24h) }}</mat-icon>
+              <span>{{ selectedCrypto.price_change_percentage_24h > 0 ? '+' : '' }}{{ selectedCrypto.price_change_percentage_24h.toFixed(2) }}%</span>
+            </div>
+          </div>
+          
+          <div class="stats-grid-details">
+            <div class="stat-item-detail">
+              <span class="stat-label">Market Cap</span>
+              <span class="stat-value">{{ formatCurrency(selectedCrypto.market_cap) }}</span>
+            </div>
+            <div class="stat-item-detail">
+              <span class="stat-label">24h Volume</span>
+              <span class="stat-value">{{ formatCurrency(selectedCrypto.total_volume) }}</span>
+            </div>
+            <div class="stat-item-detail">
+              <span class="stat-label">24h High</span>
+              <span class="stat-value">{{ selectedCrypto.high_24h | currency:'USD':'symbol':'1.2-2' }}</span>
+            </div>
+            <div class="stat-item-detail">
+              <span class="stat-label">24h Low</span>
+              <span class="stat-value">{{ selectedCrypto.low_24h | currency:'USD':'symbol':'1.2-2' }}</span>
+            </div>
+            <div class="stat-item-detail">
+              <span class="stat-label">Circulating Supply</span>
+              <span class="stat-value">{{ formatNumber(selectedCrypto.circulating_supply) }}</span>
+            </div>
+            <div class="stat-item-detail">
+              <span class="stat-label">Total Supply</span>
+              <span class="stat-value">{{ selectedCrypto.total_supply ? formatNumber(selectedCrypto.total_supply) : 'N/A' }}</span>
+            </div>
+            <div class="stat-item-detail">
+              <span class="stat-label">All Time High</span>
+              <span class="stat-value">{{ selectedCrypto.ath | currency:'USD':'symbol':'1.2-2' }}</span>
+            </div>
+            <div class="stat-item-detail">
+              <span class="stat-label">All Time Low</span>
+              <span class="stat-value">{{ selectedCrypto.atl | currency:'USD':'symbol':'1.2-2' }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 
-  <div *ngIf="!isLoading && viewMode === 'list'" class="list-view">
-    <div class="list-header">
-      <div class="header-cell rank">Rank</div>
-      <div class="header-cell name">Asset</div>
-      <div class="header-cell price">Price</div>
-      <div class="header-cell change">24h Change</div>
-      <div class="header-cell market-cap">Market Cap</div>
-      <div class="header-cell volume">Volume (24h)</div>
-      <div class="header-cell supply">Circulating Supply</div>
+  <div *ngIf="!isLoading() && viewMode === 'list'" class="list-view" role="table" aria-label="Cryptocurrency data table">
+    <div class="list-header" role="row">
+      <div class="header-cell rank" role="columnheader">Rank</div>
+      <div class="header-cell name" role="columnheader">Asset</div>
+      <div class="header-cell price" role="columnheader">Price</div>
+      <div class="header-cell change" role="columnheader">24h Change</div>
+      <div class="header-cell market-cap" role="columnheader">Market Cap</div>
+      <div class="header-cell volume" role="columnheader">Volume (24h)</div>
+      <div class="header-cell supply" role="columnheader">Circulating Supply</div>
     </div>
     
-    <div class="list-body" [@staggerList]="getPaginatedData().length">
+    <div class="list-body" [@staggerList]="paginatedData().length">
       <div 
-        *ngFor="let crypto of getPaginatedData(); trackBy: trackByCrypto"
+        *ngFor="let crypto of paginatedData(); trackBy: trackByCrypto"
         class="list-item"
+        role="row"
+        tabindex="0"
+        [attr.aria-label]="'View details for ' + crypto.name"
         (click)="selectCrypto(crypto)"
+        (keydown.enter)="selectCrypto(crypto)"
+        (keydown.space)="selectCrypto(crypto); $event.preventDefault()"
       >
-        <div class="item-cell rank">
-          <span class="rank-number" [style.color]="getRankColor(crypto.market_cap_rank)">
+        <div class="item-cell rank" role="cell">
+          <span class="rank-number" [style.color]="getRankColor(crypto.market_cap_rank)" [attr.aria-label]="'Rank ' + crypto.market_cap_rank">
             #{{ crypto.market_cap_rank }}
           </span>
         </div>
         
-        <div class="item-cell name">
+        <div class="item-cell name" role="cell">
           <div class="crypto-info">
-            <img [src]="crypto.image" [alt]="crypto.name" class="crypto-icon">
+            <img 
+              ngOptimizedImage
+              [src]="crypto.image" 
+              [alt]="'Logo for ' + crypto.name" 
+              class="crypto-icon"
+              width="28"
+              height="28"
+              loading="lazy"
+              decoding="async"
+              [attr.sizes]="'(max-width: 768px) 100vw, 28px'"
+            >
             <div class="crypto-details">
               <span class="crypto-name">{{ crypto.name }}</span>
               <span class="crypto-symbol">{{ crypto.symbol }}</span>
@@ -214,52 +368,79 @@
           </span>
         </div>
         
-        <div class="item-cell change">
-          <div class="change-indicator" [class]="crypto.price_change_percentage_24h > 0 ? 'positive' : 'negative'">
-            <mat-icon>{{ getChangeIcon(crypto.price_change_percentage_24h) }}</mat-icon>
+        <div class="item-cell change" role="cell">
+          <div class="change-indicator" [class]="getChangeClass(crypto.price_change_percentage_24h)" [attr.aria-label]="'24 hour change: ' + (crypto.price_change_percentage_24h > 0 ? '+' : '') + crypto.price_change_percentage_24h.toFixed(2) + ' percent'">
+            <mat-icon aria-hidden="true">{{ getChangeIcon(crypto.price_change_percentage_24h) }}</mat-icon>
             <span>{{ crypto.price_change_percentage_24h > 0 ? '+' : '' }}{{ crypto.price_change_percentage_24h.toFixed(2) }}%</span>
           </div>
         </div>
         
-        <div class="item-cell market-cap">
+        <div class="item-cell market-cap" role="cell">
           <span class="market-cap-value">{{ formatCurrency(crypto.market_cap) }}</span>
         </div>
         
-        <div class="item-cell volume">
+        <div class="item-cell volume" role="cell">
           <span class="volume-value">{{ formatCurrency(crypto.total_volume) }}</span>
         </div>
         
-        <div class="item-cell supply">
+        <div class="item-cell supply" role="cell">
           <span class="supply-value">{{ formatNumber(crypto.circulating_supply) }}</span>
         </div>
       </div>
     </div>
   </div>
 
-  <div *ngIf="!isLoading && cryptoData.length > 0" class="paginator-container">
+  <div *ngIf="!isLoading() && cryptoData().length > 0" class="paginator-container">
     <mat-paginator
-      [length]="cryptoData.length"
+      [length]="cryptoData().length"
       [pageSize]="pageSize"
       [pageSizeOptions]="pageSizeOptions"
-      [pageIndex]="currentPage"
+      [pageIndex]="currentPage()"
       (page)="onPageChange($event)"
       showFirstLastButtons
       aria-label="Select page of cryptocurrencies">
     </mat-paginator>
   </div>
 
-  <div *ngIf="showDetails && selectedCrypto" class="details-overlay" (click)="closeDetails()">
+  <!-- Full-screen modal for list view (unchanged) -->
+  <div 
+    *ngIf="showDetails && selectedCrypto && viewMode === 'list'" 
+    class="details-overlay" 
+    (click)="closeDetails()"
+    role="dialog"
+    aria-modal="true"
+    [attr.aria-labelledby]="'modal-title-' + selectedCrypto.id"
+    (keydown.escape)="closeDetails()"
+    #modalOverlay
+  >
     <div class="details-modal" (click)="$event.stopPropagation()" [@fadeInUp]>
       <div class="modal-header">
         <div class="modal-title">
-          <img [src]="selectedCrypto.image" [alt]="selectedCrypto.name" class="modal-icon">
+          <img 
+            ngOptimizedImage
+            [src]="selectedCrypto.image" 
+            [alt]="'Logo for ' + selectedCrypto.name" 
+            class="modal-icon"
+            width="40"
+            height="40"
+            loading="eager"
+            decoding="async"
+            [attr.sizes]="'(max-width: 768px) 100vw, 40px'"
+          >
           <div class="title-text">
-            <h3>{{ selectedCrypto.name }}</h3>
+            <h3 [id]="'modal-title-' + selectedCrypto.id">{{ selectedCrypto.name }}</h3>
             <span class="symbol">{{ selectedCrypto.symbol }}</span>
           </div>
         </div>
-        <button class="close-btn" (click)="closeDetails()">
-          <mat-icon>close</mat-icon>
+        <button 
+          class="close-btn" 
+          (click)="closeDetails()"
+          (keydown.enter)="closeDetails()"
+          (keydown.space)="closeDetails(); $event.preventDefault()"
+          aria-label="Close cryptocurrency details"
+          type="button"
+        >
+          <mat-icon aria-hidden="true">close</mat-icon>
         </button>
       </div>
       
@@ -269,8 +450,8 @@
             <span class="price-label">Current Price</span>
             <span class="price-value">{{ selectedCrypto.price | currency:'USD':'symbol':'1.2-6' }}</span>
           </div>
-          <div class="price-change" [class]="selectedCrypto.price_change_percentage_24h > 0 ? 'positive' : 'negative'">
-            <mat-icon>{{ getChangeIcon(selectedCrypto.price_change_percentage_24h) }}</mat-icon>
+          <div class="price-change" [class]="getChangeClass(selectedCrypto.price_change_percentage_24h)" [attr.aria-label]="'24 hour change: ' + (selectedCrypto.price_change_percentage_24h > 0 ? '+' : '') + selectedCrypto.price_change_percentage_24h.toFixed(2) + ' percent'">
+            <mat-icon aria-hidden="true">{{ getChangeIcon(selectedCrypto.price_change_percentage_24h) }}</mat-icon>
             <span>{{ selectedCrypto.price_change_percentage_24h > 0 ? '+' : '' }}{{ selectedCrypto.price_change_percentage_24h.toFixed(2) }}%</span>
           </div>
         </div>

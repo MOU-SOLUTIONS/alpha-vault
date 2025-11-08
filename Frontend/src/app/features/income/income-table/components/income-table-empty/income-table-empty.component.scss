@@ -1,0 +1,52 @@
+/*
+  Alpha Vault Financial System
+  
+  @author Mohamed Dhaoui
+  @component IncomeTableEmptyComponent
+  @description Comprehensive styling for income table empty component with responsive design
+*/
+
+/* CSS Variables */
+:host {
+  --empty-icon-size: 3rem;
+  --empty-padding: 3rem 1.5rem;
+  --empty-title-size: 1.25rem;
+  --empty-text-size: 0.875rem;
+  --empty-icon-opacity: 0.5;
+}
+
+/* Empty State */
+.empty-state {
+  text-align: center;
+  padding: var(--empty-padding);
+  color: var(--text-light);
+
+  .empty-icon {
+    font-size: var(--empty-icon-size);
+    margin-bottom: 1rem;
+    opacity: var(--empty-icon-opacity);
+    color: var(--text-light);
+  }
+
+  h3 {
+    font-size: var(--empty-title-size);
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+    color: var(--text-color);
+  }
+
+  p {
+    font-size: var(--empty-text-size);
+    margin-bottom: 1.5rem;
+    color: var(--text-light);
+  }
+}
+
+/* Motion Preferences */
+@media (prefers-reduced-motion: reduce) {
+  .empty-state {
+    .empty-icon {
+      transition: none;
+    }
+  }
+}

@@ -29,11 +29,6 @@
   flex-direction: column;
   align-items: center;
   
-  &__button {
-    margin: 0 auto;
-    display: inline-flex;
-  }
-  
   h2 {
     font-size: 3rem;
     font-weight: 700;
@@ -82,9 +77,28 @@
     box-shadow: 0 15px 30px rgba(99, 102, 241, 0.4);
   }
   
+  &:focus-visible {
+    outline: 3px solid var(--primary-color);
+    outline-offset: 2px;
+    box-shadow: 0 10px 25px rgba(99, 102, 241, 0.3),
+                0 0 0 3px rgba(99, 102, 241, 0.3);
+  }
+  
   &.large {
     padding: 16px 32px;
     font-size: 16px;
+  }
+}
+
+/* ================= ACCESSIBILITY ENHANCEMENTS ================= */
+
+@media (prefers-reduced-motion: reduce) {
+  .btn-primary {
+    transition: none;
+    
+    &:hover {
+      transform: none;
+    }
   }
 }
 

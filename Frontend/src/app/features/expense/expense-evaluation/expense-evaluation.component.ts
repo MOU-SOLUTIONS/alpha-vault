@@ -1,14 +1,21 @@
-// ====================================================================
-//             Coded by Mohamed Dhaoui for Alpha Vault
-// ====================================================================
+/*
+  Alpha Vault Financial System
+  
+  @author Mohamed Dhaoui
+  @component ExpenseEvaluationComponent
+  @description Expense evaluation component for displaying expense data
+*/  
 
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnChanges, OnDestroy, OnInit, SimpleChanges } from '@angular/core';
-import { CommonModule, CurrencyPipe, DecimalPipe } from '@angular/common';
-import { Meta, Title } from '@angular/platform-browser';
-import { Subject } from 'rxjs';
+import { CommonModule } from '@angular/common';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, computed, DestroyRef, EventEmitter, inject, Input, OnChanges, OnInit, Output, signal, SimpleChanges } from '@angular/core';
+import { Meta } from '@angular/platform-browser';
 
-import { Expense } from '../../../models/expense.model';
 import { ExpenseService } from '../../../core/services/expense.service';
+import { Expense } from '../../../models/expense.model';
+import { ExpenseEvaluationHeaderComponent } from './components/expense-evaluation-header/expense-evaluation-header.component';
+import { ExpenseEvaluationInsightsComponent, Insight } from './components/expense-evaluation-insights/expense-evaluation-insights.component';
+import { ExpenseEvaluationMetricsComponent } from './components/expense-evaluation-metrics/expense-evaluation-metrics.component';
+import { ExpenseEvaluationTrendsComponent } from './components/expense-evaluation-trends/expense-evaluation-trends.component';
 
 interface EvolutionMetrics {
   totalExpense: number;
@@ -33,22 +40,22 @@ interface PerformanceMetrics {
   stabilityIndex: number;
 }
 
-interface Insight {
-  id: number;
-  icon: string;
-  title: string;
-  description: string;
-}
-
 @Component({
   standalone: true,
   selector: 'app-expense-evaluation',
   templateUrl: './expense-evaluation.component.html',
   styleUrls: ['./expense-evaluation.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, CurrencyPipe, DecimalPipe],
+      imports: [
+        CommonModule,
+        ExpenseEvaluationHeaderComponent,
+        ExpenseEvaluationTrendsComponent,
+        ExpenseEvaluationMetricsComponent,
+        ExpenseEvaluationInsightsComponent
+      ],
 })
-export class ExpenseEvaluationComponent implements OnInit, OnDestroy, OnChanges {
+export class ExpenseEvaluationComponent implements OnInit, OnChanges {
+  /* ===== INPUTS ===== */
   @Input() weekEvolution = 0;
   @Input() monthEvolution = 0;
   @Input() yearEvolution = 0;
@@ -61,94 +68,134 @@ export class ExpenseEvaluationComponent implements OnInit, OnDestroy, OnChanges 
   @Input() paymentMethodData: Record<string, number> = {};
   @Input() weeklyExpenseData: number[] = [];
   @Input() monthlyExpenseData: number[] = [];
-  @Input() topExpenses: Array<{ category: string; amount: number }> = [];
+  @Input() topExpenses: { category: string; amount: number }[] = [];
 
-  loading = true;
-  hasData = false;
+  /* ===== OUTPUTS ===== */
+  @Output() addExpense = new EventEmitter<void>();
+
+  /* ===== SIGNALS ===== */
+  private readonly expensesSignal = signal<Expense[]>([]);
+  private readonly weekEvolutionSignal = signal<number>(0);
+  private readonly monthEvolutionSignal = signal<number>(0);
+  private readonly yearEvolutionSignal = signal<number>(0);
+  private readonly dayExpenseSignal = signal<number>(0);
+  private readonly weekExpenseSignal = signal<number>(0);
+  private readonly monthExpenseSignal = signal<number>(0);
+  private readonly yearExpenseSignal = signal<number>(0);
+  private readonly expenseCategoryDataSignal = signal<Record<string, number>>({});
+  private readonly currentPeriodSignal = signal<string>('month');
+
+  /* ===== COMPUTED PROPERTIES ===== */
+  readonly evolutionMetrics = computed(() => this.calculateEvolutionMetrics());
+  readonly performanceMetrics = computed(() => this.calculatePerformanceMetrics());
+  readonly insights = computed(() => this.generateInsights());
+  readonly hasData = computed(() => this.checkHasData());
+  
+  // Convert getters to computed signals for better performance
+  readonly totalExpense = computed(() => this.evolutionMetrics().totalExpense);
+  readonly growthRate = computed(() => this.evolutionMetrics().growthRate);
+  readonly achievementRate = computed(() => this.evolutionMetrics().achievementRate);
+  readonly trend = computed(() => this.evolutionMetrics().trend);
+  readonly monthlyGrowth = computed(() => this.evolutionMetrics().monthlyGrowth);
+  readonly weeklyGrowth = computed(() => this.evolutionMetrics().weeklyGrowth);
+  readonly yearlyGrowth = computed(() => this.evolutionMetrics().yearlyGrowth);
+  readonly consistencyScore = computed(() => this.evolutionMetrics().consistencyScore);
+  readonly diversificationScore = computed(() => this.evolutionMetrics().diversificationScore);
+  readonly todayExpense = computed(() => this.evolutionMetrics().todayExpense);
+  readonly efficiency = computed(() => this.performanceMetrics().efficiency);
+  readonly growthPotential = computed(() => this.performanceMetrics().growthPotential);
+  readonly goalAlignment = computed(() => this.performanceMetrics().goalAlignment);
+  readonly stabilityIndex = computed(() => this.performanceMetrics().stabilityIndex);
+  readonly insightsList = computed(() => this.insights());
+
+  /* ===== COMPONENT STATE ===== */
   currentPeriod = 'month';
-  evolutionMetrics: EvolutionMetrics = {
-    totalExpense: 0,
-    growthRate: 0,
-    achievementRate: 0,
-    trend: 0,
-    monthlyGrowth: 0,
-    weeklyGrowth: 0,
-    yearlyGrowth: 0,
-    consistencyScore: 0,
-    diversificationScore: 0,
-    todayExpense: 0,
-    weekExpense: 0,
-    monthExpense: 0,
-    yearExpense: 0,
-  };
-  distributionData: Record<string, number> = {};
-  performanceMetrics: PerformanceMetrics = {
-    efficiency: 0,
-    growthPotential: 0,
-    goalAlignment: 0,
-    stabilityIndex: 0,
-  };
-  insights: Insight[] = [];
 
-  private readonly destroy$ = new Subject<void>();
+  /* ===== DEPENDENCIES ===== */
+  private readonly destroyRef = inject(DestroyRef);
+  private readonly expenseService = inject(ExpenseService);
+  private readonly meta = inject(Meta);
+  private readonly cdr = inject(ChangeDetectorRef);
 
-  constructor(
-    private readonly title: Title,
-    private readonly meta: Meta,
-    private readonly cdr: ChangeDetectorRef,
-    private readonly expenseService?: ExpenseService,
-  ) {
-    this.title.setTitle('Expense Evaluation | Alpha Vault');
+  constructor() {
     this.meta.addTags([
-      { name: 'description', content: 'Comprehensive expense evaluation dashboard with trends, distribution analysis, and performance metrics for Alpha Vault financial management.' },
+      { name: 'description', content: 'Comprehensive expense evaluation dashboard with trends and performance metrics for Alpha Vault financial management.' },
       { name: 'robots', content: 'index,follow' },
       { name: 'viewport', content: 'width=device-width, initial-scale=1' },
     ]);
   }
 
+  /* ===== LIFECYCLE ===== */
   ngOnInit(): void {
-    // Add a small delay to ensure all inputs are properly bound
-    setTimeout(() => {
-      this.processData();
-    }, 100);
+    this.updateSignals();
   }
 
   ngOnChanges(changes: SimpleChanges): void {
-    if (changes['expenses'] || changes['monthExpense'] || changes['monthEvolution'] || 
-        changes['expenseCategoryData'] || changes['dayExpense'] || changes['weekExpense'] || 
-        changes['yearExpense'] || changes['weekEvolution'] || changes['yearEvolution']) {
-      this.processData();
+    this.updateSignalsFromChanges(changes);
+    this.cdr.markForCheck();
+  }
+
+  /* ===== PRIVATE METHODS ===== */
+  private updateSignals(): void {
+    this.expensesSignal.set(this.expenses || []);
+    this.weekEvolutionSignal.set(this.weekEvolution || 0);
+    this.monthEvolutionSignal.set(this.monthEvolution || 0);
+    this.yearEvolutionSignal.set(this.yearEvolution || 0);
+    this.dayExpenseSignal.set(this.dayExpense || 0);
+    this.weekExpenseSignal.set(this.weekExpense || 0);
+    this.monthExpenseSignal.set(this.monthExpense || 0);
+    this.yearExpenseSignal.set(this.yearExpense || 0);
+    this.expenseCategoryDataSignal.set(this.expenseCategoryData || {});
+  }
+
+  private updateSignalsFromChanges(changes: SimpleChanges): void {
+    if (changes['expenses']) {
+      this.expensesSignal.set(changes['expenses'].currentValue || []);
+    }
+    if (changes['weekEvolution']) {
+      this.weekEvolutionSignal.set(changes['weekEvolution'].currentValue || 0);
+    }
+    if (changes['monthEvolution']) {
+      this.monthEvolutionSignal.set(changes['monthEvolution'].currentValue || 0);
+    }
+    if (changes['yearEvolution']) {
+      this.yearEvolutionSignal.set(changes['yearEvolution'].currentValue || 0);
+    }
+    if (changes['dayExpense']) {
+      this.dayExpenseSignal.set(changes['dayExpense'].currentValue || 0);
+    }
+    if (changes['weekExpense']) {
+      this.weekExpenseSignal.set(changes['weekExpense'].currentValue || 0);
+    }
+    if (changes['monthExpense']) {
+      this.monthExpenseSignal.set(changes['monthExpense'].currentValue || 0);
+    }
+    if (changes['yearExpense']) {
+      this.yearExpenseSignal.set(changes['yearExpense'].currentValue || 0);
+    }
+    if (changes['expenseCategoryData']) {
+      this.expenseCategoryDataSignal.set(changes['expenseCategoryData'].currentValue || {});
     }
   }
 
-  ngOnDestroy(): void {
-    this.destroy$.next();
-    this.destroy$.complete();
-  }
-
-  onPeriodChange(period: string): void {
-    this.currentPeriod = period;
-    this.loadDistributionData();
-  }
-
-  processData(): void {
-    this.loading = true;
-    this.cdr.markForCheck();
-
-    this.evolutionMetrics = this.calculateEvolutionMetrics();
-    this.loadDistributionData();
-    this.performanceMetrics = this.calculatePerformanceMetrics();
-    this.insights = this.generateInsights();
-
-    this.hasData = this.checkHasData();
-    this.loading = false;
-    this.cdr.markForCheck();
+  /* ===== PUBLIC METHODS ===== */
+  onAddExpense(): void {
+    this.addExpense.emit();
   }
 
   private calculateEvolutionMetrics(): EvolutionMetrics {
-    const calculatedTotalExpense = this.expenses?.length > 0 
-      ? this.expenses.reduce((sum, expense) => sum + expense.amount, 0)
-      : this.monthExpense || 0;
+    const expenses = this.expensesSignal();
+    const monthExpense = this.monthExpenseSignal();
+    const weekEvolution = this.weekEvolutionSignal();
+    const monthEvolution = this.monthEvolutionSignal();
+    const yearEvolution = this.yearEvolutionSignal();
+    const dayExpense = this.dayExpenseSignal();
+    const weekExpense = this.weekExpenseSignal();
+    const yearExpense = this.yearExpenseSignal();
+
+    const calculatedTotalExpense = expenses?.length > 0 
+      ? expenses.reduce((sum, expense) => sum + expense.amount, 0)
+      : monthExpense || 0;
 
     const realGrowthRate = this.calculateRealGrowthRate();
 
@@ -157,21 +204,24 @@ export class ExpenseEvaluationComponent implements OnInit, OnDestroy, OnChanges 
       growthRate: realGrowthRate,
       achievementRate: this.calculateAchievementRate(),
       trend: realGrowthRate,
-      monthlyGrowth: this.monthEvolution || 0,
-      weeklyGrowth: this.weekEvolution || 0,
-      yearlyGrowth: this.yearEvolution || 0,
+      monthlyGrowth: monthEvolution || 0,
+      weeklyGrowth: weekEvolution || 0,
+      yearlyGrowth: yearEvolution || 0,
       consistencyScore: this.calculateConsistencyScore(),
       diversificationScore: this.calculateDiversificationScore(),
-      todayExpense: this.dayExpense || 0,
-      weekExpense: this.weekExpense || 0,
-      monthExpense: this.monthExpense || 0,
-      yearExpense: this.yearExpense || 0,
+      todayExpense: dayExpense || 0,
+      weekExpense: weekExpense || 0,
+      monthExpense: monthExpense || 0,
+      yearExpense: yearExpense || 0,
     };
   }
 
   private calculateRealGrowthRate(): number {
-    if (!this.expenses?.length) {
-      return this.monthEvolution || 0;
+    const expenses = this.expensesSignal();
+    const monthEvolution = this.monthEvolutionSignal();
+
+    if (!expenses?.length) {
+      return monthEvolution || 0;
     }
 
     const currentMonth = new Date().getMonth();
@@ -179,12 +229,12 @@ export class ExpenseEvaluationComponent implements OnInit, OnDestroy, OnChanges 
     const previousMonth = currentMonth === 0 ? 11 : currentMonth - 1;
     const previousYear = currentMonth === 0 ? currentYear - 1 : currentYear;
 
-    const currentMonthExpenses = this.expenses.filter(expense => {
+    const currentMonthExpenses = expenses.filter(expense => {
       const expenseDate = new Date(expense.date);
       return expenseDate.getMonth() === currentMonth && expenseDate.getFullYear() === currentYear;
     });
 
-    const previousMonthExpenses = this.expenses.filter(expense => {
+    const previousMonthExpenses = expenses.filter(expense => {
       const expenseDate = new Date(expense.date);
       return expenseDate.getMonth() === previousMonth && expenseDate.getFullYear() === previousYear;
     });
@@ -201,177 +251,107 @@ export class ExpenseEvaluationComponent implements OnInit, OnDestroy, OnChanges 
 
   private calculatePerformanceMetrics(): PerformanceMetrics {
     const efficiency = this.calculateEfficiencyScore();
-    const growthPotential = Math.max(0, 100 - this.evolutionMetrics.growthRate);
-    const goalAlignment = this.calculateAchievementRate();
+    const growthPotential = this.calculateRealGrowthRate();
+    const performanceScore = this.calculatePerformanceScore();
     const stabilityIndex = this.calculateStabilityIndex();
 
     return {
       efficiency,
       growthPotential,
-      goalAlignment,
+      goalAlignment: performanceScore,
       stabilityIndex,
     };
   }
 
-  private loadDistributionData(): void {
-    if (!this.expenses?.length) {
-      // If no expenses array, use the provided category data
-      this.distributionData = this.expenseCategoryData || {};
-      return;
-    }
-
-    const currentDate = new Date();
-    let filteredExpenses: Expense[] = [];
-
-    switch (this.currentPeriod) {
-      case 'week':
-        const weekStart = new Date(currentDate);
-        weekStart.setDate(currentDate.getDate() - currentDate.getDay());
-        weekStart.setHours(0, 0, 0, 0);
-        const weekEnd = new Date(weekStart);
-        weekEnd.setDate(weekStart.getDate() + 6);
-        weekEnd.setHours(23, 59, 59, 999);
-        
-        filteredExpenses = this.expenses.filter(expense => {
-          const expenseDate = new Date(expense.date);
-          return expenseDate >= weekStart && expenseDate <= weekEnd;
-        });
-        break;
-
-      case 'month':
-        const monthStart = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1);
-        const monthEnd = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0);
-        monthEnd.setHours(23, 59, 59, 999);
-        
-        filteredExpenses = this.expenses.filter(expense => {
-          const expenseDate = new Date(expense.date);
-          return expenseDate >= monthStart && expenseDate <= monthEnd;
-        });
-        break;
-
-      case 'year':
-        const yearStart = new Date(currentDate.getFullYear(), 0, 1);
-        const yearEnd = new Date(currentDate.getFullYear(), 11, 31);
-        yearEnd.setHours(23, 59, 59, 999);
-        
-        filteredExpenses = this.expenses.filter(expense => {
-          const expenseDate = new Date(expense.date);
-          return expenseDate >= yearStart && expenseDate <= yearEnd;
-        });
-        break;
-
-      default:
-        filteredExpenses = this.expenses;
-    }
-
-    // Group by category
-    this.distributionData = filteredExpenses.reduce((acc, expense) => {
-      const category = expense.category || 'Other';
-      acc[category] = (acc[category] || 0) + expense.amount;
-      return acc;
-    }, {} as Record<string, number>);
-  }
 
   private calculateConsistencyScore(): number {
-    if (!this.expenses?.length) return 0;
-
-    const monthlyData = this.groupExpensesByMonth();
-    const months = Object.keys(monthlyData);
+    const expenses = this.expensesSignal();
+    if (!expenses?.length) return 0;
+    
+    const monthlyIncomes = this.groupExpensesByMonth();
+    const months = Object.keys(monthlyIncomes);
     if (months.length < 2) return 100;
 
-    const amounts = Object.values(monthlyData);
-    const mean = amounts.reduce((sum, amount) => sum + amount, 0) / amounts.length;
-    const variance = amounts.reduce((sum, amount) => sum + Math.pow(amount - mean, 2), 0) / amounts.length;
+    const amounts = months.map(month => monthlyIncomes[month]);
+    const avg = amounts.reduce((sum, amount) => sum + amount, 0) / amounts.length;
+    
+    if (avg === 0) return 100;
+    
+    const variance = amounts.reduce((sum, amount) => sum + Math.pow(amount - avg, 2), 0) / amounts.length;
     const standardDeviation = Math.sqrt(variance);
-    const coefficientOfVariation = standardDeviation / mean;
-
-    return Math.max(0, 100 - (coefficientOfVariation * 100));
+    const coefficientOfVariation = standardDeviation / avg;
+    
+    return Math.max(0, Math.min(100, 100 - (coefficientOfVariation * 100)));
   }
 
   private calculateDiversificationScore(): number {
-    if (!this.expenses?.length) return 0;
-
-    const categoryTotals = this.expenses.reduce((acc, expense) => {
-      const category = expense.category || 'Other';
-      acc[category] = (acc[category] || 0) + expense.amount;
-      return acc;
-    }, {} as Record<string, number>);
-
-    const totalAmount = Object.values(categoryTotals).reduce((sum, amount) => sum + amount, 0);
-    if (totalAmount === 0) return 0;
-
-    const categoryCount = Object.keys(categoryTotals).length;
-    const evenness = this.calculateDistributionEvenness(categoryTotals, totalAmount);
-
-    return Math.min(100, (categoryCount * 10) + (evenness * 50));
-  }
-
-  private calculateDistributionEvenness(categoryTotals: Record<string, number>, totalAmount: number): number {
-    const proportions = Object.values(categoryTotals).map(amount => amount / totalAmount);
-    const idealProportion = 1 / proportions.length;
+    const expenses = this.expensesSignal();
+    if (!expenses?.length) return 0;
     
-    const sumSquaredDifferences = proportions.reduce((sum, proportion) => {
-      return sum + Math.pow(proportion - idealProportion, 2);
-    }, 0);
-
-    return Math.max(0, 1 - (sumSquaredDifferences / proportions.length));
+    const sourceCount = new Set(expenses.map(expense => expense.category)).size;
+    const totalAmount = expenses.reduce((sum, expense) => sum + expense.amount, 0);
+    
+    if (totalAmount === 0) return 0;
+    
+    const sourceScore = Math.min(100, sourceCount * 25);
+    
+    return sourceScore;
   }
+
 
   private calculateEfficiencyScore(): number {
-    if (!this.expenses?.length) return 0;
+    const expenses = this.expensesSignal();
+    if (!expenses?.length) return 0;
     
-    const totalExpense = this.expenses.reduce((sum, expense) => sum + expense.amount, 0);
-    const averageExpense = totalExpense / this.expenses.length;
-    const variance = this.expenses.reduce((sum, expense) => sum + Math.pow(expense.amount - averageExpense, 2), 0) / this.expenses.length;
+    const receivedExpenses = expenses.filter(expense => true); // All expenses are "received" in expense context
+    const totalExpenses = expenses.length;
     
-    return Math.max(0, 100 - (Math.sqrt(variance) / averageExpense) * 100);
+    return Math.round((receivedExpenses.length / totalExpenses) * 100);
   }
 
   private calculatePerformanceScore(): number {
-    const efficiency = this.calculateEfficiencyScore();
-    const consistency = this.calculateConsistencyScore();
-    const diversification = this.calculateDiversificationScore();
+    const consistencyScore = this.calculateConsistencyScore();
+    const growthRate = this.calculateRealGrowthRate();
+    const diversificationScore = this.calculateDiversificationScore();
     
-    return (efficiency + consistency + diversification) / 3;
+    const performanceScore = (consistencyScore * 0.4) + (Math.max(0, growthRate) * 0.3) + (diversificationScore * 0.3);
+    
+    return Math.min(100, Math.max(0, performanceScore));
   }
 
   private calculateAchievementRate(): number {
-    if (!this.expenses?.length) return 0;
+    const consistencyScore = this.calculateConsistencyScore();
+    const growthRate = this.calculateRealGrowthRate();
+    const diversificationScore = this.calculateDiversificationScore();
     
-    const currentMonth = new Date().getMonth();
-    const currentYear = new Date().getFullYear();
-    const currentMonthExpenses = this.expenses.filter(expense => {
-      const expenseDate = new Date(expense.date);
-      return expenseDate.getMonth() === currentMonth && expenseDate.getFullYear() === currentYear;
-    });
+    const achievementRate = (consistencyScore * 0.4) + (Math.max(0, growthRate) * 0.3) + (diversificationScore * 0.3);
     
-    const totalCurrentMonth = currentMonthExpenses.reduce((sum, expense) => sum + expense.amount, 0);
-    const averageMonthlyExpense = this.expenses.reduce((sum, expense) => sum + expense.amount, 0) / Math.max(1, this.expenses.length);
-    
-    return Math.max(0, 100 - (totalCurrentMonth / averageMonthlyExpense) * 100);
+    return Math.min(100, Math.max(0, achievementRate));
   }
 
   private calculateStabilityIndex(): number {
     if (!this.expenses?.length) return 0;
-
-    const monthlyData = this.groupExpensesByMonth();
-    const months = Object.keys(monthlyData);
+    
+    const monthlyIncomes = this.groupExpensesByMonth();
+    const months = Object.keys(monthlyIncomes);
     if (months.length < 2) return 100;
 
-    const amounts = Object.values(monthlyData);
-    const sortedAmounts = amounts.sort((a, b) => a - b);
-    const median = sortedAmounts[Math.floor(sortedAmounts.length / 2)];
-    const mean = amounts.reduce((sum, amount) => sum + amount, 0) / amounts.length;
+    const amounts = months.map(month => monthlyIncomes[month]);
+    const avg = amounts.reduce((sum, amount) => sum + amount, 0) / amounts.length;
     
-    const medianDeviation = amounts.reduce((sum, amount) => sum + Math.abs(amount - median), 0) / amounts.length;
-    const meanDeviation = amounts.reduce((sum, amount) => sum + Math.abs(amount - mean), 0) / amounts.length;
+    if (avg === 0) return 100;
     
-    const stabilityScore = Math.max(0, 100 - (medianDeviation / mean) * 100);
-    return Math.min(100, stabilityScore);
+    const maxDeviation = Math.max(...amounts.map(amount => Math.abs(amount - avg)));
+    const stabilityScore = Math.max(0, 100 - (maxDeviation / avg * 50));
+    
+    return Math.round(stabilityScore);
   }
 
   private groupExpensesByMonth(): Record<string, number> {
-    return this.expenses.reduce((acc, expense) => {
+    const expenses = this.expensesSignal();
+    if (!expenses) return {};
+    
+    return expenses.reduce((acc, expense) => {
       const date = new Date(expense.date);
       const monthKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
       acc[monthKey] = (acc[monthKey] || 0) + expense.amount;
@@ -381,122 +361,95 @@ export class ExpenseEvaluationComponent implements OnInit, OnDestroy, OnChanges 
 
   private generateInsights(): Insight[] {
     const insights: Insight[] = [];
-
-    // Expense Growth Insight
-    if (this.evolutionMetrics.growthRate > 10) {
+    
+    // Only generate insights if there's actual data
+    const expenses = this.expensesSignal();
+    const hasExpenses = expenses && expenses.length > 0;
+    const hasExpenseData = this.dayExpenseSignal() > 0 || this.weekExpenseSignal() > 0 || this.monthExpenseSignal() > 0 || this.yearExpenseSignal() > 0;
+    
+    if (!hasExpenses && !hasExpenseData) {
+      return insights; // Return empty array if no data
+    }
+    
+    const monthlyGrowth = this.monthEvolutionSignal();
+    if (monthlyGrowth > 0) {
       insights.push({
         id: 1,
         icon: '📈',
-        title: 'Expense Growth Detected',
-        description: `Your expenses have increased by ${this.evolutionMetrics.growthRate.toFixed(1)}% this month. Consider reviewing your spending patterns.`
+        title: 'Expense Growth Trend',
+        description: `Your expenses have grown ${monthlyGrowth.toFixed(1)}% this month. Consider reviewing your spending patterns.`,
       });
-    } else if (this.evolutionMetrics.growthRate < -5) {
+    } else if (monthlyGrowth < 0) {
+      insights.push({
+        id: 1,
+        icon: '📉',
+        title: 'Expense Reduction Detected',
+        description: `Your expenses decreased by ${Math.abs(monthlyGrowth).toFixed(1)}% this month. Great job on controlling your spending!`,
+      });
+    }
+
+    const diversificationScore = this.calculateDiversificationScore();
+    if (diversificationScore < 50) {
       insights.push({
         id: 2,
-        icon: '📉',
-        title: 'Expense Reduction',
-        description: `Great job! Your expenses have decreased by ${Math.abs(this.evolutionMetrics.growthRate).toFixed(1)}% this month.`
+        icon: '🌐',
+        title: 'Diversification Opportunity',
+        description: 'Consider diversifying your expense categories to better understand your spending patterns.',
+      });
+    } else if (diversificationScore > 80) {
+      insights.push({
+        id: 2,
+        icon: '🎯',
+        title: 'Excellent Diversification',
+        description: 'Your expenses are well diversified across multiple categories. This provides great spending visibility.',
       });
     }
 
-    // Consistency Insight
-    if (this.evolutionMetrics.consistencyScore > 80) {
+    const consistencyScore = this.calculateConsistencyScore();
+    if (consistencyScore < 70) {
       insights.push({
         id: 3,
-        icon: '🎯',
-        title: 'Consistent Spending',
-        description: 'Your spending patterns are very consistent. This helps with budget planning and financial stability.'
-      });
-    } else if (this.evolutionMetrics.consistencyScore < 50) {
-      insights.push({
-        id: 4,
-        icon: '⚠️',
-        title: 'Inconsistent Spending',
-        description: 'Your spending patterns are irregular. Consider creating a budget to improve consistency.'
-      });
-    }
-
-    // Diversification Insight
-    if (this.evolutionMetrics.diversificationScore > 70) {
-      insights.push({
-        id: 5,
-        icon: '🌐',
-        title: 'Well-Diversified Expenses',
-        description: 'Your expenses are well distributed across different categories. This indicates balanced spending.'
+        icon: '📅',
+        title: 'Expense Consistency',
+        description: 'Your expenses show some variability. Consider setting up recurring budget categories for better planning.',
       });
     } else {
       insights.push({
-        id: 6,
-        icon: '📊',
-        title: 'Concentrated Spending',
-        description: 'Your expenses are concentrated in few categories. Consider diversifying your spending for better financial health.'
+        id: 3,
+        icon: '✅',
+        title: 'Stable Expense Pattern',
+        description: 'Your expenses show excellent consistency. This predictable pattern helps with budget planning.',
       });
     }
 
-    // Performance Insight
-    if (this.performanceMetrics.efficiency > 80) {
-      insights.push({
-        id: 7,
-        icon: '💰',
-        title: 'Efficient Spending',
-        description: 'Your spending is very efficient with minimal variance. You have good control over your expenses.'
-      });
-    }
-
-    return insights.slice(0, 4); // Limit to 4 insights
+    return insights;
   }
 
   private checkHasData(): boolean {
-    // Check multiple data sources
-    const hasExpensesArray = this.expenses?.length > 0;
-    const hasExpenseTotals = this.monthExpense > 0 || this.weekExpense > 0 || this.yearExpense > 0;
-    const hasCategoryData = Object.keys(this.expenseCategoryData || {}).length > 0;
-    const hasTopExpenses = this.topExpenses?.length > 0;
-    const hasWeeklyData = this.weeklyExpenseData?.length > 0;
-    const hasMonthlyData = this.monthlyExpenseData?.length > 0;
+    const expenses = this.expensesSignal();
+    const hasExpenses = expenses && expenses.length > 0;
+    const hasExpenseData = this.dayExpenseSignal() > 0 || this.weekExpenseSignal() > 0 || this.monthExpenseSignal() > 0 || this.yearExpenseSignal() > 0;
 
-    const hasData = hasExpensesArray || hasExpenseTotals || hasCategoryData || hasTopExpenses || hasWeeklyData || hasMonthlyData;
-
-    return hasData;
-  }
-
-  getDistributionKeys(): string[] {
-    return Object.keys(this.distributionData);
-  }
-
-  hasDistributionData(): boolean {
-    return Object.keys(this.distributionData).length > 0;
-  }
-
-  getTotalDistribution(): number {
-    return Object.values(this.distributionData).reduce((sum, value) => sum + value, 0);
-  }
-
-  getDistributionValue(key: string): number {
-    return this.distributionData[key] || 0;
+    return hasExpenses || hasExpenseData;
   }
 
   calculateMetricScore(metric: number, maxValue: number): number {
-    return Math.min(100, Math.max(0, (metric / maxValue) * 100));
+    return Math.min((metric / maxValue) * 100, 100);
   }
 
-  calculateDistributionPercentage(value: number, total: number): number {
-    return total > 0 ? (value / total) * 100 : 0;
+  trackByInsight(index: number, insight: Insight): number {
+    return insight.id;
   }
 
-  getTrendIcon(trend: number): string {
-    return trend > 0 ? '↗️' : trend < 0 ? '↘️' : '→';
+  getTrendClass(value: number): string {
+    if (value > 0) return 'positive';
+    if (value < 0) return 'negative';
+    return 'neutral';
   }
 
-  getTrendClass(trend: number): string {
-    return trend > 0 ? 'positive' : trend < 0 ? 'negative' : 'neutral';
-  }
-
-  trackByInsight(index: number, insight: Insight): string {
-    return insight.id.toString();
-  }
-
-  trackByDistribution(index: number, item: string): string {
-    return item;
+  getTrendIcon(value: number): string {
+    if (value > 0) return '↗';
+    if (value < 0) return '↘';
+    return '→';
   }
 }

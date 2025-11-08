@@ -1,26 +1,79 @@
-<div class="body" [class.sidebar-open]="sidebarOpen">
-  <!-- ========== MOBILE MENU BUTTON ========== -->
+<!--
+  Alpha Vault Financial System
+  
+  @author Mohamed Dhaoui
+  @component MainComponent
+  @description Primary layout template for authenticated application area
+-->
+
+<main class="body" 
+      [class.sidebar-open]="sidebarOpen" 
+      [class.initializing]="isInitializing"
+      role="main" 
+      aria-label="Main application area">
+
+  <div class="loading-overlay" *ngIf="isInitializing" role="status" aria-live="polite">
+    <div class="loading-spinner" aria-label="Loading application"></div>
+    <p class="loading-text">Loading Alpha Vault...</p>
+  </div>
+
   <button
     class="menu-toggle d-lg-none"
-    aria-label="Toggle sidebar"
+    [attr.aria-expanded]="sidebarOpen"
+    [attr.aria-controls]="'main-sidebar'"
+    aria-label="Toggle sidebar navigation"
     (click)="toggleSidebar()"
-  >
-    <i class="fas fa-bars"></i>
+    (keydown.enter)="toggleSidebar()"
+    (keydown.space)="toggleSidebar(); $event.preventDefault()"
+    type="button">
+    <i class="fas fa-bars" aria-hidden="true"></i>
+    <span class="sr-only">Toggle sidebar</span>
   </button>
 
-  <!-- ========== NAVBAR ========== -->
-  <app-navbar></app-navbar>
+  <nav class="navbar-container" role="banner" aria-label="Main navigation">
+    <app-navbar 
+      (componentLoaded)="onComponentLoaded('navbar')"
+      [class.loaded]="componentsLoaded.navbar">
+    </app-navbar>
+  </nav>
 
-  <!-- ========== SIDEBAR ========== -->
-  <app-sidbar></app-sidbar>
+  <aside class="sidebar-container" 
+         id="main-sidebar"
+         role="navigation" 
+         aria-label="Sidebar navigation"
+         [attr.inert]="isMobile && !sidebarOpen ? '' : null">
+    <app-sidbar 
+      (componentLoaded)="onComponentLoaded('sidebar')"
+      [class.loaded]="componentsLoaded.sidebar">
+    </app-sidbar>
+  </aside>
 
-  <!-- ========== MAIN CONTENT ========== -->
-  <app-body></app-body>
+  <section class="content-container" 
+           role="region" 
+           aria-label="Main content"
+           [attr.aria-hidden]="isInitializing">
+    <app-body 
+      (componentLoaded)="onComponentLoaded('body')"
+      [class.loaded]="componentsLoaded.body">
+    </app-body>
+  </section>
 
-  <!-- ========== OVERLAY (click to close) ========== -->
   <div
     class="overlay d-lg-none"
     *ngIf="sidebarOpen"
-    (click)="toggleSidebar()"
-  ></div>
-</div>
+    (click)="closeSidebar()"
+    (keydown.enter)="closeSidebar()"
+    (keydown.escape)="closeSidebar()"
+    role="button"
+    tabindex="0"
+    aria-label="Close sidebar"
+    [attr.aria-hidden]="!sidebarOpen">
+  </div>
+
+  <div class="sr-only" 
+       aria-live="polite" 
+       aria-atomic="true">
+    {{ sidebarOpen ? 'Sidebar navigation opened' : 'Sidebar navigation closed' }}
+  </div>
+
+</main>

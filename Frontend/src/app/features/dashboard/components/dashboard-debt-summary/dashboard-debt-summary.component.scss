@@ -1,0 +1,197 @@
+/*
+  Alpha Vault Financial System
+  
+  @author Mohamed Dhaoui
+  @component DashboardDebtSummaryComponent
+  @description Debt summary styling
+*/
+
+:host {
+  display: block;
+  height: 100%;
+}
+
+.debt-card {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  background: var(--bg-primary, #ffffff);
+  border-radius: var(--radius-lg, 16px);
+  padding: 1.5rem;
+  box-shadow: var(--shadow-md, 0 4px 6px -1px rgba(0, 0, 0, 0.1));
+  border: 1px solid var(--border-color, #e2e8f0);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-xl, 0 20px 25px -5px rgba(0, 0, 0, 0.1));
+  }
+}
+
+.debt-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid var(--border-color, #e2e8f0);
+}
+
+.debt-title {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--text-dark, #1a202c);
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  
+  i {
+    color: #ec4899;
+  }
+}
+
+.view-all-link {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--primary-color, #6366f1);
+  text-decoration: none;
+  transition: all 0.2s ease;
+  outline: none;
+  
+  &:hover,
+  &:focus-visible {
+    color: var(--secondary-color, #8b5cf6);
+    transform: translateX(4px);
+    outline: 2px solid var(--primary-color, #6366f1);
+    outline-offset: 2px;
+    border-radius: 4px;
+  }
+  
+  &:focus {
+    outline: 2px solid var(--primary-color, #6366f1);
+    outline-offset: 2px;
+    border-radius: 4px;
+  }
+  
+  i {
+    font-size: 0.75rem;
+  }
+}
+
+.loading-state {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 150px;
+}
+
+.loading-spinner-small {
+  width: 32px;
+  height: 32px;
+  border: 3px solid var(--border-color, #e2e8f0);
+  border-top-color: var(--primary-color, #6366f1);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .loading-spinner-small {
+    animation: none;
+  }
+  
+  .debt-card {
+    transition: none;
+    
+    &:hover {
+      transform: none;
+    }
+  }
+  
+  .view-all-link {
+    transition: none;
+    
+    &:hover {
+      transform: none;
+    }
+  }
+}
+
+.debt-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  min-height: 0;
+}
+
+.debt-stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+}
+
+.stat-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.stat-label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--text-muted, #94a3b8);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.stat-value {
+  font-size: 1.25rem;
+  font-weight: 700;
+  
+  &.total {
+    color: #ec4899;
+  }
+  
+  &.paid {
+    color: #10b981;
+  }
+  
+  &.creditors {
+    color: var(--text-dark, #1a202c);
+  }
+}
+
+.payment-section {
+  padding: 1.25rem;
+  border-radius: var(--radius-md, 12px);
+  background: linear-gradient(135deg, rgba(236, 72, 153, 0.05) 0%, rgba(219, 39, 119, 0.05) 100%);
+  border: 1px solid rgba(236, 72, 153, 0.1);
+}
+
+.payment-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.payment-label {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--text-dark, #1a202c);
+}
+
+.payment-amount {
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: #ec4899;
+  line-height: 1;
+}
+

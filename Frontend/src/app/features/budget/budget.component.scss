@@ -1,6 +1,31 @@
-/* ===================================================================
-   Coded by Mohamed Dhaoui for Alpha Vault
-=================================================================== */
+/*
+  Alpha Vault Financial System
+  
+  @author Mohamed Dhaoui
+  @component BudgetComponent
+  @description Main budget dashboard component styles for managing budget allocations
+*/
+
+:host {
+  display: block;
+  width: 100%;
+}
+
+.parent-container {
+  margin: 0 auto;
+}
+
+h1 {
+  margin: 0 0 24px 0;
+  font-size: 2rem;
+  font-weight: 700;
+  color: #1f2937;
+  
+  @media (max-width: 768px) {
+    font-size: 1.5rem;
+    margin-bottom: 16px;
+  }
+}
 
 .first-row {
   margin-bottom: 10px;
@@ -19,6 +44,21 @@
   grid-template-columns: 1fr 1fr;
   gap: 10px;
   width: 100%;
+  align-items: stretch;
+}
+
+.chart-item {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  
+  app-budget-pie-chart,
+  app-budget-bar-chart {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    width: 100%;
+  }
 }
 
 .pie-chart {
@@ -44,4 +84,359 @@
     grid-column: 1;
     grid-row: 2;
   }
+}
+
+.fourth-row {
+  margin-bottom: 10px;
+}
+
+.budget-form-section {
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  margin-bottom: 20px;
+  overflow: hidden;
+  border: 1px solid #e5e7eb;
+
+  &.expanded {
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+  }
+}
+
+.budget-table-section {
+  background: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+  position: relative;
+}
+
+.form-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 24px;
+  cursor: pointer;
+  background: linear-gradient(135deg, #065f46 0%, #047857 100%);
+  border-bottom: 1px solid #047857;
+  box-shadow: 0 2px 8px rgba(6, 95, 70, 0.3);
+  color: white;
+
+  &:hover {
+    background: linear-gradient(135deg, #047857 0%, #065f46 100%);
+    box-shadow: 0 4px 12px rgba(6, 95, 70, 0.4);
+  }
+
+  &.modify-mode {
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    color: white;
+    border-bottom-color: #047857;
+    box-shadow: 0 2px 8px rgba(16, 185, 129, 0.3);
+
+    &:hover {
+      background: linear-gradient(135deg, #059669 0%, #047857 100%);
+      box-shadow: 0 4px 12px rgba(16, 185, 129, 0.4);
+    }
+
+    .form-title {
+      color: white;
+      
+      i {
+        color: white;
+      }
+    }
+
+    .form-subtitle {
+      color: rgba(255, 255, 255, 0.9);
+    }
+
+    .form-toggle {
+      background: rgba(255, 255, 255, 0.2);
+      
+      i {
+        color: white;
+      }
+    }
+  }
+}
+
+.form-header-content {
+  flex: 1;
+}
+
+.form-title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: white;
+  margin: 0 0 4px 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+
+  i {
+    color: white;
+    font-size: 1.1rem;
+  }
+}
+
+.form-subtitle {
+  font-size: 0.875rem;
+  color: rgba(255, 255, 255, 0.9);
+  margin: 0;
+  font-weight: 400;
+}
+
+.form-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.2);
+
+  i {
+    color: white;
+    font-size: 0.875rem;
+
+    &.rotated {
+      /* Rotation removed */
+    }
+  }
+}
+
+.form-content {
+  max-height: 0;
+  overflow: hidden;
+
+  &.visible {
+    max-height: 500px;
+  }
+}
+
+.form-wrapper {
+  padding: 24px;
+  background: white;
+}
+
+.delete-confirmation-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  border-radius: 12px;
+  backdrop-filter: blur(4px);
+}
+
+.delete-confirmation-modal {
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+  max-width: 400px;
+  width: 90%;
+  max-height: 90vh;
+  overflow: hidden;
+}
+
+.delete-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 24px 16px;
+  border-bottom: 1px solid #e2e8f0;
+  background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+  color: white;
+}
+
+.delete-modal-title {
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+
+  i {
+    font-size: 1.1rem;
+  }
+}
+
+.delete-modal-close {
+  background: rgba(255, 255, 255, 0.2);
+  border: none;
+  border-radius: 50%;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: white;
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.3);
+  }
+
+  &:focus {
+    outline: 2px solid rgba(255, 255, 255, 0.5);
+    outline-offset: 2px;
+  }
+
+  i {
+    font-size: 0.9rem;
+  }
+}
+
+.delete-modal-body {
+  padding: 24px;
+}
+
+.delete-warning-text {
+  margin: 0 0 16px 0;
+  font-size: 1rem;
+  color: #374151;
+  line-height: 1.5;
+}
+
+.delete-budget-details {
+  background: #f8fafc;
+  border-radius: 8px;
+  padding: 16px;
+  margin-top: 16px;
+}
+
+.delete-detail-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 0;
+  border-bottom: 1px solid #e2e8f0;
+
+  &:last-child {
+    border-bottom: none;
+  }
+}
+
+.delete-detail-label {
+  font-weight: 500;
+  color: #6b7280;
+  font-size: 0.9rem;
+}
+
+.delete-detail-value {
+  font-weight: 600;
+  color: #374151;
+  font-size: 0.9rem;
+}
+
+.delete-modal-footer {
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
+  padding: 16px 24px 24px;
+}
+
+.btn {
+  padding: 10px 20px;
+  border-radius: 8px;
+  font-weight: 500;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+
+  &:focus {
+    outline: 2px solid #4f46e5;
+    outline-offset: 2px;
+  }
+
+  &.btn-secondary {
+    background: #f3f4f6;
+    color: #374151;
+    border: 1px solid #d1d5db;
+
+    &:hover {
+      background: #e5e7eb;
+      border-color: #9ca3af;
+    }
+  }
+
+  &.btn-danger {
+    background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+    color: white;
+    border: 1px solid #dc2626;
+
+    &:hover {
+      background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
+      box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+    }
+
+    i {
+      font-size: 0.9rem;
+    }
+  }
+}
+
+
+
+@media (max-width: 768px) {
+  .form-header {
+    padding: 16px 20px;
+  }
+
+  .form-title {
+    font-size: 1.125rem;
+  }
+
+  .form-subtitle {
+    font-size: 0.8125rem;
+  }
+
+  .form-wrapper {
+    padding: 20px;
+  }
+
+  .delete-confirmation-overlay {
+    .delete-confirmation-modal {
+      margin: 20px;
+      max-width: none;
+    }
+
+    .delete-modal-header {
+      padding: 16px 20px 12px;
+    }
+
+    .delete-modal-body {
+      padding: 20px;
+    }
+
+    .delete-modal-footer {
+      padding: 12px 20px 20px;
+      flex-direction: column;
+
+      .btn {
+        width: 100%;
+        justify-content: center;
+      }
+    }
+  }
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
 }

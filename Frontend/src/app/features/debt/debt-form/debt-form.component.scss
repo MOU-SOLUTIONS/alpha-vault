@@ -1,6 +1,10 @@
-/* ===================================================================
-   Coded by Mohamed Dhaoui for Alpha Vault
-================================================================== */
+/*
+  Alpha Vault Financial System
+  
+  @author Mohamed Dhaoui
+  @component DebtFormComponent
+  @description Main debt dashboard component styles for managing debt form
+*/
 
 :host {
   --primary-color: #EC4899;
@@ -136,10 +140,9 @@
     font-size: 0.8125rem;
     display: flex;
     align-items: center;
+    gap: 0.375rem;
     
-    &::before {
-      content: '⚠️';
-      margin-right: 0.375rem;
+    span[aria-hidden="true"] {
       font-size: 0.75rem;
     }
   }
@@ -212,6 +215,22 @@
   overflow: hidden;
   clip: rect(0 0 0 0);
   border: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .debt-form {
+    .btn {
+      transition: none;
+      
+      &:hover {
+        transform: none;
+      }
+    }
+    
+    .input-wrapper input {
+      transition: none;
+    }
+  }
 }
 
 @media (max-width: 767px) {

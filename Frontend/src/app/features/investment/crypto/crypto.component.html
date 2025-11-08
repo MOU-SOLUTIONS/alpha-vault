@@ -1,6 +1,10 @@
-<!-- ====================================================================
-     Coded by Mohamed Dhaoui for Alpha Vault
-==================================================================== -->
+<!--
+  Alpha Vault Financial System
+  
+  @author Mohamed Dhaoui
+  @component CryptoComponent
+  @description Crypto component for displaying crypto investments
+-->
 
 <div class="crypto-investment-container">
   <!-- Header Section -->
@@ -21,7 +25,7 @@
       </div>
       <div class="mini-card">
         <span class="label">Total Value</span>
-        <span class="value">{{ getTotalValue() | currency }}</span>
+        <span class="value">{{ totalValue | currency }}</span>
       </div>
     </div>
   </div>
@@ -51,32 +55,109 @@
     </div>
   </div>
 
+  <!-- Form Section -->
+  <div class="form-section" [class.expanded]="showAddForm">
+    <div class="form-header" [class.modify-mode]="isModifyMode" (click)="toggleAddForm()" 
+         (keydown.enter)="toggleAddForm()" (keydown.space)="toggleAddForm(); $event.preventDefault()" 
+         role="button" tabindex="0" [attr.aria-expanded]="showAddForm" 
+         [attr.aria-label]="isModifyMode ? 'Toggle modify crypto investment form' : 'Toggle add crypto investment form'">
+      <div class="form-header-content">
+        <h3 class="form-title">
+          <i class="fas" [ngClass]="isModifyMode ? 'fa-edit' : 'fa-plus-circle'"></i>
+          {{ isModifyMode ? 'Modify Crypto Investment' : 'Add New Crypto Investment' }}
+        </h3>
+        <p class="form-subtitle">
+          {{ isModifyMode ? 'Edit the selected crypto investment entry' : 'Click to add a new crypto investment entry' }}
+        </p>
+      </div>
+      <div class="form-toggle">
+        <i class="fas fa-chevron-down" [class.rotated]="showAddForm"></i>
+      </div>
+    </div>
+    
+    <div class="form-content" [class.visible]="showAddForm" id="cryptoFormContent">
+      <div class="form-wrapper">
+        <app-crypto-investment-form
+          [initialData]="selectedInvestment"
+          [mode]="isModifyMode ? 'modify' : 'add'"
+          (formSubmit)="handleSubmit($event)"
+          (cancelForm)="closeAddForm()"
+        ></app-crypto-investment-form>
+      </div>
+    </div>
+  </div>
+
   <!-- Table Section -->
   <div class="table-section">
     <div class="table-wrapper">
       <app-crypto-investment-table
         [investments]="filteredInvestments"
-        (modify)="openModify($event)"
-        (remove)="remove($event)"
-        (add)="openAdd()"
+        (modify)="onModifyInvestment($event)"
+        (remove)="onDeleteInvestment($event)"
+        (add)="onAddInvestmentFromTable()"
       ></app-crypto-investment-table>
+      
+      <div 
+        *ngIf="isDeleteOverlayVisible" 
+        class="delete-confirmation-overlay"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="deleteModalTitle"
+        (keydown.escape)="closeOverlay()"
+        tabindex="-1">
+        <div class="delete-confirmation-modal">
+          <div class="delete-modal-header">
+            <h3 class="delete-modal-title" id="deleteModalTitle">
+              <i class="fas fa-exclamation-triangle" aria-hidden="true"></i>
+              Confirm Deletion
+            </h3>
+            <button 
+              class="delete-modal-close" 
+              (click)="closeOverlay()"
+              (keydown.enter)="closeOverlay()"
+              (keydown.space)="closeOverlay()"
+              aria-label="Close confirmation dialog">
+              <i class="fas fa-times"></i>
+            </button>
+          </div>
+          <div class="delete-modal-body">
+            <p class="delete-warning-text">
+              Are you sure you want to delete this crypto investment record? This action cannot be undone.
+            </p>
+            <div class="delete-investment-details" *ngIf="selectedInvestment">
+              <div class="delete-detail-item">
+                <span class="delete-detail-label">Name:</span>
+                <span class="delete-detail-value">{{ selectedInvestment.name }}</span>
+              </div>
+              <div class="delete-detail-item">
+                <span class="delete-detail-label">Amount Invested:</span>
+                <span class="delete-detail-value">{{ selectedInvestment.amountInvested | currency }}</span>
+              </div>
+              <div class="delete-detail-item">
+                <span class="delete-detail-label">Start Date:</span>
+                <span class="delete-detail-value">{{ selectedInvestment.startDate | date:'MMM dd, yyyy' }}</span>
+              </div>
+            </div>
+          </div>
+          <div class="delete-modal-footer">
+            <button 
+              class="btn btn-secondary" 
+              (click)="closeOverlay()"
+              (keydown.enter)="closeOverlay()"
+              (keydown.space)="closeOverlay()">
+              Cancel
+            </button>
+            <button 
+              class="btn btn-danger" 
+              (click)="deleteInvestment()"
+              (keydown.enter)="deleteInvestment()"
+              (keydown.space)="deleteInvestment()">
+              <i class="fas fa-trash"></i>
+              Delete Investment
+            </button>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
-
-  <!-- Overlay -->
-  <app-overlay-container
-    *ngIf="isOverlayVisible"
-    [title]="
-      mode === 'add' ? 'Add Crypto Investment' : 'Edit Crypto Investment'
-    "
-    [theme]="mode"
-    (cancel)="closeOverlay()"
-  >
-    <app-crypto-investment-form
-      [initialData]="selectedInvestment"
-      [mode]="mode"
-      (formSubmit)="handleSubmit($event)"
-      (cancelForm)="closeOverlay()"
-    ></app-crypto-investment-form>
-  </app-overlay-container>
 </div>

@@ -1,73 +1,75 @@
-// ====================================================================
-//             Coded by Mohamed Dhaoui for Alpha Vault
-// ====================================================================
+/*
+  Alpha Vault Financial System
+  
+  @author Mohamed Dhaoui
+  @component IncomeComponent
+  @description Main income dashboard component with comprehensive income management
+*/
 
-import { Component, OnInit, ChangeDetectionStrategy, ChangeDetectorRef, OnDestroy } from '@angular/core';
-import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { CommonModule, formatDate } from '@angular/common';
-import { Title, Meta } from '@angular/platform-browser';
-import { Subject, takeUntil } from 'rxjs';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, inject, OnDestroy, OnInit } from '@angular/core';
+import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { Meta, Title } from '@angular/platform-browser';
+import { debounceTime, distinctUntilChanged, forkJoin, Subject, takeUntil } from 'rxjs';
 
-import { Income } from '../../models/income.model';
+import { AuthService } from '../../core/services/auth.service';
 import { IncomeService } from '../../core/services/income.service';
+import { LoggingService } from '../../core/services/logging.service';
 import { PAYMENT_METHOD_OPTIONS } from '../../enums/payment-method';
-
-import { IncomeWidgetComponent } from './income-widget/income-widget.component';
-import { IncomeWeekChartComponent } from './income-week-chart/income-week-chart.component';
-import { IncomeMonthChartComponent } from './income-month-chart/income-month-chart.component';
-import { IncomeTop5Component } from './income-top5/income-top5.component';
-import { IncomeMethodChartComponent } from './income-method-chart/income-method-chart.component';
-import { IncomeSourceChartComponent } from './income-source-chart/income-source-chart.component';
-import { IncomeEvaluationComponent } from './income-evaluation/income-evaluation.component';
-import { IncomeTableModule } from './income-table/income-table.module';
-import { IncomeFormComponent } from './income-form/income-form/income-form.component';
+import { Income } from '../../models/income.model';
 import { OverlayContainerComponent } from '../../shared/components/overlay-container/overlay-container/overlay-container.component';
+import { IncomeEvaluationComponent } from './income-evaluation/income-evaluation.component';
+import { IncomeFormComponent } from './income-form/income-form/income-form.component';
+import { IncomeMethodChartComponent } from './income-method-chart/income-method-chart.component';
+import { IncomeMonthChartComponent } from './income-month-chart/income-month-chart.component';
+import { IncomeSourceChartComponent } from './income-source-chart/income-source-chart.component';
+import { IncomeTableSplitComponent } from './income-table/income-table-split.component';
+import { IncomeTop5Component } from './income-top5/income-top5.component';
+import { IncomeWeekChartComponent } from './income-week-chart/income-week-chart.component';
+import { IncomeWidgetNewComponent } from './income-widget/income-widget-new.component';
 
 @Component({
   standalone: true,
   selector: 'app-income',
   template: `
-    <!-- Section: Income Dashboard -->
     <main class="parent-container" role="main">
       <h1 class="sr-only">Income Dashboard</h1>
       
-      <!-- Section: Summary Widget Overview -->
       <section class="first-row row" aria-labelledby="incomeSummary">
         <h2 id="incomeSummary" class="sr-only">Income Summary</h2>
-        <app-income-widget
-          [dayIncome]="dayIncome"
-          [weekIncome]="weekIncome"
-          [monthIncome]="monthIncome"
-          [yearIncome]="yearIncome"
-        ></app-income-widget>
+        <ng-container *ngFor="let trigger of [refreshTrigger]; trackBy: trackByRefresh">
+          <app-income-widget-new 
+            [dayIncome]="dayIncome"
+            [weekIncome]="weekIncome" 
+            [monthIncome]="monthIncome"
+            [yearIncome]="yearIncome">
+          </app-income-widget-new>
+        </ng-container>
       </section>
 
-      <!-- Section: Week and Month Charts -->
       <section class="second-row row" aria-labelledby="incomeCharts">
         <h2 id="incomeCharts" class="sr-only">Income Charts</h2>
         <div class="weekly-chart col-12 col-md-6">
-          <app-income-week-chart [weeklyData]="weeklyIncomeData"></app-income-week-chart>
+          <app-income-week-chart [weeklyData]="weeklyIncomeData" *ngIf="refreshTrigger >= 0"></app-income-week-chart>
         </div>
         <div class="monthly-chart col-12 col-md-6">
-          <app-income-month-chart [monthlyData]="monthlyIncomeData"></app-income-month-chart>
+          <app-income-month-chart [monthlyData]="monthlyIncomeData" *ngIf="refreshTrigger >= 0"></app-income-month-chart>
         </div>
       </section>
 
-      <!-- Section: Top 5, Method, Source -->
       <section class="third-row row" aria-labelledby="incomeAnalytics">
         <h2 id="incomeAnalytics" class="sr-only">Income Analytics</h2>
         <div class="top-5-table col-12 col-md-6">
-          <app-income-top5 [topIncomes]="topIncomes"></app-income-top5>
+          <app-income-top5 [topIncomes]="topIncomes" *ngIf="refreshTrigger >= 0"></app-income-top5>
         </div>
         <div class="method-chart col-6 col-md-3">
-          <app-income-method-chart [methodData]="paymentMethodData"></app-income-method-chart>
+          <app-income-method-chart [methodData]="paymentMethodData" *ngIf="refreshTrigger >= 0"></app-income-method-chart>
         </div>
         <div class="source-chart col-6 col-md-3">
-          <app-income-source-chart [sourceData]="incomeSourceData"></app-income-source-chart>
+          <app-income-source-chart [sourceData]="incomeSourceData" *ngIf="refreshTrigger >= 0"></app-income-source-chart>
         </div>
       </section>
 
-      <!-- Section: Evaluation Block -->
       <section class="fourth-row" aria-labelledby="incomeEvaluation">
         <h2 id="incomeEvaluation" class="sr-only">Income Evaluation</h2>
         <app-income-evaluation
@@ -84,38 +86,104 @@ import { OverlayContainerComponent } from '../../shared/components/overlay-conta
           [weeklyIncomeData]="weeklyIncomeData"
           [monthlyIncomeData]="monthlyIncomeData"
           [topIncomes]="topIncomes"
+          (addIncome)="onAddIncomeFromEvaluation()"
+          *ngIf="refreshTrigger >= 0"
         ></app-income-evaluation>
       </section>
 
-      <!-- Section: Income Table -->
       <section class="fifth-row" aria-labelledby="incomeTable">
-        <h2 id="incomeTable" class="sr-only">Income Table</h2>
-        <app-income-table
+        <h2 id="incomeTable" class="sr-only">Income Management</h2>
+        
+        <div class="add-income-section" [class.expanded]="showAddForm">
+          <div class="form-header" [class.modify-mode]="isModifyMode" (click)="toggleAddForm()" (keydown)="onFormHeaderKeydown($event)" 
+               role="button" tabindex="0" [attr.aria-expanded]="showAddForm" 
+               [attr.aria-label]="isModifyMode ? 'Toggle modify income form' : 'Toggle add income form'">
+            <div class="form-header-content">
+              <h3 class="form-title">
+                <i class="fas" [ngClass]="isModifyMode ? 'fa-edit' : 'fa-plus-circle'"></i>
+                {{ isModifyMode ? 'Modify Income' : 'Add New Income' }}
+              </h3>
+              <p class="form-subtitle">
+                {{ isModifyMode ? 'Edit the selected income entry' : 'Click to add a new income entry' }}
+              </p>
+            </div>
+            <div class="form-toggle">
+              <i class="fas fa-chevron-down" [class.rotated]="showAddForm"></i>
+            </div>
+          </div>
+          
+          <div class="form-content" [class.visible]="showAddForm">
+            <div class="form-wrapper">
+              <app-income-form
+                [formGroup]="incomeForm"
+                [mode]="isModifyMode ? 'edit' : 'add'"
+                [paymentMethods]="paymentMethods"
+                (formSubmit)="isModifyMode ? modifyIncome() : addIncome()"
+                (cancel)="closeAddForm()"
+              />
+            </div>
+          </div>
+        </div>
+
+        <div class="income-table-section">
+        <app-income-table-split
           [incomes]="incomes"
-          [onAdd]="onAddIncome.bind(this)"
+          [onAdd]="onAddIncomeFromTable.bind(this)"
           [onModify]="onModifyIncome.bind(this)"
           [onDelete]="onDeleteIncome.bind(this)"
-        ></app-income-table>
+          *ngIf="refreshTrigger >= 0"
+        ></app-income-table-split>
+          
+          <div *ngIf="isDeleteOverlayVisible" class="delete-confirmation-overlay">
+            <div class="delete-confirmation-modal">
+              <div class="delete-modal-header">
+                <h3 class="delete-modal-title">
+                  <i class="fas fa-exclamation-triangle"></i>
+                  Confirm Deletion
+                </h3>
+                <button 
+                  class="delete-modal-close" 
+                  (click)="closeOverlay()"
+                  (keydown.enter)="closeOverlay()"
+                  (keydown.space)="closeOverlay()"
+                  aria-label="Close confirmation dialog">
+                  <i class="fas fa-times"></i>
+                </button>
+              </div>
+              
+              <div class="delete-modal-content">
+                <p class="delete-text">
+                  Are you sure you want to delete this income record?
+                </p>
+                <p class="delete-warning">
+                  <i class="fas fa-info-circle"></i>
+                  This action cannot be undone.
+                </p>
+              </div>
+              
+              <div class="delete-modal-actions">
+                <button 
+                  class="btn btn-secondary" 
+                  (click)="closeOverlay()"
+                  (keydown.enter)="closeOverlay()"
+                  (keydown.space)="closeOverlay()">
+                  Cancel
+                </button>
+                <button 
+                  class="btn btn-danger" 
+                  (click)="deleteIncome()"
+                  (keydown.enter)="deleteIncome()"
+                  (keydown.space)="deleteIncome()">
+                  <i class="fas fa-trash"></i>
+                  Delete
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
       </section>
     </main>
 
-    <!-- Section: Add Overlay -->
-    <app-overlay-container
-      *ngIf="isAddOverlayVisible"
-      [title]="'Add Income'"
-      [theme]="'add'"
-      (cancel)="closeOverlay()"
-    >
-      <app-income-form
-        [formGroup]="incomeForm"
-        [mode]="'add'"
-        [paymentMethods]="paymentMethods"
-        (formSubmit)="addIncome()"
-        (cancel)="closeOverlay()"
-      />
-    </app-overlay-container>
-
-    <!-- Section: Modify Overlay -->
     <app-overlay-container
       *ngIf="isModifyOverlayVisible"
       [title]="'Modify Income'"
@@ -131,49 +199,44 @@ import { OverlayContainerComponent } from '../../shared/components/overlay-conta
       />
     </app-overlay-container>
 
-    <!-- Section: Delete Confirmation Overlay -->
-    <app-overlay-container
-      *ngIf="isDeleteOverlayVisible"
-      [title]="'Confirm Deletion'"
-      [theme]="'delete'"
-      (cancel)="closeOverlay()"
-    >
-      <p class="delete-text">
-        Are you sure you want to delete this income record?
-      </p>
-      <div class="delete-button-group d-flex justify-content-end gap-2">
-        <button class="btn btn-secondary" (click)="closeOverlay()">Cancel</button>
-        <button class="btn btn-danger" (click)="deleteIncome()">Delete</button>
-      </div>
-    </app-overlay-container>
   `,
   styleUrls: ['./income.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     CommonModule,
     ReactiveFormsModule,
-    IncomeWidgetComponent,
+    IncomeWidgetNewComponent,
     IncomeWeekChartComponent,
     IncomeMonthChartComponent,
     IncomeTop5Component,
     IncomeMethodChartComponent,
     IncomeSourceChartComponent,
     IncomeEvaluationComponent,
-    IncomeTableModule,
+    IncomeTableSplitComponent,
     IncomeFormComponent,
     OverlayContainerComponent,
   ],
 })
 export class IncomeComponent implements OnInit, OnDestroy {
-  private destroy$ = new Subject<void>();
 
-  incomeForm: FormGroup;
+  private destroy$ = new Subject<void>();
+  private refreshSubject$ = new Subject<void>();
+  private performanceMetrics = {
+    dataLoadTime: 0,
+    lastRefresh: 0,
+    cacheHits: 0,
+    totalRequests: 0
+  };
+
+  incomeForm!: FormGroup;
   selectedIncome!: Income;
   incomeId = 0;
 
   isModifyOverlayVisible = false;
-  isAddOverlayVisible = false;
+  showAddForm = false;
   isDeleteOverlayVisible = false;
+  isModifyMode = false;
+  selectedIncomeForModify: Income | null = null;
 
   paymentMethods = PAYMENT_METHOD_OPTIONS;
 
@@ -181,33 +244,37 @@ export class IncomeComponent implements OnInit, OnDestroy {
   weekIncome = 0;
   monthIncome = 0;
   yearIncome = 0;
+  refreshTrigger = 0;
 
   weekEvolution = 0;
   monthEvolution = 0;
   yearEvolution = 0;
 
-  incomeSourceData: { [key: string]: number } = {};
-  paymentMethodData: { [key: string]: number } = {};
+  incomeSourceData: Record<string, number> = {};
+  paymentMethodData: Record<string, number> = {};
   weeklyIncomeData: number[] = [];
   monthlyIncomeData: number[] = [];
 
   topIncomes: { category: string; amount: number }[] = [];
   incomes: Income[] = [];
+  userId = 0;
 
-  constructor(
-    private fb: FormBuilder,
-    private incomeService: IncomeService,
-    private cdr: ChangeDetectorRef,
-    private title: Title,
-    private meta: Meta,
-  ) {
+  private readonly fb = inject(FormBuilder);
+  private readonly incomeService = inject(IncomeService);
+  private readonly loggingService = inject(LoggingService);
+  private readonly cdr = inject(ChangeDetectorRef);
+  private readonly title = inject(Title);
+  private readonly meta = inject(Meta);
+  private readonly authService = inject(AuthService);
+
+  constructor() {
     this.title.setTitle('Income Dashboard | Alpha Vault');
     this.meta.addTags([
       { name: 'description', content: 'Track and manage your income with detailed analytics, charts, and comprehensive reporting tools.' },
       { name: 'robots', content: 'index,follow' },
       { name: 'viewport', content: 'width=device-width, initial-scale=1' },
     ]);
-
+    
     this.incomeForm = this.fb.group({
       source: ['', Validators.required],
       amount: [null, [Validators.required, Validators.min(0.01)]],
@@ -219,7 +286,23 @@ export class IncomeComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
-    this.loadAllIncomeData();
+    this.refreshSubject$.pipe(
+      debounceTime(300),
+      distinctUntilChanged(),
+      takeUntil(this.destroy$)
+    ).subscribe(() => {
+      this.loadAllIncomeData();
+    });
+
+    // Fix subscription leak: Add takeUntil to userId$ subscription
+    this.authService.userId$.pipe(
+      takeUntil(this.destroy$)
+    ).subscribe(userId => {
+      this.userId = userId || 0;
+      if (this.userId > 0) {
+        this.refreshSubject$.next();
+      }
+    });
   }
 
   ngOnDestroy(): void {
@@ -227,31 +310,64 @@ export class IncomeComponent implements OnInit, OnDestroy {
     this.destroy$.complete();
   }
 
-  onAddIncome(): void {
+  toggleAddForm(): void {
+    this.showAddForm = !this.showAddForm;
+    if (this.showAddForm) {
+      this.incomeForm.reset({ isReceived: false });
+    }
+    this.cdr.markForCheck();
+  }
+
+  closeAddForm(): void {
+    this.showAddForm = false;
+    this.isModifyMode = false;
+    this.selectedIncomeForModify = null;
+    this.cdr.markForCheck();
+  }
+
+  onFormHeaderKeydown(event: KeyboardEvent): void {
+    if (event.key === 'Enter' || event.key === ' ') {
+      event.preventDefault();
+      this.toggleAddForm();
+    }
+  }
+
+  onAddIncomeFromTable(): void {
+    this.isModifyMode = false;
+    this.selectedIncomeForModify = null;
     this.incomeForm.reset({ isReceived: false });
-    this.isAddOverlayVisible = true;
-    document.body.style.overflow = 'hidden';
+    this.showAddForm = true;
+    this.cdr.markForCheck();
+  }
+
+  onAddIncomeFromEvaluation(): void {
+    this.isModifyMode = false;
+    this.selectedIncomeForModify = null;
+    this.incomeForm.reset({ isReceived: false });
+    this.showAddForm = true;
     this.cdr.markForCheck();
   }
 
   onModifyIncome(income: Income): void {
     this.selectedIncome = income;
     this.incomeId = income.id;
+    this.isModifyMode = true;
+    this.selectedIncomeForModify = income;
+    
+    const mappedPaymentMethod = this.mapPaymentMethodValue(income.paymentMethod);
+    
     this.incomeForm.reset();
-    this.isModifyOverlayVisible = true;
-    document.body.style.overflow = 'hidden';
-
-    setTimeout(() => {
-      this.incomeForm.patchValue({
-        source: income.source,
-        amount: income.amount,
-        paymentMethod: income.paymentMethod,
-        date: this.toHtmlDateFormat(income.date),
-        description: income.description ?? '',
-        isReceived: Boolean(income.isReceived),
-      });
-      this.cdr.markForCheck();
-    }, 0);
+    this.incomeForm.patchValue({
+      source: income.source,
+      amount: income.amount,
+      paymentMethod: mappedPaymentMethod,
+      date: this.toHtmlDateFormat(income.date),
+      description: income.description ?? '',
+      isReceived: Boolean(income.isReceived),
+    });
+    
+    this.showAddForm = true;
+    this.cdr.markForCheck();
   }
 
   onDeleteIncome(id: number): void {
@@ -261,176 +377,192 @@ export class IncomeComponent implements OnInit, OnDestroy {
   }
 
   addIncome(): void {
-    if (this.incomeForm.invalid) return;
+    if (this.incomeForm.invalid) {
+      return;
+    }
     
     const raw = this.incomeForm.value;
     const newIncome: Income = {
       id: 0,
-      userId: 0,
-      source: raw.source,
+      userId: this.userId,
+      source: this.sanitizeInput(raw.source),
       amount: raw.amount,
       paymentMethod: raw.paymentMethod,
       date: this.formatDate(raw.date),
-      description: raw.description ?? '',
+      description: this.sanitizeInput(raw.description ?? ''),
       isReceived: raw.isReceived,
+      received: raw.isReceived,
     };
 
     this.incomeService.saveIncome(newIncome)
       .pipe(takeUntil(this.destroy$))
-      .subscribe(() => {
-        this.loadAllIncomeData();
-        this.incomeForm.reset();
-        this.isAddOverlayVisible = false;
-        this.cdr.markForCheck();
+      .subscribe({
+        next: () => {
+          this.refreshAllData();
+          if (this.incomeForm) {
+            this.incomeForm.reset();
+          }
+          this.closeAddForm();
+        },
+        error: (error) => {
+          this.loggingService.error('Error adding income:', error);
+          this.cdr.markForCheck();
+        }
       });
   }
 
   modifyIncome(): void {
-    if (this.incomeForm.invalid) return;
+    if (this.incomeForm.invalid) {
+      return;
+    }
     
     const raw = this.incomeForm.value;
     const updatedIncome: Income = {
       id: this.incomeId,
-      userId: 0,
-      source: raw.source,
+      userId: this.userId,
+      source: this.sanitizeInput(raw.source),
       amount: raw.amount,
       paymentMethod: raw.paymentMethod,
       date: this.formatDate(raw.date),
-      description: raw.description ?? '',
+      description: this.sanitizeInput(raw.description ?? ''),
       isReceived: raw.isReceived,
+      received: raw.isReceived,
     };
 
     this.incomeService.updateIncome(this.incomeId, updatedIncome)
       .pipe(takeUntil(this.destroy$))
-      .subscribe(() => {
-        this.loadAllIncomeData();
-        this.incomeForm.reset();
-        this.isModifyOverlayVisible = false;
-        this.cdr.markForCheck();
+      .subscribe({
+        next: () => {
+          this.refreshAllData();
+          if (this.incomeForm) {
+            this.incomeForm.reset();
+          }
+          this.closeAddForm();
+        },
+        error: (error) => {
+          this.loggingService.error('Error modifying income:', error);
+          this.cdr.markForCheck();
+        }
       });
   }
 
   deleteIncome(): void {
     this.incomeService.deleteIncome(this.incomeId)
       .pipe(takeUntil(this.destroy$))
-      .subscribe(() => {
-        this.loadAllIncomeData();
-        this.incomeForm.reset();
-        this.isDeleteOverlayVisible = false;
-        this.cdr.markForCheck();
+      .subscribe({
+        next: () => {
+          this.refreshAllData();
+          if (this.incomeForm) {
+            this.incomeForm.reset();
+          }
+          this.isDeleteOverlayVisible = false;
+        },
+        error: (error) => {
+          this.loggingService.error('Error deleting income:', error);
+          this.cdr.markForCheck();
+        }
       });
   }
 
   closeOverlay(): void {
-    this.isAddOverlayVisible = false;
     this.isModifyOverlayVisible = false;
     this.isDeleteOverlayVisible = false;
     document.body.style.overflow = 'auto';
     this.cdr.markForCheck();
   }
 
+  private refreshAllData(): void {
+    this.refreshTrigger++;
+    this.loadAllIncomeData();
+    
+    const timeoutId = setTimeout(() => {
+      this.cdr.detectChanges();
+    }, 200);
+    
+    this.destroy$.subscribe(() => {
+      clearTimeout(timeoutId);
+    });
+  }
+
   private loadAllIncomeData(): void {
-    this.incomeService.getTodayIncome()
-      .pipe(takeUntil(this.destroy$))
-      .subscribe((val) => {
-        this.dayIncome = val;
-        this.cdr.markForCheck();
-      });
-
-    this.incomeService.getWeekIncome()
-      .pipe(takeUntil(this.destroy$))
-      .subscribe((val) => {
-        this.weekIncome = val;
-        this.cdr.markForCheck();
-      });
-
-    this.incomeService.getMonthIncome()
-      .pipe(takeUntil(this.destroy$))
-      .subscribe((val) => {
-        this.monthIncome = val;
-        this.cdr.markForCheck();
-      });
-
-    this.incomeService.getYearIncome()
-      .pipe(takeUntil(this.destroy$))
-      .subscribe((val) => {
-        this.yearIncome = val;
-        this.cdr.markForCheck();
-      });
-
-    this.incomeService.getWeeklyEvolution()
-      .pipe(takeUntil(this.destroy$))
-      .subscribe((val) => {
-        this.weekEvolution = val;
-        this.cdr.markForCheck();
-      });
-
-    this.incomeService.getMonthlyEvolution()
-      .pipe(takeUntil(this.destroy$))
-      .subscribe((val) => {
-        this.monthEvolution = val;
-        this.cdr.markForCheck();
-      });
-
-    this.incomeService.getYearlyEvolution()
-      .pipe(takeUntil(this.destroy$))
-      .subscribe((val) => {
-        this.yearEvolution = val;
-        this.cdr.markForCheck();
-      });
-
-    this.incomeService.getTop5IncomeThisMonth()
-      .pipe(takeUntil(this.destroy$))
-      .subscribe((source) => {
-        this.topIncomes = Object.entries(source).map(([category, amount]) => ({
+    if (!this.userId || this.userId <= 0) {
+      return;
+    }
+    
+    const startTime = performance.now();
+    this.performanceMetrics.totalRequests++;
+    
+    forkJoin({
+      today: this.incomeService.getTodayIncome(this.userId),
+      week: this.incomeService.getWeekIncome(),
+      month: this.incomeService.getMonthIncome(),
+      year: this.incomeService.getYearIncome(),
+      weekEvolution: this.incomeService.getWeeklyEvolution(this.userId),
+      monthEvolution: this.incomeService.getMonthlyEvolution(this.userId),
+      yearEvolution: this.incomeService.getYearlyEvolution(this.userId),
+      top5: this.incomeService.getTop5IncomeThisMonth(),
+      allIncomes: this.incomeService.getAllIncomes(),
+      weeklyData: this.incomeService.getIncomeForWeeksOfCurrentMonth(),
+      monthlyData: this.incomeService.getIncomeForMonthsOfCurrentYear(),
+      paymentMethods: this.incomeService.getCurrentMonthPaymentMethodSummary(this.userId),
+      sources: this.incomeService.getCurrentMonthSourceSummary(this.userId)
+    })
+    .pipe(takeUntil(this.destroy$))
+    .subscribe({
+      next: (data) => {
+        this.dayIncome = data.today || 0;
+        this.weekIncome = data.week || 0;
+        this.monthIncome = data.month || 0;
+        this.yearIncome = data.year || 0;
+        this.weekEvolution = data.weekEvolution || 0;
+        this.monthEvolution = data.monthEvolution || 0;
+        this.yearEvolution = data.yearEvolution || 0;
+        
+        this.topIncomes = Object.entries(data.top5 || {}).map(([category, amount]) => ({
           category,
           amount,
         }));
+        
+        this.incomes = (data.allIncomes || []).map(income => ({
+          ...income,
+          isReceived: income.received,
+          received: income.received
+        }));
+        
+        this.weeklyIncomeData = data.weeklyData || [];
+        this.monthlyIncomeData = data.monthlyData || [];
+        
+        this.paymentMethodData = data.paymentMethods || {};
+        this.incomeSourceData = data.sources || {};
+        
+        const endTime = performance.now();
+        this.performanceMetrics.dataLoadTime = endTime - startTime;
+        this.performanceMetrics.lastRefresh = Date.now();
+        
         this.cdr.markForCheck();
-      });
+      },
+      error: (error) => {
+        this.loggingService.error('Error loading income data:', error);
+        this.resetAllData();
+        this.cdr.markForCheck();
+      }
+    });
+  }
 
-    this.incomeService.getAllIncomes()
-      .pipe(takeUntil(this.destroy$))
-      .subscribe((val) => {
-        this.incomes = val;
-        this.cdr.markForCheck();
-      });
-
-    this.incomeService.getIncomeForWeeksOfCurrentMonth()
-      .pipe(takeUntil(this.destroy$))
-      .subscribe((data) => {
-        this.weeklyIncomeData = data;
-        this.cdr.markForCheck();
-      });
-
-    this.incomeService.getIncomeForMonthsOfCurrentYear()
-      .pipe(takeUntil(this.destroy$))
-      .subscribe((data) => {
-        this.monthlyIncomeData = data;
-        this.cdr.markForCheck();
-      });
-
-    this.incomeService.getPaymentMethodSummary()
-      .pipe(takeUntil(this.destroy$))
-      .subscribe((data) => {
-        if (!data || Object.keys(data).length === 0) {
-          this.paymentMethodData = {};
-        } else {
-          this.paymentMethodData = data;
-        }
-        this.cdr.markForCheck();
-      });
-
-    this.incomeService.getIncomeSourceSummary()
-      .pipe(takeUntil(this.destroy$))
-      .subscribe((source) => {
-        if (!source || Object.keys(source).length === 0) {
-          this.incomeSourceData = {};
-        } else {
-          this.incomeSourceData = source;
-        }
-        this.cdr.markForCheck();
-      });
+  private resetAllData(): void {
+    this.dayIncome = 0;
+    this.weekIncome = 0;
+    this.monthIncome = 0;
+    this.yearIncome = 0;
+    this.weekEvolution = 0;
+    this.monthEvolution = 0;
+    this.yearEvolution = 0;
+    this.topIncomes = [];
+    this.incomes = [];
+    this.weeklyIncomeData = [];
+    this.monthlyIncomeData = [];
+    this.paymentMethodData = {};
+    this.incomeSourceData = {};
   }
 
   private formatDate(input: string | Date): string {
@@ -440,5 +572,36 @@ export class IncomeComponent implements OnInit, OnDestroy {
   private toHtmlDateFormat(dateStr: string): string {
     const [mm, dd, yyyy] = dateStr.split('/');
     return `${yyyy}-${mm.padStart(2, '0')}-${dd.padStart(2, '0')}`;
+  }
+
+  trackByRefresh(index: number, trigger: number): number {
+    return trigger;
+  }
+
+  private mapPaymentMethodValue(paymentMethod: string | number | null | undefined): string | null {
+    if (!paymentMethod) return null;
+    
+    const method = String(paymentMethod).toUpperCase();
+    
+    if (!this.paymentMethods || !Array.isArray(this.paymentMethods)) {
+      return String(paymentMethod);
+    }
+    
+    const validMethods = this.paymentMethods.map(pm => pm.value);
+    const foundMethod = validMethods.find(validMethod => 
+      validMethod.toUpperCase() === method || 
+      validMethod === paymentMethod
+    );
+    
+    return foundMethod || String(paymentMethod);
+  }
+
+  private sanitizeInput(input: string): string {
+    if (!input) return '';
+    return input
+      .replace(/[<>]/g, '')
+      .replace(/javascript:/gi, '')
+      .replace(/on\w+=/gi, '')
+      .trim();
   }
 }

@@ -1,0 +1,415 @@
+<!--
+  Alpha Vault Financial System
+  
+  @author Mohamed Dhaoui
+  @component ProfileComponent
+  @description User profile management template
+-->
+
+<main class="profile-container" role="main" aria-label="User Profile">
+  <header class="profile-header">
+    <div class="header-content">
+      <div class="header-icon" aria-hidden="true">
+        <i class="fas fa-user-circle"></i>
+      </div>
+      <div class="header-text">
+        <h1 class="profile-title">User Profile</h1>
+        <p class="profile-subtitle">Manage your personal information and preferences</p>
+      </div>
+    </div>
+  </header>
+
+  <div *ngIf="isLoading" class="loading-container" role="status" aria-label="Loading profile data">
+    <div class="loading-spinner" aria-hidden="true"></div>
+    <p class="loading-text">Loading your profile...</p>
+  </div>
+
+  <div *ngIf="hasError && !isLoading" class="error-container" role="alert" aria-live="assertive">
+    <div class="error-icon" aria-hidden="true">
+      <i class="fas fa-exclamation-triangle"></i>
+    </div>
+    <h3 class="error-title">Error Loading Profile</h3>
+    <p class="error-message">{{ errorMessage }}</p>
+    <button 
+      class="retry-button"
+      (click)="loadUserData()"
+      (keydown.enter)="loadUserData()"
+      (keydown.space)="loadUserData(); $event.preventDefault()"
+      type="button"
+      aria-label="Retry loading profile">
+      <i class="fas fa-redo" aria-hidden="true"></i>
+      Retry
+    </button>
+  </div>
+
+  <div *ngIf="!isLoading && !hasError" class="profile-content">
+    <form 
+      [formGroup]="profileForm" 
+      (ngSubmit)="onSubmit()"
+      class="profile-form"
+      role="form"
+      aria-labelledby="profileFormTitle">
+      
+      <div id="profileFormTitle" class="sr-only">User Profile Update Form</div>
+
+      <section class="form-section" aria-labelledby="personalInfoHeading">
+        <h2 id="personalInfoHeading" class="section-title">
+          <i class="fas fa-user" aria-hidden="true"></i>
+          Personal Information
+        </h2>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="firstName" class="required-field">
+              First Name
+            </label>
+            <div class="input-wrapper">
+              <input
+                id="firstName"
+                type="text"
+                formControlName="firstName"
+                placeholder="Enter your first name"
+                [class.invalid]="isFieldInvalid('firstName')"
+                [class.valid]="isFieldValid('firstName')"
+                aria-required="true"
+                [attr.aria-invalid]="isFieldInvalid('firstName')"
+                [attr.aria-describedby]="isFieldInvalid('firstName') ? 'firstName-error' : null"
+                (keydown.escape)="onEscapeKey($event)"
+              />
+              <div class="input-icon" *ngIf="isFieldValid('firstName')" aria-hidden="true">
+                <i class="fas fa-check-circle"></i>
+              </div>
+            </div>
+            <div
+              *ngIf="isFieldInvalid('firstName')"
+              id="firstName-error"
+              class="error-message"
+              role="alert"
+              aria-live="polite">
+              {{ getFieldError('firstName') }}
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="lastName" class="required-field">
+              Last Name
+            </label>
+            <div class="input-wrapper">
+              <input
+                id="lastName"
+                type="text"
+                formControlName="lastName"
+                placeholder="Enter your last name"
+                [class.invalid]="isFieldInvalid('lastName')"
+                [class.valid]="isFieldValid('lastName')"
+                aria-required="true"
+                [attr.aria-invalid]="isFieldInvalid('lastName')"
+                [attr.aria-describedby]="isFieldInvalid('lastName') ? 'lastName-error' : null"
+                (keydown.escape)="onEscapeKey($event)"
+              />
+              <div class="input-icon" *ngIf="isFieldValid('lastName')" aria-hidden="true">
+                <i class="fas fa-check-circle"></i>
+              </div>
+            </div>
+            <div
+              *ngIf="isFieldInvalid('lastName')"
+              id="lastName-error"
+              class="error-message"
+              role="alert"
+              aria-live="polite">
+              {{ getFieldError('lastName') }}
+            </div>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="email" class="required-field">
+            Email Address
+          </label>
+          <div class="input-wrapper">
+            <input
+              id="email"
+              type="email"
+              formControlName="email"
+              placeholder="Enter your email address"
+              [class.invalid]="isFieldInvalid('email')"
+              [class.valid]="isFieldValid('email')"
+              aria-required="true"
+              [attr.aria-invalid]="isFieldInvalid('email')"
+              [attr.aria-describedby]="isFieldInvalid('email') ? 'email-error' : null"
+              (keydown.escape)="onEscapeKey($event)"
+            />
+            <div class="input-icon" *ngIf="isFieldValid('email')" aria-hidden="true">
+              <i class="fas fa-check-circle"></i>
+            </div>
+          </div>
+          <div
+            *ngIf="isFieldInvalid('email')"
+            id="email-error"
+            class="error-message"
+            role="alert"
+            aria-live="polite">
+            {{ getFieldError('email') }}
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="profileImage">
+            Profile Image
+            <span class="field-hint">(Optional)</span>
+          </label>
+          
+          <div class="image-preview-container" *ngIf="getProfileImageUrl()">
+            <div class="image-preview-wrapper">
+              <img
+                ngOptimizedImage
+                [ngSrc]="getProfileImageUrl() || ''"
+                alt="Profile preview"
+                width="150"
+                height="150"
+                loading="lazy"
+                decoding="async"
+                class="profile-image-preview"
+                [class.preview-mode]="selectedFile"
+              />
+              <button
+                *ngIf="selectedFile"
+                type="button"
+                class="remove-preview-btn"
+                (click)="removeImagePreview()"
+                (keydown.enter)="removeImagePreview()"
+                (keydown.space)="removeImagePreview(); $event.preventDefault()"
+                aria-label="Remove selected image">
+                <i class="fas fa-times" aria-hidden="true"></i>
+              </button>
+            </div>
+          </div>
+
+          <div class="file-upload-container">
+            <input
+              #fileInput
+              id="profileImageFile"
+              type="file"
+              accept="image/*"
+              (change)="onFileSelected($event)"
+              [disabled]="isUploading"
+              class="file-input"
+              aria-describedby="profileImage-hint"
+            />
+            <label for="profileImageFile" class="file-upload-label" [class.disabled]="isUploading">
+              <i class="fas fa-upload" aria-hidden="true"></i>
+              <span>{{ selectedFile ? 'Change Image' : 'Choose Image' }}</span>
+            </label>
+            <button
+              *ngIf="selectedFile"
+              type="button"
+              class="btn btn-primary upload-btn"
+              (click)="uploadProfileImage()"
+              (keydown.enter)="uploadProfileImage()"
+              (keydown.space)="uploadProfileImage(); $event.preventDefault()"
+              [disabled]="isUploading"
+              aria-label="Upload profile image">
+              <span *ngIf="!isUploading">
+                <i class="fas fa-cloud-upload-alt" aria-hidden="true"></i>
+                Upload Image
+              </span>
+              <span *ngIf="isUploading" class="loading-content">
+                <i class="fas fa-spinner fa-spin" aria-hidden="true"></i>
+                Uploading...
+              </span>
+            </button>
+          </div>
+
+          <div class="url-input-container">
+            <label for="profileImageUrl" class="url-input-label">
+              Or enter image URL:
+            </label>
+            <div class="input-wrapper">
+              <input
+                id="profileImageUrl"
+                type="url"
+                formControlName="profileImageUrl"
+                placeholder="https://example.com/image.jpg"
+                [class.invalid]="isFieldInvalid('profileImageUrl')"
+                [class.valid]="isFieldValid('profileImageUrl')"
+                aria-describedby="profileImageUrl-hint"
+                (keydown.escape)="onEscapeKey($event)"
+              />
+              <div class="input-icon" *ngIf="isFieldValid('profileImageUrl')" aria-hidden="true">
+                <i class="fas fa-check-circle"></i>
+              </div>
+            </div>
+          </div>
+
+          <p id="profileImage-hint" class="field-hint">
+            Upload an image file (max 10MB) or enter a URL. Accepted formats: JPEG, PNG, GIF, WebP.
+          </p>
+        </div>
+      </section>
+
+      <section class="form-section" aria-labelledby="preferencesHeading">
+        <h2 id="preferencesHeading" class="section-title">
+          <i class="fas fa-cog" aria-hidden="true"></i>
+          Preferences
+        </h2>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="preferredLanguage">
+              Preferred Language
+            </label>
+            <div class="select-wrapper">
+              <select
+                id="preferredLanguage"
+                formControlName="preferredLanguage"
+                aria-describedby="preferredLanguage-hint"
+                (keydown.escape)="onEscapeKey($event)"
+              >
+                <option *ngFor="let lang of preferredLanguages; trackBy: trackByLanguage" [value]="lang.value">
+                  {{ lang.label }}
+                </option>
+              </select>
+              <div class="select-icon" aria-hidden="true">
+                <i class="fas fa-chevron-down"></i>
+              </div>
+            </div>
+            <p id="preferredLanguage-hint" class="field-hint">
+              Currently selected: {{ selectedLanguageLabel }}
+            </p>
+          </div>
+
+          <div class="form-group">
+            <label for="preferredCurrency">
+              Preferred Currency
+            </label>
+            <div class="select-wrapper">
+              <select
+                id="preferredCurrency"
+                formControlName="preferredCurrency"
+                aria-describedby="preferredCurrency-hint"
+                (keydown.escape)="onEscapeKey($event)"
+              >
+                <option *ngFor="let currency of preferredCurrencies; trackBy: trackByCurrency" [value]="currency.value">
+                  {{ currency.label }}
+                </option>
+              </select>
+              <div class="select-icon" aria-hidden="true">
+                <i class="fas fa-chevron-down"></i>
+              </div>
+            </div>
+            <p id="preferredCurrency-hint" class="field-hint">
+              Currently selected: {{ selectedCurrencyLabel }}
+            </p>
+          </div>
+        </div>
+
+        <section class="password-subsection" aria-labelledby="passwordHeading">
+          <h2 id="passwordHeading" class="section-title">
+            <i class="fas fa-lock" aria-hidden="true"></i>
+            Change Password
+            <span class="section-subtitle">(Optional - Leave blank to keep current password)</span>
+          </h2>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="password">
+                New Password
+              </label>
+              <div class="input-wrapper">
+                <input
+                  id="password"
+                  type="password"
+                  formControlName="password"
+                  placeholder="Enter new password"
+                  [class.invalid]="isFieldInvalid('password')"
+                  [class.valid]="isFieldValid('password')"
+                  aria-describedby="password-hint password-error"
+                  (keydown.escape)="onEscapeKey($event)"
+                />
+                <div class="input-icon" *ngIf="isFieldValid('password')" aria-hidden="true">
+                  <i class="fas fa-check-circle"></i>
+                </div>
+              </div>
+              <p id="password-hint" class="field-hint">
+                Leave blank if you don't want to change your password.
+              </p>
+              <div
+                *ngIf="isFieldInvalid('password')"
+                id="password-error"
+                class="error-message"
+                role="alert"
+                aria-live="polite">
+                {{ getFieldError('password') }}
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label for="confirmPassword">
+                Confirm Password
+              </label>
+              <div class="input-wrapper">
+                <input
+                  id="confirmPassword"
+                  type="password"
+                  formControlName="confirmPassword"
+                  placeholder="Confirm new password"
+                  [class.invalid]="isFieldInvalid('confirmPassword')"
+                  [class.valid]="isFieldValid('confirmPassword')"
+                  aria-describedby="confirmPassword-hint confirmPassword-error"
+                  (keydown.escape)="onEscapeKey($event)"
+                />
+                <div class="input-icon" *ngIf="isFieldValid('confirmPassword')" aria-hidden="true">
+                  <i class="fas fa-check-circle"></i>
+                </div>
+              </div>
+              <p id="confirmPassword-hint" class="field-hint">
+                Re-enter the new password to confirm.
+              </p>
+              <div
+                *ngIf="isFieldInvalid('confirmPassword')"
+                id="confirmPassword-error"
+                class="error-message"
+                role="alert"
+                aria-live="polite">
+                {{ getFieldError('confirmPassword') }}
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <div class="form-actions">
+          <button
+            type="button"
+            class="btn btn-secondary"
+            (click)="loadUserData()"
+            (keydown.enter)="loadUserData()"
+            (keydown.space)="loadUserData(); $event.preventDefault()"
+            [disabled]="isSaving"
+            aria-label="Reset form to original values">
+            <i class="fas fa-undo" aria-hidden="true"></i>
+            Reset
+          </button>
+          <button
+            type="submit"
+            class="btn btn-primary"
+            [disabled]="profileForm.invalid || isSaving"
+            aria-label="Save profile changes">
+            <span *ngIf="!isSaving">
+              <i class="fas fa-save" aria-hidden="true"></i>
+              Save Changes
+            </span>
+            <span *ngIf="isSaving" class="loading-content">
+              <i class="fas fa-spinner fa-spin" aria-hidden="true"></i>
+              Saving...
+            </span>
+          </button>
+        </div>
+      </section>
+    </form>
+  </div>
+
+  <div class="sr-only" aria-live="polite" aria-atomic="true">
+    {{ isLoading ? 'Loading profile data' : hasError ? 'Error loading profile' : 'Profile form ready' }}
+  </div>
+</main>
+

@@ -1,19 +1,45 @@
+/**
+ * ================================================================
+ *  Coded by Mohamed Dhaoui for Alpha Vault - Financial System
+ *  License: Proprietary. All rights reserved.
+ * ================================================================
+ */
 package com.alpha.alphavault.enums;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 
-@JsonFormat(shape = JsonFormat.Shape.STRING)
 public enum InvestmentType {
-    STOCKS,
-    CRYPTO,
-    REAL_ESTATE,
-    COMMODITIES,
-    BUSINESS,
-    BONDS,
-    ETF,
-    FOREX,
-    OTHER,
-    MUTUAL_FUNDS;
 
+    // ===== TRADITIONAL ASSETS =====
+    STOCKS,
+    BONDS,
+    MUTUAL_FUNDS,
+    ETF,
+
+    // ===== ALTERNATIVE ASSETS =====
+    REAL_ESTATE,
+    BUSINESS,
+    COMMODITIES,
+    FOREX,
+
+    // ===== DIGITAL ASSETS =====
+    CRYPTO,
+
+    // ===== OTHER =====
+    OTHER;
+
+    // ============================================================
+    // == JSON Serialization / Deserialization
+    // ============================================================
+
+    @JsonValue
+    public String toJson() {
+        return name().toLowerCase();
+    }
+
+    @JsonCreator(mode = JsonCreator.Mode.DELEGATING)
+    public static InvestmentType fromJson(String value) {
+        return InvestmentType.valueOf(value.toUpperCase());
+    }
 }

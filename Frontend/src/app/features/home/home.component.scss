@@ -98,6 +98,26 @@
   }
 }
 
+/* ================= ACCESSIBILITY ENHANCEMENTS ================= */
+
+@media (prefers-reduced-motion: reduce) {
+  .page-wrapper,
+  .page-wrapper * {
+    animation: none;
+    transition: none;
+  }
+  
+  .alpha-header,
+  app-hero,
+  app-features,
+  app-about,
+  app-contact,
+  app-cta,
+  app-footer {
+    animation: none;
+  }
+}
+
 /* ================= RESPONSIVE DESIGN ================= */
 
 @media (max-width: 768px) {

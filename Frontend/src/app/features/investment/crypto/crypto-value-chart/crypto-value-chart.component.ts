@@ -1,17 +1,22 @@
-// ====================================================================
-//      Coded by Mohamed Dhaoui for Alpha Vault
-// ====================================================================
+/*
+  Alpha Vault Financial System
+  
+  @author Mohamed Dhaoui
+  @component CryptoValueChartComponent
+  @description Crypto value chart component for displaying crypto portfolio value
+*/
 
-import { Component, Input, OnChanges, ChangeDetectionStrategy, OnInit, OnDestroy } from '@angular/core';
-import { Meta } from '@angular/platform-browser';
-import { CommonModule } from '@angular/common';
-import { Subject, takeUntil, interval } from 'rxjs';
-import { trigger, state, style, transition, animate, query, stagger } from '@angular/animations';
-import { NgChartsModule } from 'ng2-charts';
-import { ChartConfiguration, ChartData, ChartType } from 'chart.js';
+import { animate, query, stagger, style, transition, trigger } from '@angular/animations';
+import { CommonModule, isPlatformBrowser } from '@angular/common';
+import { ChangeDetectionStrategy, Component, DestroyRef, inject, Input, OnChanges, OnDestroy, OnInit, PLATFORM_ID } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { MatIconModule } from '@angular/material/icon';
 import { MatTooltipModule } from '@angular/material/tooltip';
+import { ChartConfiguration, ChartData, ChartType } from 'chart.js';
+import { NgChartsModule } from 'ng2-charts';
+import { interval } from 'rxjs';
 
+import { META_FRAGMENT } from '../../../../core/seo/page-meta.model';
 import { Investment } from '../../../../models/investment.model';
 
 type Timeframe = '7d' | '30d' | '90d' | '1y';
@@ -23,6 +28,14 @@ type Timeframe = '7d' | '30d' | '90d' | '1y';
   styleUrls: ['./crypto-value-chart.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [CommonModule, NgChartsModule, MatIconModule, MatTooltipModule],
+  providers: [
+    {
+      provide: META_FRAGMENT,
+      useValue: {
+        description: 'Track your cryptocurrency portfolio value over time with interactive charts and performance analytics.'
+      }
+    }
+  ],
   animations: [
     trigger('fadeInUp', [
       transition(':enter', [
@@ -168,6 +181,9 @@ export class CryptoValueChartComponent implements OnChanges, OnInit, OnDestroy {
           title: (context) => `📈 Portfolio Value`,
           label: (context) => {
             const value = context.parsed.y;
+            if (value === null || value === undefined) {
+              return `💰 $0`;
+            }
             return `💰 $${value.toLocaleString()}`;
           }
         }
@@ -185,50 +201,36 @@ export class CryptoValueChartComponent implements OnChanges, OnInit, OnDestroy {
   };
 
   readonly timeframes: readonly Timeframe[] = ['7d', '30d', '90d', '1y'];
+  readonly timeframeLabelMap: Record<Timeframe, string> = {
+    '7d': '7 Days',
+    '30d': '30 Days',
+    '90d': '90 Days',
+    '1y': '1 Year'
+  };
+  timeframeLabel = '7 Days';
 
-  private readonly destroy$ = new Subject<void>();
+  private readonly destroyRef = inject(DestroyRef);
+  private readonly isBrowser = isPlatformBrowser(inject(PLATFORM_ID));
 
-  constructor(
-    private readonly meta: Meta
-  ) {
-    this.meta.addTags([
-      { name: 'description', content: 'Track your cryptocurrency portfolio value over time with interactive charts and performance analytics.' },
-      { name: 'robots', content: 'index,follow' },
-      { name: 'viewport', content: 'width=device-width, initial-scale=1' }
-    ]);
-  }
+  constructor() {}
 
   ngOnInit(): void {
     this.startAutoRefresh();
   }
 
   ngOnDestroy(): void {
-    this.destroy$.next();
-    this.destroy$.complete();
   }
 
   ngOnChanges(): void {
     this.computePortfolioMetrics();
     this.generateChartData();
+    this.timeframeLabel = this.timeframeLabelMap[this.selectedTimeframe];
   }
 
   changeTimeframe(timeframe: Timeframe): void {
     this.selectedTimeframe = timeframe;
     this.generateChartData();
-  }
-
-  getTimeframeLabel(): string {
-    const labels: Record<Timeframe, string> = {
-      '7d': '7 Days',
-      '30d': '30 Days',
-      '90d': '90 Days',
-      '1y': '1 Year'
-    };
-    return labels[this.selectedTimeframe];
-  }
-
-  getTimeframes(): readonly Timeframe[] {
-    return this.timeframes;
+    this.timeframeLabel = this.timeframeLabelMap[this.selectedTimeframe];
   }
 
   trackByTimeframe(index: number, timeframe: Timeframe): string {
@@ -257,8 +259,9 @@ export class CryptoValueChartComponent implements OnChanges, OnInit, OnDestroy {
   }
 
   private startAutoRefresh(): void {
+    if (!this.isBrowser) return;
     interval(30000)
-      .pipe(takeUntil(this.destroy$))
+      .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe(() => {
         this.computePortfolioMetrics();
         this.generateChartData();
@@ -317,6 +320,7 @@ export class CryptoValueChartComponent implements OnChanges, OnInit, OnDestroy {
   }
 
   private generateChartData(): void {
+    if (!this.isBrowser) return;
     const days = this.getDaysForTimeframe();
     const baseValue = this.totalInvested;
     const volatility = 0.15;

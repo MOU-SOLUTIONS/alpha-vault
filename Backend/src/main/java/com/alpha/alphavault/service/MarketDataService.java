@@ -1,4 +1,9 @@
-// com/alpha/alphavault/service/MarketDataService.java
+/**
+ * ================================================================
+ *  Coded by Mohamed Dhaoui for Alpha Vault - Financial System
+ *  Service: MarketDataService — external price feed hook
+ * ================================================================
+ */
 package com.alpha.alphavault.service;
 
 import com.alpha.alphavault.enums.InvestmentType;
@@ -9,12 +14,11 @@ import java.math.BigDecimal;
 @Service
 public class MarketDataService {
     /**
-     * Hook into your external market‐data provider here.
-     * @param type   type of asset (CRYPTO, STOCK, COMMODITY...)
-     * @param symbol e.g. "BTC", "AAPL", "GC=F"
+     * Plug in a real provider here. Return the latest price for the asset.
+     * For non-quantity assets you can treat this as the latest valuation.
      */
-    public BigDecimal fetchCurrentPrice(InvestmentType type, String symbol) {
-        // TODO: call real API
+    public BigDecimal fetchCurrentPrice(InvestmentType type, String symbolOrName) {
+        // TODO: call real API (FMP, AlphaVantage, CoinGecko Pro, etc.)
         return BigDecimal.ZERO;
     }
 }

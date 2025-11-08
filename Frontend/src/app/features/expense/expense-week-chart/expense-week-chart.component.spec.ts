@@ -1,3 +1,11 @@
+/*
+  Alpha Vault Financial System
+  
+  @author Mohamed Dhaoui
+  @component ExpenseWeekChartComponent
+  @description Test suite for expense week chart component
+*/
+
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { ExpenseWeekChartComponent } from './expense-week-chart.component';

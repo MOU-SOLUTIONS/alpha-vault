@@ -1,14 +1,23 @@
 // src/app/enums/investment-type.ts
 
 export enum InvestmentType {
-  CRYPTO = 'CRYPTO',
-  FOREX = 'FOREX',
-  STOCK = 'STOCKS',
-  ETF = 'ETF',
-  COMMODITY = 'COMMODITIES',
-  REAL_ESTATE = 'REAL_ESTATE',
-  BUSINESS = 'BUSINESS',
-  OTHER = 'OTHER',
+  // Traditional Assets
+  STOCKS = 'stocks',
+  BONDS = 'bonds',
+  MUTUAL_FUNDS = 'mutual_funds',
+  ETF = 'etf',
+  
+  // Alternative Assets
+  REAL_ESTATE = 'real_estate',
+  BUSINESS = 'business',
+  COMMODITIES = 'commodities',
+  FOREX = 'forex',
+  
+  // Digital Assets
+  CRYPTO = 'crypto',
+  
+  // Other
+  OTHER = 'other',
 }
 
 // For *ngFor and filtering

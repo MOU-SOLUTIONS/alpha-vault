@@ -1,6 +1,10 @@
-/* ===================================================================
-   Coded by Mohamed Dhaoui for Alpha Vault
-=================================================================== */
+/*
+  Alpha Vault Financial System
+  
+  @author Mohamed Dhaoui
+  @component IncomeWidgetComponent
+  @description Comprehensive styling for income widget with responsive design
+*/
 
 :host {
   --today-color: #6366f1;
@@ -16,11 +20,32 @@
   --transition: all 0.3s ease;
   --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1),
                 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+
+  display: block;
+  margin: 0;
+  padding: 0;
+}
+
+.income-cards-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+}
+
+.income-card {
+  flex: 1;
+  min-width: calc(50% - 5px);
+  
+  @media (min-width: 992px) {
+    min-width: calc(25% - 7.5px);
+  }
 }
 
 .income-box {
   background-color: var(--bg-light);
-  padding: 1.25rem;
+  padding: 1rem;
   border-radius: var(--radius);
   box-shadow: var(--shadow-md);
   height: 100%;
@@ -29,6 +54,7 @@
   overflow: hidden;
   transition: var(--transition);
   border: 1px solid rgba(0, 0, 0, 0.05);
+  cursor: pointer;
 
   &:hover {
     transform: translateY(-5px);
@@ -42,19 +68,31 @@
       opacity: 0.15;
     }
   }
+
+  &:focus {
+    outline: 2px solid #6366f1;
+    outline-offset: 2px;
+    box-shadow: 0 0 20px rgba(99, 102, 241, 0.3);
+  }
+
+  &:focus-visible {
+    outline: 2px solid #6366f1;
+    outline-offset: 2px;
+    box-shadow: 0 0 20px rgba(99, 102, 241, 0.3);
+  }
 }
 
 .income-icon {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 48px;
-  height: 48px;
+  width: 40px;
+  height: 40px;
   border-radius: var(--radius);
   background-color: rgba(99, 102, 241, 0.1);
-  color: #6366f1;
-  margin-right: 1rem;
-  font-size: 1.25rem;
+  color: #3f51b5;
+  margin-right: 0.75rem;
+  font-size: 1.125rem;
   transition: var(--transition);
 }
 
@@ -69,7 +107,7 @@
   font-size: 0.875rem;
   font-weight: 500;
   color: var(--text-medium);
-  margin-bottom: 0.25rem;
+  margin-bottom: 0.125rem;
   letter-spacing: 0.025em;
 }
 
@@ -77,10 +115,11 @@
   display: flex;
   align-items: baseline;
   gap: 0.25rem;
+  margin-bottom: 0.125rem;
 }
 
 .income-amount {
-  font-size: 1.5rem;
+  font-size: 1.375rem;
   font-weight: 700;
   color: var(--text-dark);
   letter-spacing: -0.025em;
@@ -91,6 +130,8 @@
   color: var(--text-medium);
   font-weight: 500;
 }
+
+
 
 .income-indicator {
   position: absolute;
@@ -109,17 +150,102 @@
 
 @media (max-width: 767px) {
   .income-box {
-    padding: 1rem;
+    padding: 0.75rem;
   }
 
   .income-icon {
-    width: 40px;
-    height: 40px;
-    font-size: 1rem;
-    margin-right: 0.75rem;
+    width: 36px;
+    height: 36px;
+    font-size: 0.875rem;
+    margin-right: 0.5rem;
+  }
+
+  .income-label {
+    font-size: 0.75rem;
+    margin-bottom: 0.125rem;
   }
 
   .income-amount {
-    font-size: 1.25rem;
+    font-size: 1.125rem;
+  }
+
+  .income-currency {
+    font-size: 0.75rem;
+  }
+
+
+}
+
+@media (max-width: 575px) {
+  .income-box {
+    padding: 0.5rem;
+  }
+
+  .income-icon {
+    width: 32px;
+    height: 32px;
+    font-size: 0.75rem;
+    margin-right: 0.375rem;
+  }
+
+  .income-label {
+    font-size: 0.625rem;
+    margin-bottom: 0.125rem;
+  }
+
+  .income-amount {
+    font-size: 1rem;
+  }
+
+  .income-currency {
+    font-size: 0.625rem;
+  }
+
+
+}
+
+@media (max-width: 480px) {
+  .income-box {
+    padding: 0.375rem;
+  }
+
+  .income-icon {
+    width: 28px;
+    height: 28px;
+    font-size: 0.625rem;
+    margin-right: 0.25rem;
+  }
+
+  .income-label {
+    font-size: 0.5rem;
+    margin-bottom: 0.125rem;
+  }
+
+  .income-amount {
+    font-size: 0.875rem;
+  }
+
+  .income-currency {
+    font-size: 0.5rem;
+  }
+}
+
+// Add reduced motion support
+@media (prefers-reduced-motion: reduce) {
+  .income-box {
+    transition: none;
+    
+    &:hover {
+      transform: none;
+      
+      .income-icon {
+        transform: none;
+      }
+      
+      .income-indicator {
+        height: 4px;
+        opacity: 1;
+      }
+    }
   }
 }

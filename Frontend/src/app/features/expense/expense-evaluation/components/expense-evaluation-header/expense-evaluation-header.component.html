@@ -1,0 +1,62 @@
+<!--
+  Alpha Vault Financial System
+  
+  @author Mohamed Dhaoui
+  @component ExpenseEvaluationHeaderComponent
+  @description Comprehensive tests for expense evaluation header component
+-->
+
+<header class="premium-header" role="banner" aria-labelledby="main-title">
+  <div class="header-content">
+    <div class="title-section">
+      <h1 id="main-title" class="main-title">
+        <span class="title-accent">Expense</span>
+        <span class="title-main">Evaluation</span>
+      </h1>
+      <p class="subtitle">Comprehensive analysis of your expense patterns and performance</p>
+    </div>
+    <div class="header-stats" role="region" aria-label="Expense statistics">
+      <div class="stat-card" 
+           role="img" 
+           [attr.aria-label]="'Total Expenses: ' + (totalExpense | currency:'USD':'symbol':'1.2-2')"
+           tabindex="0"
+           (keydown.enter)="onStatCardFocus($event)"
+           (keydown.space)="onStatCardFocus($event)">
+        <div class="stat-icon" aria-hidden="true">💰</div>
+        <div class="stat-content">
+          <div class="stat-value">{{ totalExpense | currency:'USD':'symbol':'1.2-2' }}</div>
+          <div class="stat-label">Total Expenses</div>
+        </div>
+      </div>
+      <div class="stat-card" 
+           role="img" 
+           [attr.aria-label]="'Growth Rate: ' + (growthRate | number:'1.2-2') + '%'"
+           tabindex="0"
+           (keydown.enter)="onStatCardFocus($event)"
+           (keydown.space)="onStatCardFocus($event)">
+        <div class="stat-icon" aria-hidden="true">📈</div>
+        <div class="stat-content">
+          <div class="stat-value">{{ growthRate | number:'1.2-2' }}%</div>
+          <div class="stat-label">Growth Rate</div>
+        </div>
+      </div>
+      <div class="stat-card" 
+           role="img" 
+           [attr.aria-label]="'Expense Performance: ' + (achievementRate | number:'1.2-2') + '%'"
+           tabindex="0"
+           (keydown.enter)="onStatCardFocus($event)"
+           (keydown.space)="onStatCardFocus($event)">
+        <div class="stat-icon" aria-hidden="true">🎯</div>
+        <div class="stat-content">
+          <div class="stat-value">{{ achievementRate | number:'1.2-2' }}%</div>
+          <div class="stat-label">Expense Performance</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="floating-elements" aria-hidden="true">
+    <div class="floating-circle"></div>
+    <div class="floating-square"></div>
+    <div class="floating-triangle"></div>
+  </div>
+</header>

@@ -1,11 +1,20 @@
-// ====================================================================
-//             Coded by Mohamed Dhaoui for Alpha Vault
-// ====================================================================
+/*
+  Alpha Vault Financial System
+  
+  @author Mohamed Dhaoui
+  @component ExpenseTop5Component
+  @description Expense top 5 component for displaying expense data
+*/  
 
-import { Component, Input, ChangeDetectionStrategy, OnChanges, SimpleChanges } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { ChangeDetectionStrategy, Component, computed, inject, Input, OnChanges, OnInit, signal, SimpleChanges } from '@angular/core';
 import { Meta } from '@angular/platform-browser';
-import { EXPENSE_CATEGORY_OPTIONS } from '../../../enums/expense-category';
+import { Subject } from 'rxjs';
+
+interface ExpenseItem {
+  category: string;
+  amount: number;
+}
 
 @Component({
   selector: 'app-expense-top5',
@@ -15,12 +24,37 @@ import { EXPENSE_CATEGORY_OPTIONS } from '../../../enums/expense-category';
   styleUrls: ['./expense-top5.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class ExpenseTop5Component implements OnChanges {
-  @Input() topExpenses: { category: string; amount: number }[] = [];
-  shouldPulse = false;
-  private categoryColors: Record<string, string> = {};
+export class ExpenseTop5Component implements OnInit, OnChanges {
+  @Input() topExpenses: ExpenseItem[] = [];
 
-  constructor( private meta: Meta) {
+  private readonly topExpensesSignal = signal<ExpenseItem[]>([]);
+  private readonly shouldPulseSignal = signal<boolean>(false);
+  private readonly destroy$ = new Subject<void>();
+
+  readonly sortedExpenses = computed(() => {
+    const expenses = this.topExpensesSignal();
+    return [...expenses].sort((a, b) => b.amount - a.amount);
+  });
+
+  readonly shouldPulse = this.shouldPulseSignal.asReadonly();
+
+  readonly categoryColors = computed(() => {
+    const palette = ['#3f51b5', '#8b5cf6', '#34d399', '#f59e0b', '#ec4899'];
+    const colors: Record<string, string> = {};
+    const expenses = this.sortedExpenses();
+
+    expenses.forEach((item, i) => {
+      if (!colors[item.category]) {
+        colors[item.category] = palette[i % palette.length];
+      }
+    });
+
+    return colors;
+  });
+
+  private readonly meta = inject(Meta);
+
+  constructor() {
     this.meta.addTags([
       { name: 'description', content: 'Top 5 expense categories ranked by amount in Alpha Vault.' },
       { name: 'robots', content: 'index,follow' },
@@ -28,38 +62,44 @@ export class ExpenseTop5Component implements OnChanges {
     ]);
   }
 
+  ngOnInit(): void {
+    this.topExpensesSignal.set(this.topExpenses || []);
+  }
+
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['topExpenses'] && !changes['topExpenses'].firstChange) {
-      this.shouldPulse = true;
-      setTimeout(() => (this.shouldPulse = false), 1000);
+      this.shouldPulseSignal.set(true);
+      const timeoutId = setTimeout(() => this.shouldPulseSignal.set(false), 1000);
+      
+      // Clean up timeout on destroy
+      this.destroy$.subscribe(() => {
+        clearTimeout(timeoutId);
+      });
     }
 
     if (this.topExpenses?.length > 0) {
-      this.topExpenses = [...this.topExpenses].sort((a, b) => b.amount - a.amount);
-      this.assignDynamicColors();
+      this.topExpensesSignal.set(this.topExpenses);
+    } else {
+      this.topExpensesSignal.set([]);
     }
   }
 
   getCategoryLabel(category: string): string {
-    return EXPENSE_CATEGORY_OPTIONS.find(opt => opt.value === category)?.label || category;
+    return category;
   }
 
   getCategoryColor(category: string): string {
-    return this.categoryColors[category] || '#999999';
+    return this.categoryColors()[category] || '#999999';
   }
 
-  private assignDynamicColors(): void {
-    const palette = ['#3f51b5', '#f44336', '#4caf50', '#ff9800', '#9c27b0'];
-    this.categoryColors = {};
-
-    this.topExpenses.forEach((item, i) => {
-      if (!this.categoryColors[item.category]) {
-        this.categoryColors[item.category] = palette[i % palette.length];
-      }
-    });
+  trackByCategory(index: number, item: ExpenseItem): string {
+    return item.category;
   }
 
-  trackByIndex(index: number): number {
-    return index;
+  onRowKeydown(event: KeyboardEvent, expense: ExpenseItem): void {
+    if (event.key === 'Enter' || event.key === ' ') {
+      event.preventDefault();
+      // Handle row activation if needed
+    }
   }
 }

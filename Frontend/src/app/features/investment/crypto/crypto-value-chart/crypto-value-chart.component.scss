@@ -1,6 +1,10 @@
-/* ====================================================================
-   Coded by Mohamed Dhaoui for Alpha Vault
-==================================================================== */
+/*
+  Alpha Vault Financial System
+  
+  @author Mohamed Dhaoui
+  @component CryptoValueChartComponent
+  @description Comprehensive styling for crypto value chart with responsive design
+*/
 
 :host {
   --primary-color: #7E57C2;
@@ -45,9 +49,22 @@
   font-family: 'Inter', 'Segoe UI', 'Roboto', -apple-system, BlinkMacSystemFont, sans-serif;
 }
 
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
 .crypto-value-container {
   background: var(--background-color);
   border-radius: var(--border-radius-lg);
+  padding: 16px;
   box-shadow: var(--shadow-lg);
   overflow: hidden;
   border: 1px solid var(--border-color);
@@ -67,55 +84,49 @@
   
   &:hover {
     box-shadow: var(--shadow-xl);
-    transform: translateY(-2px);
   }
 }
 
 .header-section {
-  margin-bottom: var(--spacing-lg);
+  margin-bottom: var(--spacing-md);
 }
 
 .header-content {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: var(--spacing-lg) var(--spacing-xl);
+  padding: var(--spacing-md) var(--spacing-lg);
   background: #ffffff;
   border: 1px solid var(--border-color);
-  border-radius: var(--border-radius);
+  border-radius: var(--border-radius) 0 0;
   color: var(--text-color);
   box-shadow: var(--shadow-sm);
   transition: box-shadow var(--transition-normal), transform var(--transition-fast);
-
-  &:hover {
-    box-shadow: var(--shadow-md);
-    transform: translateY(-1px);
-  }
 }
 
 .header-left {
   display: flex;
   align-items: center;
-  gap: var(--spacing-md);
+  gap: var(--spacing-sm);
 }
 
 .header-icon {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 48px;
-  height: 48px;
+  width: 40px;
+  height: 40px;
   background: #ffffff;
   border: 1px solid var(--border-color);
-  border-radius: 50%;
+  border-radius: var(--border-radius);
   position: relative;
   transition: var(--transition-normal);
   box-shadow: var(--shadow-sm);
 
   mat-icon {
-    font-size: 24px;
-    width: 24px;
-    height: 24px;
+    font-size: 18px;
+    width: 18px;
+    height: 18px;
     color: var(--primary-color);
     filter: none;
   }
@@ -123,48 +134,38 @@
   &:hover { box-shadow: var(--shadow-md); transform: translateY(-1px); }
 }
 
-.header-text {
-  .header-title {
-    font-size: 1.5rem;
-    font-weight: 800;
-    color: var(--primary-color);
-    margin: 0 0 var(--spacing-xs) 0;
-    line-height: 1.2;
-    letter-spacing: -0.025em;
-    position: relative;
+  .header-text {
+    .header-title {
+      font-size: 1.125rem;
+      font-weight: 700;
+      color: var(--primary-color);
+      margin: 0 0 var(--spacing-xs) 0;
+      line-height: 1.2;
+      letter-spacing: -0.02em;
+    }
 
-    &::after {
-      content: '';
-      position: absolute;
-      left: 0; bottom: -6px;
-      width: 56px; height: 3px;
-      background: var(--primary-gradient);
-      border-radius: 2px;
+    .header-subtitle {
+      font-size: 0.75rem;
+      color: var(--accent-color);
+      margin: 2px 0 0 0;
+      line-height: 1.4;
+      font-weight: 500;
     }
   }
-
-  .header-subtitle {
-    font-size: 0.875rem;
-    color: var(--accent-color);
-    margin: var(--spacing-xs) 0 0 0;
-    line-height: 1.4;
-    font-weight: 600;
-  }
-}
 
 .header-actions {
   display: flex;
   align-items: center;
-  gap: var(--spacing-sm);
+  gap: var(--spacing-xs);
 }
 
 .action-btn {
-  width: 40px;
-  height: 40px;
+  width: 32px;
+  height: 32px;
   border: 1px solid var(--border-color);
   background: rgba(126, 87, 194, 0.08);
   color: var(--primary-color);
-  border-radius: 50%;
+  border-radius: var(--border-radius-sm);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -183,10 +184,15 @@
 
   &:disabled { opacity: 0.6; cursor: not-allowed; }
 
+  &:focus-visible {
+    outline: 3px solid var(--accent-color);
+    outline-offset: 2px;
+  }
+
   mat-icon {
-    font-size: 20px;
-    width: 20px;
-    height: 20px;
+    font-size: 16px;
+    width: 16px;
+    height: 16px;
     z-index: 1;
     color: var(--primary-color);
   }
@@ -195,18 +201,18 @@
 .stats-section {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: var(--spacing-md);
-  padding: var(--spacing-lg);
+  gap: var(--spacing-sm);
+  padding: var(--spacing-md);
   background: var(--background-color);
 
   .stat-card {
     background: var(--background-alt);
     border: 1px solid var(--border-color);
     border-radius: var(--border-radius);
-    padding: var(--spacing-md);
+    padding: var(--spacing-sm) var(--spacing-md);
     display: flex;
     align-items: center;
-    gap: var(--spacing-md);
+    gap: var(--spacing-sm);
     transition: var(--transition-normal);
     position: relative;
     overflow: hidden;
@@ -252,9 +258,9 @@
       flex-shrink: 0;
 
       mat-icon {
-        font-size: 20px;
-        width: 20px;
-        height: 20px;
+        font-size: 18px;
+        width: 18px;
+        height: 18px;
         color: var(--primary-color);
       }
     }
@@ -276,8 +282,8 @@
 
     .stat-value {
       display: block;
-      font-size: 1.25rem;
-      font-weight: 700;
+      font-size: 1.1rem;
+      font-weight: 600;
       color: var(--text-color);
       line-height: 1.2;
     }
@@ -288,13 +294,13 @@
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
   gap: var(--spacing-md);
-  padding: 0 var(--spacing-lg) var(--spacing-lg);
+  padding: 0 var(--spacing-md) var(--spacing-md);
 
   .performance-card {
     background: var(--background-alt);
     border: 1px solid var(--border-color);
     border-radius: var(--border-radius);
-    padding: var(--spacing-md);
+    padding: var(--spacing-sm) var(--spacing-md);
     text-align: center;
     transition: var(--transition-normal);
     position: relative;
@@ -323,27 +329,27 @@
     }
 
     .card-icon {
-      width: 48px;
-      height: 48px;
+      width: 40px;
+      height: 40px;
       background: var(--primary-light);
-      border-radius: 50%;
+      border-radius: var(--border-radius);
       display: flex;
       align-items: center;
       justify-content: center;
-      margin: 0 auto var(--spacing-sm);
+      margin: 0 auto var(--spacing-xs);
 
       mat-icon {
-        font-size: 24px;
-        width: 24px;
-        height: 24px;
+        font-size: 18px;
+        width: 18px;
+        height: 18px;
         color: var(--primary-color);
       }
     }
 
     .card-content {
       .card-title {
-        font-size: 0.875rem;
-        font-weight: 600;
+        font-size: 0.75rem;
+        font-weight: 500;
         color: var(--text-color-secondary);
         margin: 0 0 var(--spacing-xs) 0;
         text-transform: uppercase;
@@ -351,8 +357,8 @@
       }
 
       .card-value {
-        font-size: 1rem;
-        font-weight: 700;
+        font-size: 0.95rem;
+        font-weight: 600;
         color: var(--text-color);
         display: block;
       }
@@ -375,19 +381,19 @@
 }
 
 .chart-section {
-  padding: var(--spacing-lg);
+  padding: var(--spacing-md);
   background: var(--background-color);
 
   .chart-header {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    margin-bottom: var(--spacing-lg);
-    padding-bottom: var(--spacing-md);
+    margin-bottom: var(--spacing-md);
+    padding-bottom: var(--spacing-sm);
     border-bottom: 1px solid var(--border-color-light);
 
     .chart-title {
-      font-size: 1.125rem;
+      font-size: 1rem;
       font-weight: 600;
       color: var(--text-color);
       margin: 0;
@@ -396,15 +402,15 @@
     .chart-controls {
       display: flex;
       align-items: center;
-      gap: var(--spacing-sm);
+      gap: var(--spacing-xs);
 
       .timeframe-controls {
         display: flex;
         align-items: center;
-        gap: var(--spacing-xs);
+        gap: var(--spacing-sm);
         background: var(--background-alt);
         border: 1px solid var(--border-color);
-        border-radius: var(--border-radius);
+        border-radius: var(--border-radius-sm);
         padding: 2px;
 
         .timeframe-btn {
@@ -414,11 +420,16 @@
           color: var(--text-color-secondary);
           font-size: 0.75rem;
           font-weight: 500;
-          border-radius: calc(var(--border-radius) - 2px);
+          border-radius: calc(var(--border-radius-sm) - 2px);
           cursor: pointer;
           transition: var(--transition-fast);
           text-transform: uppercase;
           letter-spacing: 0.05em;
+
+          &:focus-visible {
+            outline: 3px solid var(--accent-color);
+            outline-offset: 2px;
+          }
 
           &:hover {
             background: rgba(126, 87, 194, 0.08);
@@ -447,10 +458,10 @@
 
   .chart-container {
     position: relative;
-    height: 350px;
+    height: 450px;
     background: var(--background-alt);
     border-radius: var(--border-radius);
-    padding: var(--spacing-md);
+    padding: var(--spacing-sm) var(--spacing-md);
     border: 1px solid var(--border-color);
 
     .chart-canvas {
@@ -478,15 +489,15 @@
         gap: var(--spacing-sm);
 
         .loading-spinner {
-          font-size: 32px;
-          width: 32px;
-          height: 32px;
+          font-size: 24px;
+          width: 24px;
+          height: 24px;
           color: var(--primary-color);
           animation: spin 1s linear infinite;
         }
 
         .loading-text {
-          font-size: 0.875rem;
+          font-size: 0.8rem;
           color: var(--text-color-secondary);
           font-weight: 500;
         }
@@ -496,7 +507,7 @@
 }
 
 .empty-state {
-  padding: var(--spacing-xl);
+  padding: var(--spacing-lg);
   text-align: center;
   background: var(--background-alt);
 
@@ -505,42 +516,42 @@
     margin: 0 auto;
 
     .empty-icon {
-      width: 80px;
-      height: 80px;
+      width: 60px;
+      height: 60px;
       background: var(--primary-light);
-      border-radius: 50%;
+      border-radius: var(--border-radius);
       display: flex;
       align-items: center;
       justify-content: center;
-      margin: 0 auto var(--spacing-lg);
+      margin: 0 auto var(--spacing-md);
 
       mat-icon {
-        font-size: 40px;
-        width: 40px;
-        height: 40px;
+        font-size: 30px;
+        width: 30px;
+        height: 30px;
         color: var(--primary-color);
       }
     }
 
     .empty-title {
-      font-size: 1.25rem;
+      font-size: 1.1rem;
       font-weight: 600;
       color: var(--text-color);
       margin: 0 0 var(--spacing-sm) 0;
     }
 
     .empty-description {
-      font-size: 0.875rem;
+      font-size: 0.9rem;
       color: var(--text-color-secondary);
       line-height: 1.5;
-      margin: 0 0 var(--spacing-lg) 0;
+      margin: 0 0 var(--spacing-md) 0;
     }
 
     .empty-action-btn {
       display: inline-flex;
       align-items: center;
-      gap: var(--spacing-sm);
-      padding: var(--spacing-sm) var(--spacing-lg);
+      gap: var(--spacing-xs);
+      padding: var(--spacing-sm) var(--spacing-md);
       background: var(--primary-gradient);
       color: white;
       border: none;
@@ -552,9 +563,9 @@
       text-decoration: none;
 
       mat-icon {
-        font-size: 18px;
-        width: 18px;
-        height: 18px;
+        font-size: 16px;
+        width: 16px;
+        height: 16px;
       }
 
       &:hover {
@@ -578,18 +589,39 @@
   }
 }
 
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation: none !important;
+    transition: none !important;
+    scroll-behavior: auto !important;
+  }
+}
+
 @media (max-width: 768px) {
   .crypto-value-container {
     margin: 0;
   }
 
   .header-section {
+    margin-bottom: var(--spacing-sm);
+
     .header-content {
       flex-direction: column;
       align-items: center;
-      gap: var(--spacing-md);
-      padding: var(--spacing-lg) var(--spacing-xl);
+      gap: var(--spacing-sm);
+      padding: var(--spacing-md) var(--spacing-lg);
       text-align: center;
+    }
+
+    .header-left {
+      flex-direction: column;
+      align-items: center;
+      gap: var(--spacing-md);
+      width: 100%;
+    }
+    
+    .header-icon {
+      margin-bottom: var(--spacing-sm);
     }
 
     .header-actions {
@@ -599,53 +631,60 @@
   }
 
   .stats-section {
-    grid-template-columns: 1fr;
+    grid-template-columns: repeat(2, 1fr);
     gap: var(--spacing-sm);
-    padding: var(--spacing-md);
+    padding: var(--spacing-sm);
   }
 
   .performance-section {
     grid-template-columns: 1fr;
     gap: var(--spacing-sm);
-    padding: 0 var(--spacing-md) var(--spacing-md);
+    padding: 0 var(--spacing-sm) var(--spacing-sm);
   }
 
   .chart-section {
-    padding: var(--spacing-md);
+    padding: var(--spacing-sm);
 
     .chart-header {
       flex-direction: column;
       align-items: flex-start;
-      gap: var(--spacing-sm);
+      gap: var(--spacing-xs);
 
       .chart-controls {
         width: 100%;
         justify-content: flex-start;
+
+        .timeframe-controls {
+          display: grid;
+          grid-template-columns: repeat(2, 1fr);
+          gap: var(--spacing-md);
+          width: 100%;
+        }
       }
     }
 
     .chart-container {
-      height: 300px;
+      height: 350px;
     }
   }
 
   .empty-state {
-    padding: var(--spacing-lg);
+    padding: var(--spacing-md);
 
     .empty-content {
       .empty-icon {
-        width: 60px;
-        height: 60px;
+        width: 50px;
+        height: 50px;
 
         mat-icon {
-          font-size: 30px;
-          width: 30px;
-          height: 30px;
+          font-size: 24px;
+          width: 24px;
+          height: 24px;
         }
       }
 
       .empty-title {
-        font-size: 1.125rem;
+        font-size: 1rem;
       }
     }
   }
@@ -675,7 +714,11 @@
   }
 
   .stats-section .stat-card,
-  .performance-section .performance-card,
+  .performance-section .performance-card {
+    background: var(--background-alt);
+    border-color: var(--border-color);
+  }
+
   .chart-section .chart-container {
     background: var(--background-alt);
     border-color: var(--border-color);

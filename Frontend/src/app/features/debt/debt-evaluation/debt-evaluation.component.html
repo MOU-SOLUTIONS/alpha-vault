@@ -1,21 +1,22 @@
-<!-- ================================================================
-               Coded by Mohamed Dhaoui for Alpha Vault
-=============================================================== -->
+<!--
+  Alpha Vault Financial System
+  
+  @author Mohamed Dhaoui
+  @component DebtEvaluationComponent
+  @description Main debt dashboard component template for managing debt health score and recommendations
+-->
 
-<!-- Section: Debt Evaluation Container -->
 <section class="debt-evaluation-container" role="region" aria-labelledby="debtEvaluationTitle">
   
-  <!-- Section: Evaluation Header -->
   <header class="evaluation-header">
     <div class="header-content">
-      <div class="header-icon">
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <div class="header-icon" aria-label="Evaluation icon">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
           <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" fill="currentColor"/>
         </svg>
       </div>
       <div class="header-text">
         <h2 id="debtEvaluationTitle">Debt Evaluation</h2>
-        <p class="evaluation-subtitle">Assess your financial health and get personalized recommendations</p>
       </div>
     </div>
     
@@ -27,14 +28,12 @@
     </div>
   </header>
   
-  <!-- Section: Evaluation Grid -->
   <div class="evaluation-grid">
     
-    <!-- Section: Total Debt Card -->
     <article class="evaluation-card">
       <header class="card-header">
-        <div class="card-icon">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <div class="card-icon" aria-label="Total debt icon">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
             <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" fill="currentColor"/>
           </svg>
         </div>
@@ -44,7 +43,7 @@
       <div class="card-content">
         <div class="metric">
           <span class="label">Total Debt:</span>
-          <span class="value">${{ totalDebt | number:'1.0-0' }}</span>
+          <span class="value">${{ displayTotalDebt | number:'1.0-0' }}</span>
         </div>
         <div class="metric">
           <span class="label">Paid Amount:</span>
@@ -56,16 +55,15 @@
         </div>
         <div class="metric">
           <span class="label">Progress:</span>
-          <span class="value progress">{{ getProgressPercentage() | number:'1.0-1' }}%</span>
+          <span class="value progress">{{ progressPercentage | number:'1.0-1' }}%</span>
         </div>
       </div>
     </article>
     
-    <!-- Section: Interest Analysis Card -->
     <article class="evaluation-card">
       <header class="card-header">
-        <div class="card-icon">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <div class="card-icon" aria-label="Interest analysis icon">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
             <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" fill="currentColor"/>
           </svg>
         </div>
@@ -75,35 +73,34 @@
       <div class="card-content">
         <div class="metric">
           <span class="label">High Interest (>15%):</span>
-          <span class="value warning">{{ getHighInterestDebtCount() }}</span>
+          <span class="value warning">{{ highInterestDebtCount }}</span>
         </div>
         <div class="metric">
           <span class="label">Low Interest (≤5%):</span>
-          <span class="value success">{{ getLowInterestDebtCount() }}</span>
+          <span class="value success">{{ lowInterestDebtCount }}</span>
         </div>
         <div class="metric">
           <span class="label">Risk Level:</span>
-          <span class="value risk-level" [class]="getRiskLevel()">{{ getRiskLevel() | titlecase }}</span>
+          <span class="value risk-level" [class]="riskLevel">{{ riskLevel | titlecase }}</span>
         </div>
       </div>
     </article>
     
-    <!-- Section: Recommendations Card -->
     <article class="evaluation-card recommendations">
       <header class="card-header">
-        <div class="card-icon">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <div class="card-icon" aria-label="Recommendations icon">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
             <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" fill="currentColor"/>
           </svg>
         </div>
         <h3 class="card-title">Recommendations</h3>
       </header>
       
-      <ul class="recommendations-list">
-        <li *ngFor="let recommendation of getRecommendations(); trackBy: trackByRecommendation" [class]="recommendation.priority">
+      <ul class="recommendations-list" role="list" aria-label="Debt management recommendations">
+        <li *ngFor="let recommendation of recommendations; trackBy: trackByRecommendation" [class]="recommendation.priority" role="listitem">
           <div class="recommendation-content">
             <span class="recommendation-text">{{ recommendation.text }}</span>
-            <span class="priority-badge" [class]="recommendation.priority">{{ recommendation.priority | titlecase }}</span>
+            <span class="priority-badge" [class]="recommendation.priority" [attr.aria-label]="recommendation.priority + ' priority'">{{ recommendation.priority | titlecase }}</span>
           </div>
         </li>
       </ul>

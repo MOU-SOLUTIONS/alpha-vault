@@ -1,10 +1,14 @@
-// ====================================================================
-//             Coded by Mohamed Dhaoui for Alpha Vault
-// ====================================================================
+/*
+  Alpha Vault Financial System
+  
+  @author Mohamed Dhaoui
+  @component DebtWidgetComponent
+  @description Main debt dashboard component for managing debt summary
+*/
 
-import { Component, Input, ChangeDetectionStrategy, OnInit } from '@angular/core';
-import { Meta } from '@angular/platform-browser';
 import { DecimalPipe } from '@angular/common';
+import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
+import { META_FRAGMENT } from '../../../core/seo/page-meta.model';
 
 @Component({
   standalone: true,
@@ -13,35 +17,33 @@ import { DecimalPipe } from '@angular/common';
   styleUrls: ['./debt-widget.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [DecimalPipe],
+  providers: [
+    {
+      provide: META_FRAGMENT,
+      useValue: {
+        description: 'Track your total debt, minimum payments, overdue accounts, and creditor count with our comprehensive debt overview dashboard. Get real-time insights into your financial health in Alpha Vault.'
+      }
+    }
+  ],
 })
-export class DebtWidgetComponent implements OnInit {
-  @Input() totalDebt: number = 0;
-  @Input() totalMinPayments: number = 0;
-  @Input() overdueDebts: number = 0;
-  @Input() totalCreditors: number = 0;
-
-  constructor(
-    private meta: Meta
-  ) {}
-
-  ngOnInit(): void {
-    this.setSEOMeta();
-  }
-
-  private setSEOMeta(): void {
-    
-    this.meta.addTags([
-      { name: 'description', content: 'Track your total debt, minimum payments, overdue accounts, and creditor count with our comprehensive debt overview dashboard. Get real-time insights into your financial health.' },
-      { name: 'keywords', content: 'debt dashboard, total debt, minimum payments, overdue debts, creditor count, financial overview, debt management, Alpha Vault' },
-      { name: 'robots', content: 'index,follow' },
-      { name: 'viewport', content: 'width=device-width, initial-scale=1' },
-      { name: 'author', content: 'Alpha Vault' },
-      { name: 'og:title', content: 'Debt Overview Dashboard | Alpha Vault' },
-      { name: 'og:description', content: 'Comprehensive debt overview with real-time tracking of total debt, payments, and creditor information.' },
-      { name: 'og:type', content: 'website' },
-      { name: 'twitter:card', content: 'summary' },
-      { name: 'twitter:title', content: 'Debt Overview Dashboard | Alpha Vault' },
-      { name: 'twitter:description', content: 'Track your financial health with our debt overview dashboard.' }
-    ]);
-  }
+export class DebtWidgetComponent {
+  /**
+   * Total outstanding debt amount
+   */
+  @Input() totalDebt = 0;
+  
+  /**
+   * Total minimum monthly payments required
+   */
+  @Input() totalMinPayments = 0;
+  
+  /**
+   * Number of overdue debt accounts
+   */
+  @Input() overdueDebts = 0;
+  
+  /**
+   * Total number of active creditors
+   */
+  @Input() totalCreditors = 0;
 }

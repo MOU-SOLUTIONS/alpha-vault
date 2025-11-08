@@ -1,10 +1,20 @@
-// ====================================================================
-//             Coded by Mohamed Dhaoui for Alpha Vault
-// ====================================================================
+/*
+  Alpha Vault Financial System
+  
+  @author Mohamed Dhaoui
+  @component IncomeTop5Component
+  @description Income top 5 component for displaying income data
+*/  
 
-import { Component, Input, ChangeDetectionStrategy, OnChanges, SimpleChanges } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { ChangeDetectionStrategy, Component, computed, inject, Input, OnChanges, signal, SimpleChanges } from '@angular/core';
 import { Meta } from '@angular/platform-browser';
+import { Subject } from 'rxjs';
+
+interface IncomeItem {
+  category: string;
+  amount: number;
+}
 
 @Component({
   selector: 'app-income-top5',
@@ -15,11 +25,36 @@ import { Meta } from '@angular/platform-browser';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class IncomeTop5Component implements OnChanges {
-  @Input() topIncomes: { category: string; amount: number }[] = [];
-  shouldPulse = false;
-  private categoryColors: Record<string, string> = {};
+  @Input() topIncomes: IncomeItem[] = [];
 
-  constructor( private meta: Meta) {
+  private readonly topIncomesSignal = signal<IncomeItem[]>([]);
+  private readonly shouldPulseSignal = signal<boolean>(false);
+  private readonly destroy$ = new Subject<void>();
+
+  readonly sortedIncomes = computed(() => {
+    const incomes = this.topIncomesSignal();
+    return [...incomes].sort((a, b) => b.amount - a.amount);
+  });
+
+  readonly shouldPulse = this.shouldPulseSignal.asReadonly();
+
+  readonly categoryColors = computed(() => {
+    const palette = ['#6366f1', '#8b5cf6', '#34d399', '#f59e0b', '#ec4899'];
+    const colors: Record<string, string> = {};
+    const incomes = this.sortedIncomes();
+
+    incomes.forEach((item, i) => {
+      if (!colors[item.category]) {
+        colors[item.category] = palette[i % palette.length];
+      }
+    });
+
+    return colors;
+  });
+
+  private readonly meta = inject(Meta);
+
+  constructor() {
     this.meta.addTags([
       { name: 'description', content: 'Top 5 income categories ranked by amount in Alpha Vault.' },
       { name: 'robots', content: 'index,follow' },
@@ -29,13 +64,19 @@ export class IncomeTop5Component implements OnChanges {
 
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['topIncomes'] && !changes['topIncomes'].firstChange) {
-      this.shouldPulse = true;
-      setTimeout(() => (this.shouldPulse = false), 1000);
+      this.shouldPulseSignal.set(true);
+      const timeoutId = setTimeout(() => this.shouldPulseSignal.set(false), 1000);
+      
+      // Clean up timeout on destroy
+      this.destroy$.subscribe(() => {
+        clearTimeout(timeoutId);
+      });
     }
 
     if (this.topIncomes?.length > 0) {
-      this.topIncomes = [...this.topIncomes].sort((a, b) => b.amount - a.amount);
-      this.assignDynamicColors();
+      this.topIncomesSignal.set(this.topIncomes);
+    } else {
+      this.topIncomesSignal.set([]);
     }
   }
 
@@ -44,21 +85,18 @@ export class IncomeTop5Component implements OnChanges {
   }
 
   getCategoryColor(category: string): string {
-    return this.categoryColors[category] || '#999999';
+    return this.categoryColors()[category] || '#999999';
   }
 
-  private assignDynamicColors(): void {
-    const palette = ['#6366f1', '#8b5cf6', '#34d399', '#f59e0b', '#ec4899'];
-    this.categoryColors = {};
-
-    this.topIncomes.forEach((item, i) => {
-      if (!this.categoryColors[item.category]) {
-        this.categoryColors[item.category] = palette[i % palette.length];
-      }
-    });
+  trackByCategory(index: number, item: IncomeItem): string {
+    return item.category;
   }
 
-  trackByIndex(index: number): number {
-    return index;
+  onRowKeydown(event: KeyboardEvent, income: IncomeItem): void {
+    if (event.key === 'Enter' || event.key === ' ') {
+      event.preventDefault();
+      // Handle row activation if needed
+    }
   }
 }
+

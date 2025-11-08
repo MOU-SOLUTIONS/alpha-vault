@@ -1,0 +1,39 @@
+<!--
+  Alpha Vault Financial System
+  
+  @author Mohamed Dhaoui
+  @component IncomeWidgetNewComponent
+  @description New income widget template to bypass cache issues
+-->
+
+<section class="income-cards-container" role="region" aria-label="Income statistics dashboard">
+  <article 
+    *ngFor="let item of cards; trackBy: trackByKey" 
+    class="income-card"
+    role="article"
+    [attr.aria-label]="item.label + ' income: ' + (getIncomeValue(item.key) | currency:currency:'symbol':'1.0-0')"
+    >
+    
+    <div class="income-box"
+         role="button"
+         tabindex="0"
+         [attr.aria-labelledby]="item.key + 'Label'"
+         (click)="onCardClick(item)"
+         (keydown.enter)="onCardClick(item)"
+         (keydown.space)="onCardClick(item)">
+      
+      <div class="income-icon" aria-hidden="true">
+        <i class="fas" [ngClass]="item.icon"></i>
+      </div>
+      
+      <div class="income-content">
+        <p class="income-label" [id]="item.key + 'Label'">{{ item.label }}</p>
+        <div class="income-amount-wrapper">
+          <span class="income-amount">{{ getIncomeValue(item.key) | currency:currency:'symbol':'1.0-0' }}</span>
+        </div>
+      </div>
+      
+      <div class="income-indicator" [ngClass]="item.class" aria-hidden="true"></div>
+    </div>
+  </article>
+</section>

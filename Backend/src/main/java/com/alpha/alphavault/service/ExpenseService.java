@@ -1,64 +1,136 @@
+/**
+ * ================================================================
+ *  Coded by Mohamed Dhaoui for Alpha Vault - Financial System
+ *  Service: ExpenseService - analytics, totals, soft delete
+ * ================================================================
+ */
 package com.alpha.alphavault.service;
 
-import com.alpha.alphavault.exception.IncomeException;
-import com.alpha.alphavault.model.Budget;
-import com.alpha.alphavault.model.Expense;
-import com.alpha.alphavault.repository.BudgetRepository;
-import com.alpha.alphavault.repository.ExpenseRepository;
-import com.alpha.alphavault.exception.ExpenseNotFoundException;
+import com.alpha.alphavault.dto.expense.ExpenseRequestDTO;
+import com.alpha.alphavault.dto.expense.ExpenseResponseDTO;
 import com.alpha.alphavault.exception.ExpenseException;
-import org.springframework.beans.factory.annotation.Autowired;
+import com.alpha.alphavault.exception.ExpenseNotFoundException;
+import com.alpha.alphavault.mapper.ExpenseMapper;
+import com.alpha.alphavault.model.Expense;
+import com.alpha.alphavault.repository.ExpenseRepository;
+import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
-import java.time.DayOfWeek;
-import java.time.LocalDate;
+import java.time.*;
 import java.time.temporal.TemporalAdjusters;
 import java.util.*;
-import java.util.stream.Collectors;
 
+@RequiredArgsConstructor
 @Service
 public class ExpenseService {
 
     private final ExpenseRepository expenseRepository;
-    private final BudgetService budgetService;
+    private final ExpenseMapper expenseMapper;
+    private final BudgetService budgetService; // keep your hook
 
-    @Autowired
-    public ExpenseService(ExpenseRepository expenseRepository, BudgetRepository budgetRepository, BudgetService budgetService) {
-        this.expenseRepository = expenseRepository;
-        this.budgetService = budgetService;
+    // ============================================================
+    // == CRUD with DTOs (new, recommended)
+    // ============================================================
+
+    @Transactional
+    public ExpenseResponseDTO create(ExpenseRequestDTO dto) {
+        try {
+            Expense exp = expenseMapper.toEntity(dto);
+            Expense saved = expenseRepository.save(exp);
+            // sync budget after change
+            if (budgetService != null) budgetService.syncAfterExpenseChange(saved);
+            return expenseMapper.toResponse(saved);
+        } catch (Exception e) {
+            throw new ExpenseException("Error creating expense: " + e.getMessage());
+        }
     }
 
+    @Transactional
+    public ExpenseResponseDTO update(Long id, ExpenseRequestDTO dto) {
+        Expense exp = expenseRepository.findById(id)
+                .orElseThrow(() -> new ExpenseNotFoundException("Expense not found for id: " + id));
+        expenseMapper.updateEntity(exp, dto);
+        Expense saved = expenseRepository.save(exp);
+        if (budgetService != null) budgetService.syncAfterExpenseChange(saved);
+        return expenseMapper.toResponse(saved);
+    }
+
+    @Transactional(readOnly = true)
+    public ExpenseResponseDTO getDtoById(Long id) {
+        Expense exp = expenseRepository.findById(id)
+                .orElseThrow(() -> new ExpenseNotFoundException("Expense not found for id: " + id));
+        return expenseMapper.toResponse(exp);
+    }
+
+    @Transactional(readOnly = true)
+    public Page<ExpenseResponseDTO> listByUser(Long userId, Pageable pageable) {
+        return expenseRepository.findByUserIdOrderByExpenseDateDesc(userId, pageable)
+                .map(expenseMapper::toResponse);
+    }
+
+    @Transactional(readOnly = true)
+    public Page<ExpenseResponseDTO> listByUserAndDateRange(Long userId, LocalDate startInclusive, LocalDate endInclusive, Pageable pageable) {
+        return expenseRepository.findByUserIdAndExpenseDateBetweenOrderByExpenseDateDesc(userId, startInclusive, endInclusive, pageable)
+                .map(expenseMapper::toResponse);
+    }
+
+    // ============================================================
+    // == Legacy CRUD kept for compatibility (your old methods)
+    // ============================================================
+
+    @Transactional
     public Expense saveExpense(Expense expense) {
         try {
             Expense saved = expenseRepository.save(expense);
-            budgetService.syncAfterExpenseChange(saved);
+            if (budgetService != null) budgetService.syncAfterExpenseChange(saved);
             return saved;
         } catch (Exception e) {
             throw new ExpenseException("Error saving expense: " + e.getMessage());
         }
     }
 
+    @Transactional
     public void deleteExpense(Long id) {
-        try {
-            Expense expense = expenseRepository.findById(id)
-                    .orElseThrow(() -> new ExpenseNotFoundException("Expense not found for id: " + id));
+        Expense expense = expenseRepository.findById(id)
+                .orElseThrow(() -> new ExpenseNotFoundException("Expense not found for id: " + id));
 
-            expenseRepository.deleteById(id);
-            budgetService.syncAfterExpenseChange(expense);
+        // Hard delete - permanently remove from database
+        int deleted = expenseRepository.deleteByIdNative(id);
+        if (deleted == 0) throw new ExpenseException("Failed to delete expense id: " + id);
 
-        } catch (ExpenseNotFoundException e) {
-            throw e;
-        } catch (Exception e) {
-            throw new ExpenseException("Error deleting expense: " + e.getMessage());
-        }
+        if (budgetService != null) budgetService.syncAfterExpenseChange(expense);
     }
 
+    /** Soft delete with attribution (preferred when you know who deleted). */
+    @Transactional
+    public void deleteExpense(Long id, String deletedBy) {
+        Expense expense = expenseRepository.findById(id)
+                .orElseThrow(() -> new ExpenseNotFoundException("Expense not found for id: " + id));
+
+        int updated = expenseRepository.softDelete(id, deletedBy);
+        if (updated == 0) throw new ExpenseException("Failed to soft delete expense id: " + id);
+
+        if (budgetService != null) budgetService.syncAfterExpenseChange(expense);
+    }
+
+    /** Restore a soft-deleted expense (admin). */
+    @Transactional
+    public void restoreExpense(Long id) {
+        int updated = expenseRepository.restore(id);
+        if (updated == 0) throw new ExpenseException("Failed to restore expense id: " + id);
+    }
+
+    @Transactional(readOnly = true)
     public Expense getExpenseById(Long id) {
         return expenseRepository.findById(id)
                 .orElseThrow(() -> new ExpenseNotFoundException("Expense not found for id: " + id));
     }
 
+    @Transactional(readOnly = true)
     public List<Expense> getExpensesByUserId(Long userId) {
         try {
             return expenseRepository.findByUserId(userId);
@@ -67,123 +139,214 @@ public class ExpenseService {
         }
     }
 
-    public Double getExpenseForPeriod(Long userId, LocalDate startDate, LocalDate endDate) {
+    // ============================================================
+    // == Totals / Period analytics (DB-side sums)
+    // ============================================================
+
+    @Transactional(readOnly = true)
+    public Double getExpenseForPeriod(Long userId, LocalDate startInclusive, LocalDate endExclusive) {
         try {
-            List<Expense> expenses = expenseRepository.findByUserIdAndDateBetween(userId, startDate, endDate.minusDays(1));
-            return expenses.stream().mapToDouble(income -> income.getAmount().doubleValue()).sum();
+            BigDecimal sum = expenseRepository.sumAmountForPeriod(userId, startInclusive, endExclusive);
+            return sum.doubleValue();
         } catch (Exception e) {
-            throw new IncomeException("Error fetching income for the specified period for user: " + userId);
+            throw new ExpenseException("Error fetching expense for the specified period for user: " + userId);
         }
     }
 
+    @Transactional(readOnly = true)
     public Double getExpenseForToday(Long userId) {
         LocalDate today = LocalDate.now();
         return getExpenseForPeriod(userId, today, today.plusDays(1));
     }
 
+    @Transactional(readOnly = true)
     public Double getExpenseForCurrentWeek(Long userId) {
         try {
             LocalDate today = LocalDate.now();
-            LocalDate startOfWeek = today.with(TemporalAdjusters.previousOrSame(java.time.DayOfWeek.MONDAY));
-            LocalDate endOfWeek = today.with(TemporalAdjusters.nextOrSame(java.time.DayOfWeek.SUNDAY)).plusDays(1);
-            return getExpenseForPeriod(userId, startOfWeek, endOfWeek);
+            LocalDate start = today.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY));
+            LocalDate end = today.with(TemporalAdjusters.nextOrSame(DayOfWeek.SUNDAY)).plusDays(1);
+            return getExpenseForPeriod(userId, start, end);
         } catch (Exception e) {
             throw new ExpenseException("Error fetching current week's expense for user: " + userId);
         }
     }
 
+    @Transactional(readOnly = true)
     public Double getExpenseForCurrentMonth(Long userId) {
         try {
             LocalDate today = LocalDate.now();
-            LocalDate startOfMonth = today.with(TemporalAdjusters.firstDayOfMonth());
-            LocalDate endOfMonth = today.with(TemporalAdjusters.lastDayOfMonth()).plusDays(1);
-            return getExpenseForPeriod(userId, startOfMonth, endOfMonth);
+            LocalDate start = today.with(TemporalAdjusters.firstDayOfMonth());
+            LocalDate end = today.with(TemporalAdjusters.lastDayOfMonth()).plusDays(1);
+            return getExpenseForPeriod(userId, start, end);
         } catch (Exception e) {
-            throw new ExpenseException("Error fetching current month's income for user: " + userId);
+            throw new ExpenseException("Error fetching current month's expense for user: " + userId);
         }
     }
 
+    @Transactional(readOnly = true)
     public Double getExpenseForCurrentYear(Long userId) {
         try {
             LocalDate today = LocalDate.now();
-            LocalDate startOfYear = today.with(TemporalAdjusters.firstDayOfYear());
-            LocalDate endOfYear = today.with(TemporalAdjusters.lastDayOfYear()).plusDays(1);
-            return getExpenseForPeriod(userId, startOfYear, endOfYear);
+            LocalDate start = today.with(TemporalAdjusters.firstDayOfYear());
+            LocalDate end = today.with(TemporalAdjusters.lastDayOfYear()).plusDays(1);
+            return getExpenseForPeriod(userId, start, end);
         } catch (Exception e) {
             throw new ExpenseException("Error fetching current year's expense for user: " + userId);
         }
     }
 
+    @Transactional(readOnly = true)
     public Double getExpenseForPreviousWeek(Long userId) {
         try {
             LocalDate today = LocalDate.now();
-            LocalDate startOfPreviousWeek = today.minusWeeks(1).with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY));
-            LocalDate endOfPreviousWeek = today.minusWeeks(1).with(TemporalAdjusters.nextOrSame(DayOfWeek.SUNDAY)).plusDays(1);
-            return getExpenseForPeriod(userId, startOfPreviousWeek, endOfPreviousWeek);
+            LocalDate start = today.minusWeeks(1).with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY));
+            LocalDate end = today.minusWeeks(1).with(TemporalAdjusters.nextOrSame(DayOfWeek.SUNDAY)).plusDays(1);
+            return getExpenseForPeriod(userId, start, end);
         } catch (Exception e) {
             throw new ExpenseException("Error fetching previous week's expense for user: " + userId);
         }
     }
 
+    @Transactional(readOnly = true)
     public Double getExpenseForPreviousMonth(Long userId) {
         try {
             LocalDate today = LocalDate.now();
-            LocalDate startOfPreviousMonth = today.minusMonths(1).with(TemporalAdjusters.firstDayOfMonth());
-            LocalDate endOfPreviousMonth = today.minusMonths(1).with(TemporalAdjusters.lastDayOfMonth()).plusDays(1);
-            return getExpenseForPeriod(userId, startOfPreviousMonth, endOfPreviousMonth);
+            LocalDate start = today.minusMonths(1).with(TemporalAdjusters.firstDayOfMonth());
+            LocalDate end = today.minusMonths(1).with(TemporalAdjusters.lastDayOfMonth()).plusDays(1);
+            return getExpenseForPeriod(userId, start, end);
         } catch (Exception e) {
             throw new ExpenseException("Error fetching previous month's expense for user: " + userId);
         }
     }
 
+    @Transactional(readOnly = true)
     public Double getExpenseForPreviousYear(Long userId) {
         try {
             LocalDate today = LocalDate.now();
-            LocalDate startOfPreviousYear = today.minusYears(1).with(TemporalAdjusters.firstDayOfYear());
-            LocalDate endOfPreviousYear = today.minusYears(1).with(TemporalAdjusters.lastDayOfYear()).plusDays(1);
-            return getExpenseForPeriod(userId, startOfPreviousYear, endOfPreviousYear);
+            LocalDate start = today.minusYears(1).with(TemporalAdjusters.firstDayOfYear());
+            LocalDate end = today.minusYears(1).with(TemporalAdjusters.lastDayOfYear()).plusDays(1);
+            return getExpenseForPeriod(userId, start, end);
         } catch (Exception e) {
             throw new ExpenseException("Error fetching previous year's expense for user: " + userId);
         }
     }
 
+    // ============================================================
+    // == Summaries / Top-K (DB-side)
+    // ============================================================
+
+    @Transactional(readOnly = true)
     public Map<String, Double> getExpensePaymentMethodSummary(Long userId) {
         try {
-            List<Expense> expenses = getExpensesByUserId(userId);
-            return expenses.stream()
-                    .collect(Collectors.groupingBy(expense -> expense.getPaymentMethod().name(),
-                            Collectors.mapping(Expense::getAmount, Collectors.reducing(BigDecimal.ZERO, BigDecimal::add))))
-                    .entrySet().stream()
-                    .collect(Collectors.toMap(Map.Entry::getKey, entry -> entry.getValue().doubleValue()));
+            List<Object[]> rows = expenseRepository.sumByPaymentMethod(userId);
+            Map<String, Double> out = new HashMap<>();
+            for (Object[] r : rows) {
+                String method = String.valueOf(r[0]);
+                BigDecimal sum = (BigDecimal) r[1];
+                out.put(method, sum.doubleValue());
+            }
+            return out;
         } catch (Exception e) {
-            throw new IncomeException("Error fetching payment method summary for user: " + userId);
+            throw new ExpenseException("Error fetching payment method summary for user: " + userId);
         }
     }
 
-    public List<Map<String, Object>> getTop5HighestExpensesThisMonth(Long userId) {
+    @Transactional(readOnly = true)
+    public Map<String, Double> getExpenseCategorySummary(Long userId) {
+        try {
+            List<Object[]> rows = expenseRepository.sumByCategory(userId);
+            Map<String, Double> out = new HashMap<>();
+            for (Object[] r : rows) {
+                String category = String.valueOf(r[0]);
+                BigDecimal sum = (BigDecimal) r[1];
+                out.put(category, sum.doubleValue());
+            }
+            return out;
+        } catch (Exception e) {
+            throw new ExpenseException("Error fetching category summary for user: " + userId);
+        }
+    }
+
+    @Transactional(readOnly = true)
+    public Map<String, Double> getCurrentMonthExpensePaymentMethodSummary(Long userId) {
         try {
             LocalDate today = LocalDate.now();
-            LocalDate startOfMonth = today.with(TemporalAdjusters.firstDayOfMonth());
-            LocalDate endOfMonth = today.with(TemporalAdjusters.lastDayOfMonth()).plusDays(1);
-
-            return expenseRepository.findByUserIdAndDateBetween(userId, startOfMonth, endOfMonth)
-                    .stream()
-                    .sorted(Comparator.comparing(Expense::getAmount).reversed())
-                    .limit(5)
-                    .map(expense -> {
-                        Map<String, Object> map = new LinkedHashMap<>();
-                        map.put("category", expense.getCategory().name());
-                        map.put("amount", expense.getAmount());
-                        return map;
-                    })
-                    .toList();
+            LocalDate start = today.with(TemporalAdjusters.firstDayOfMonth());
+            LocalDate end = today.with(TemporalAdjusters.lastDayOfMonth()).plusDays(1);
+            
+            List<Object[]> rows = expenseRepository.sumByPaymentMethodForPeriod(userId, start, end);
+            Map<String, Double> out = new HashMap<>();
+            for (Object[] r : rows) {
+                String method = String.valueOf(r[0]);
+                BigDecimal sum = (BigDecimal) r[1];
+                out.put(method, sum.doubleValue());
+            }
+            return out;
         } catch (Exception e) {
-            throw new IncomeException("Error fetching top-5 expenses for user " + userId);
+            throw new ExpenseException("Error fetching current month payment method summary for user: " + userId);
         }
     }
 
+    @Transactional(readOnly = true)
+    public Map<String, Double> getCurrentMonthExpenseCategorySummary(Long userId) {
+        try {
+            LocalDate today = LocalDate.now();
+            LocalDate start = today.with(TemporalAdjusters.firstDayOfMonth());
+            LocalDate end = today.with(TemporalAdjusters.lastDayOfMonth()).plusDays(1);
+            
+            List<Object[]> rows = expenseRepository.sumByCategoryForPeriod(userId, start, end);
+            Map<String, Double> out = new HashMap<>();
+            for (Object[] r : rows) {
+                String category = String.valueOf(r[0]);
+                BigDecimal sum = (BigDecimal) r[1];
+                out.put(category, sum.doubleValue());
+            }
+            return out;
+        } catch (Exception e) {
+            throw new ExpenseException("Error fetching current month category summary for user: " + userId);
+        }
+    }
+
+    @Transactional(readOnly = true)
+    public Map<String, Double> getTop5HighestExpensesThisMonth(Long userId) {
+        try {
+            LocalDate today = LocalDate.now();
+            LocalDate start = today.with(TemporalAdjusters.firstDayOfMonth());
+            LocalDate end = today.with(TemporalAdjusters.lastDayOfMonth()).plusDays(1);
+
+            List<Expense> top5 = expenseRepository.findTop5ByUserIdAndExpenseDateBetweenOrderByAmountDesc(userId, start, end);
+
+            LinkedHashMap<String, Double> result = new LinkedHashMap<>();
+            for (Expense e : top5) {
+                result.put(e.getCategory().name(), e.getAmount().doubleValue());
+            }
+            return result;
+        } catch (Exception e) {
+            throw new ExpenseException("Error fetching top-5 expenses for user " + userId);
+        }
+    }
+
+    /** Back-compat variant returning a list of maps (category, amount). */
+    @Transactional(readOnly = true)
+    public List<Map<String, Object>> getTop5HighestExpensesThisMonthList(Long userId) {
+        Map<String, Double> map = getTop5HighestExpensesThisMonth(userId);
+        List<Map<String, Object>> out = new ArrayList<>();
+        map.forEach((k, v) -> {
+            Map<String, Object> row = new LinkedHashMap<>();
+            row.put("category", k);
+            row.put("amount", v);
+            out.add(row);
+        });
+        return out;
+    }
+
+    // ============================================================
+    // == Series: weekly of month & 12 months of year
+    // ============================================================
+
+    @Transactional(readOnly = true)
     public List<Double> getExpenseForWeeksOfCurrentMonth(Long userId) {
-        List<Double> weeklyExpenses = new ArrayList<>();
+        List<Double> weekly = new ArrayList<>();
         LocalDate today = LocalDate.now();
         LocalDate startOfMonth = today.with(TemporalAdjusters.firstDayOfMonth());
         LocalDate endOfMonth = today.with(TemporalAdjusters.lastDayOfMonth());
@@ -192,42 +355,25 @@ public class ExpenseService {
 
         while (!weekStart.isAfter(endOfMonth)) {
             LocalDate weekEnd = weekStart.with(TemporalAdjusters.nextOrSame(DayOfWeek.SUNDAY));
-            if (weekEnd.isAfter(endOfMonth)) {
-                weekEnd = endOfMonth;
-            }
+            if (weekEnd.isAfter(endOfMonth)) weekEnd = endOfMonth;
             double sum = getExpenseForPeriod(userId, weekStart, weekEnd.plusDays(1));
-            weeklyExpenses.add(sum);
+            weekly.add(sum);
             weekStart = weekEnd.plusDays(1);
         }
-
-        return weeklyExpenses;
+        return weekly;
     }
 
+    @Transactional(readOnly = true)
     public List<Double> getExpenseForTwelveMonthsOfCurrentYear(Long userId) {
-        List<Double> monthlyExpenses = new ArrayList<>(12);
+        List<Double> monthly = new ArrayList<>(12);
         LocalDate today = LocalDate.now();
         LocalDate startOfYear = today.with(TemporalAdjusters.firstDayOfYear());
 
-        for (int monthIndex = 0; monthIndex < 12; monthIndex++) {
-            LocalDate startOfMonth = startOfYear.plusMonths(monthIndex);
+        for (int m = 0; m < 12; m++) {
+            LocalDate startOfMonth = startOfYear.plusMonths(m);
             LocalDate endOfMonth = startOfMonth.with(TemporalAdjusters.lastDayOfMonth()).plusDays(1);
-            double monthlyTotal = getExpenseForPeriod(userId, startOfMonth, endOfMonth);
-            monthlyExpenses.add(monthlyTotal);
+            monthly.add(getExpenseForPeriod(userId, startOfMonth, endOfMonth));
         }
-
-        return monthlyExpenses;
-    }
-
-    public Map<String, Double> getExpenseCategorySummary(Long userId) {
-        try {
-            List<Expense> expenses = getExpensesByUserId(userId);
-            return expenses.stream()
-                    .collect(Collectors.groupingBy(expense -> expense.getCategory().name(),
-                            Collectors.mapping(Expense::getAmount, Collectors.reducing(BigDecimal.ZERO, BigDecimal::add))))
-                    .entrySet().stream()
-                    .collect(Collectors.toMap(Map.Entry::getKey, entry -> entry.getValue().doubleValue()));
-        } catch (Exception e) {
-            throw new IncomeException("Error fetching category summary for user: " + userId);
-        }
+        return monthly;
     }
 }

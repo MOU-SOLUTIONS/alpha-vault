@@ -1,6 +1,6 @@
-import { Component, OnInit, Output, EventEmitter, HostListener } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { trigger, transition, style, animate } from '@angular/animations';
+import { animate,style, transition, trigger } from '@angular/animations';
+import { CommonModule, isPlatformBrowser } from '@angular/common';
+import { Component, EventEmitter, HostListener, inject, OnDestroy, OnInit, Output, PLATFORM_ID } from '@angular/core';
 
 @Component({
   selector: 'app-welcome-overlay',
@@ -51,23 +51,26 @@ import { trigger, transition, style, animate } from '@angular/animations';
     ])
   ]
 })
-export class WelcomeOverlayComponent implements OnInit {
+export class WelcomeOverlayComponent implements OnInit, OnDestroy {
   showOverlay = false;
   isClosing = false;
-  autoCloseTimer: any;
+  autoCloseTimer: ReturnType<typeof setTimeout> | null = null;
   
-  // Removed the quotes array as we'll use direct quotes in the template
+  private readonly platformId = inject(PLATFORM_ID);
+  private readonly isBrowser = isPlatformBrowser(this.platformId);
   
   @Output() closeOverlay = new EventEmitter<void>();
   
   constructor() {}
   
   ngOnInit(): void {
+    if (!this.isBrowser) return;
+    
     // Check if user has visited before
     const hasVisitedBefore = localStorage.getItem('hasVisitedBefore');
     if (!hasVisitedBefore) { // Fixed the logic to only show on first visit
       // Only show on first visit
-      setTimeout(() => {
+      this.autoCloseTimer = setTimeout(() => {
         this.showOverlay = true;
         
         // Auto-close after 8 seconds
@@ -81,6 +84,7 @@ export class WelcomeOverlayComponent implements OnInit {
   ngOnDestroy(): void {
     if (this.autoCloseTimer) {
       clearTimeout(this.autoCloseTimer);
+      this.autoCloseTimer = null;
     }
   }
   
@@ -92,16 +96,20 @@ export class WelcomeOverlayComponent implements OnInit {
   }
   
   onClose(): void {
+    if (!this.isBrowser) return;
+    
     if (this.autoCloseTimer) {
       clearTimeout(this.autoCloseTimer);
+      this.autoCloseTimer = null;
     }
     
     this.isClosing = true;
-    setTimeout(() => {
+    this.autoCloseTimer = setTimeout(() => {
       this.showOverlay = false;
       this.isClosing = false;
       localStorage.setItem('hasVisitedBefore', 'true');
       this.closeOverlay.emit();
+      this.autoCloseTimer = null;
     }, 500); // Match animation duration
   }
   

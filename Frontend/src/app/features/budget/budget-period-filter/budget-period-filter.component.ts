@@ -1,15 +1,21 @@
-// ====================================================================
-//             Coded by Mohamed Dhaoui for Alpha Vault
-// ====================================================================
+/*
+  Alpha Vault Financial System
+  
+  @author Mohamed Dhaoui
+  @component BudgetPeriodFilterComponent
+  @description Elite budget period navigation component with responsive design
+*/
 
-import { Component, EventEmitter, Output, OnInit, OnDestroy, ChangeDetectionStrategy, ChangeDetectorRef, HostListener, ElementRef, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Meta } from '@angular/platform-browser';
-import { Subject, takeUntil, debounceTime, distinctUntilChanged } from 'rxjs';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, computed, DestroyRef, ElementRef, EventEmitter, HostListener, inject, OnDestroy, OnInit, Output, PLATFORM_ID, signal, ViewChild } from '@angular/core';
+import { debounceTime, distinctUntilChanged, Subject, takeUntil } from 'rxjs';
 
-interface BudgetPeriod {
-  month: number;
-  year: number;
+import { LoggingService } from '../../../core/services/logging.service';
+import { META_FRAGMENT } from '../../../core/seo/page-meta.model';
+import { BudgetService } from '../../../core/services/budget.service';
+import { BudgetPeriod } from '../../../models/budget.model';
+
+interface BudgetPeriodDisplay extends BudgetPeriod {
   label: string;
   isCurrent: boolean;
   isFuture: boolean;
@@ -19,11 +25,18 @@ interface BudgetPeriod {
   selector: 'app-budget-period-filter',
   standalone: true,
   imports: [CommonModule],
+  providers: [
+    {
+      provide: META_FRAGMENT,
+      useValue: {
+        description: 'Navigate between budget periods with month-by-month filtering. Interactive timeline with keyboard navigation for efficient budget period selection in Alpha Vault.'
+      }
+    }
+  ],
   template: `
     <section 
       class="elite-budget-filter"
-      [class.animate-in]="isVisible"
-      [class.interactive]="isInteractive"
+      [class.interactive]="isInteractive()"
       role="region"
       aria-label="Budget Period Navigation"
     >
@@ -31,13 +44,13 @@ interface BudgetPeriod {
         <button
           #prevButton
           class="nav-button prev-button"
-          [class.disabled]="isMinPeriod"
-          [class.hover-effect]="!isMinPeriod"
+          [class.disabled]="isMinPeriod()"
+          [class.hover-effect]="!isMinPeriod()"
           (click)="onPreviousMonth()"
           (keydown.enter)="onPreviousMonth()"
           (keydown.space)="onPreviousMonth()"
           [attr.aria-label]="'Previous month: ' + getPreviousMonthLabel()"
-          [attr.aria-disabled]="isMinPeriod"
+          [attr.aria-disabled]="isMinPeriod()"
           tabindex="0"
         >
           <div class="button-content">
@@ -49,13 +62,13 @@ interface BudgetPeriod {
           <div class="ripple-effect"></div>
         </button>
 
-        <div class="period-display" [class.animate-change]="isChanging">
+        <div class="period-display">
           <div class="period-content">
             <div class="period-label">
-              <span class="month-text">{{ currentMonthLabel }}</span>
-              <div class="period-indicator" [class.current]="isCurrentPeriod">
+              <span class="month-text">{{ currentMonthLabel() }}</span>
+              <div class="period-indicator" [class.current]="isCurrentPeriod()">
                 <span class="indicator-dot"></span>
-                <span class="indicator-text">{{ isCurrentPeriod ? 'Current' : 'Selected' }}</span>
+                <span class="indicator-text">{{ isCurrentPeriod() ? 'Current' : 'Selected' }}</span>
               </div>
             </div>
           </div>
@@ -64,13 +77,13 @@ interface BudgetPeriod {
         <button
           #nextButton
           class="nav-button next-button"
-          [class.disabled]="isMaxPeriod"
-          [class.hover-effect]="!isMaxPeriod"
+          [class.disabled]="isMaxPeriod()"
+          [class.hover-effect]="!isMaxPeriod()"
           (click)="onNextMonth()"
           (keydown.enter)="onNextMonth()"
           (keydown.space)="onNextMonth()"
           [attr.aria-label]="'Next month: ' + getNextMonthLabel()"
-          [attr.aria-disabled]="isMaxPeriod"
+          [attr.aria-disabled]="isMaxPeriod()"
           tabindex="0"
         >
           <div class="button-content">
@@ -83,16 +96,20 @@ interface BudgetPeriod {
         </button>
       </div>
 
-      <section class="period-timeline" *ngIf="showTimeline">
+      <section class="period-timeline" *ngIf="showTimeline()" role="list" aria-label="Period selection timeline">
         <div class="timeline-track">
           <button 
             class="timeline-marker"
-            *ngFor="let period of timelinePeriods; trackBy: trackByPeriod"
-            [class.active]="period.month === currentMonth && period.year === currentYear"
+            *ngFor="let period of timelinePeriods(); trackBy: trackByPeriod"
+            [class.active]="period.month === currentMonth() && period.year === currentYear()"
             [class.current]="period.isCurrent"
             [class.future]="period.isFuture"
             (click)="selectPeriod(period)"
+            (keydown.enter)="selectPeriod(period)"
+            (keydown.space)="selectPeriod(period)"
             [attr.aria-label]="'Select ' + period.label"
+            [attr.aria-current]="period.month === currentMonth() && period.year === currentYear() ? 'true' : 'false'"
+            role="listitem"
             tabindex="0"
           >
             <div class="marker-dot"></div>
@@ -111,35 +128,62 @@ export class BudgetPeriodFilterComponent implements OnInit, OnDestroy {
 
   @Output() dateChanged = new EventEmitter<{ month: number; year: number }>();
 
-  private destroy$ = new Subject<void>();
-  private changeSubject$ = new Subject<{ month: number; year: number }>();
+  private readonly cdr = inject(ChangeDetectorRef);
+  private readonly elementRef = inject(ElementRef);
+  private readonly destroyRef = inject(DestroyRef);
+  private readonly platformId = inject(PLATFORM_ID);
+  private readonly budgetService = inject(BudgetService);
+  private readonly loggingService = inject(LoggingService);
 
-  currentMonth: number = new Date().getMonth() + 1;
-  currentYear: number = new Date().getFullYear();
-  
-  isVisible = false;
-  isInteractive = false;
-  isChanging = false;
-  showTimeline = false;
-  
-  timelinePeriods: BudgetPeriod[] = [];
+  private readonly destroy$ = new Subject<void>();
+  private readonly changeSubject$ = new Subject<{ month: number; year: number }>();
+  private readonly isBrowser = typeof window !== 'undefined';
 
-  constructor(
-    private cdr: ChangeDetectorRef,
-    private elementRef: ElementRef,
-    private meta: Meta
-  ) {
-    this.meta.addTags([
-      { name: 'description', content: 'Elite budget period navigation component with smooth transitions and responsive design' },
-      { name: 'robots', content: 'index,follow' },
-      { name: 'viewport', content: 'width=device-width, initial-scale=1' }
-    ]);
+  private readonly currentMonthSignal = signal(new Date().getMonth() + 1);
+  private readonly currentYearSignal = signal(new Date().getFullYear());
+  private readonly isVisibleSignal = signal(false);
+  private readonly isInteractiveSignal = signal(false);
+  private readonly showTimelineSignal = signal(false);
+  private readonly timelinePeriodsSignal = signal<BudgetPeriodDisplay[]>([]);
+
+  readonly currentMonth = this.currentMonthSignal.asReadonly();
+  readonly currentYear = this.currentYearSignal.asReadonly();
+  readonly isVisible = this.isVisibleSignal.asReadonly();
+  readonly isInteractive = this.isInteractiveSignal.asReadonly();
+  readonly showTimeline = this.showTimelineSignal.asReadonly();
+  readonly timelinePeriods = this.timelinePeriodsSignal.asReadonly();
+
+  readonly currentMonthLabel = computed(() => {
+    return new Date(this.currentYear(), this.currentMonth() - 1).toLocaleString('default', {
+      month: 'long',
+      year: 'numeric',
+    });
+  });
+
+  readonly isCurrentPeriod = computed(() => {
+    const now = new Date();
+    return this.currentMonth() === now.getMonth() + 1 && this.currentYear() === now.getFullYear();
+  });
+
+  readonly isMinPeriod = computed(() => {
+    return this.currentYear() <= 2020 && this.currentMonth() <= 1;
+  });
+
+  readonly isMaxPeriod = computed(() => {
+    const maxDate = new Date();
+    maxDate.setFullYear(maxDate.getFullYear() + 2);
+    return this.currentYear() >= maxDate.getFullYear() && this.currentMonth() >= maxDate.getMonth() + 1;
+  });
+
+  constructor() {
+    // SEO fragment provided via META_FRAGMENT token
+    // Parent component (BudgetComponent) aggregates all fragments via SeoService
   }
 
   ngOnInit(): void {
     this.initializeComponent();
     this.setupChangeDetection();
-    this.generateTimelinePeriods();
+    this.loadAvailablePeriods();
     this.emitDate();
   }
 
@@ -150,7 +194,7 @@ export class BudgetPeriodFilterComponent implements OnInit, OnDestroy {
 
   @HostListener('window:keydown', ['$event'])
   handleKeyboardNavigation(event: KeyboardEvent): void {
-    if (!this.isInteractive) return;
+    if (!this.isInteractive()) return;
 
     switch (event.key) {
       case 'ArrowLeft':
@@ -171,57 +215,36 @@ export class BudgetPeriodFilterComponent implements OnInit, OnDestroy {
           this.toggleTimeline();
         }
         break;
+      case 'Escape':
+        if (this.showTimeline()) {
+          this.toggleTimeline();
+        }
+        break;
     }
   }
 
-  get currentMonthLabel(): string {
-    return new Date(this.currentYear, this.currentMonth - 1).toLocaleString('default', {
-      month: 'long',
-      year: 'numeric',
-    });
-  }
-
-  get isCurrentPeriod(): boolean {
-    const now = new Date();
-    return this.currentMonth === now.getMonth() + 1 && this.currentYear === now.getFullYear();
-  }
-
-  get isMinPeriod(): boolean {
-    return this.currentYear <= 2020 && this.currentMonth <= 1;
-  }
-
-  get isMaxPeriod(): boolean {
-    const maxDate = new Date();
-    maxDate.setFullYear(maxDate.getFullYear() + 2);
-    return this.currentYear >= maxDate.getFullYear() && this.currentMonth >= maxDate.getMonth() + 1;
-  }
-
   onPreviousMonth(): void {
-    if (this.isMinPeriod) return;
+    if (this.isMinPeriod()) return;
     
-    this.animateChange(() => {
-      if (this.currentMonth === 1) {
-        this.currentMonth = 12;
-        this.currentYear--;
-      } else {
-        this.currentMonth--;
-      }
-      this.emitDate();
-    });
+    if (this.currentMonth() === 1) {
+      this.currentMonthSignal.set(12);
+      this.currentYearSignal.set(this.currentYear() - 1);
+    } else {
+      this.currentMonthSignal.set(this.currentMonth() - 1);
+    }
+    this.emitDate();
   }
 
   onNextMonth(): void {
-    if (this.isMaxPeriod) return;
+    if (this.isMaxPeriod()) return;
     
-    this.animateChange(() => {
-      if (this.currentMonth === 12) {
-        this.currentMonth = 1;
-        this.currentYear++;
-      } else {
-        this.currentMonth++;
-      }
-      this.emitDate();
-    });
+    if (this.currentMonth() === 12) {
+      this.currentMonthSignal.set(1);
+      this.currentYearSignal.set(this.currentYear() + 1);
+    } else {
+      this.currentMonthSignal.set(this.currentMonth() + 1);
+    }
+    this.emitDate();
   }
 
   goToCurrentPeriod(): void {
@@ -229,57 +252,49 @@ export class BudgetPeriodFilterComponent implements OnInit, OnDestroy {
     const targetMonth = now.getMonth() + 1;
     const targetYear = now.getFullYear();
     
-    if (this.currentMonth !== targetMonth || this.currentYear !== targetYear) {
-      this.animateChange(() => {
-        this.currentMonth = targetMonth;
-        this.currentYear = targetYear;
-        this.emitDate();
-      });
+    if (this.currentMonth() !== targetMonth || this.currentYear() !== targetYear) {
+      this.currentMonthSignal.set(targetMonth);
+      this.currentYearSignal.set(targetYear);
+      this.emitDate();
     }
   }
 
-  selectPeriod(period: BudgetPeriod): void {
-    this.animateChange(() => {
-      this.currentMonth = period.month;
-      this.currentYear = period.year;
-      this.emitDate();
-    });
+  selectPeriod(period: BudgetPeriodDisplay): void {
+    this.currentMonthSignal.set(period.month);
+    this.currentYearSignal.set(period.year);
+    this.emitDate();
   }
 
   toggleTimeline(): void {
-    this.showTimeline = !this.showTimeline;
-    this.cdr.markForCheck();
+    this.showTimelineSignal.set(!this.showTimeline());
   }
 
   getPreviousMonthLabel(): string {
-    const prevMonth = this.currentMonth === 1 ? 12 : this.currentMonth - 1;
-    const prevYear = this.currentMonth === 1 ? this.currentYear - 1 : this.currentYear;
+    const prevMonth = this.currentMonth() === 1 ? 12 : this.currentMonth() - 1;
+    const prevYear = this.currentMonth() === 1 ? this.currentYear() - 1 : this.currentYear();
     return new Date(prevYear, prevMonth - 1).toLocaleString('default', { month: 'long' });
   }
 
   getNextMonthLabel(): string {
-    const nextMonth = this.currentMonth === 12 ? 1 : this.currentMonth + 1;
-    const nextYear = this.currentMonth === 12 ? this.currentYear + 1 : this.currentYear;
+    const nextMonth = this.currentMonth() === 12 ? 1 : this.currentMonth() + 1;
+    const nextYear = this.currentMonth() === 12 ? this.currentYear() + 1 : this.currentYear();
     return new Date(nextYear, nextMonth - 1).toLocaleString('default', { month: 'long' });
   }
 
-  trackByPeriod(index: number, period: BudgetPeriod): string {
+  trackByPeriod(index: number, period: BudgetPeriodDisplay): string {
     return `${period.year}-${period.month}`;
   }
 
   private initializeComponent(): void {
-    setTimeout(() => {
-      this.isVisible = true;
-      this.isInteractive = true;
-      this.cdr.markForCheck();
-    }, 100);
+    this.isVisibleSignal.set(true);
+    this.isInteractiveSignal.set(true);
   }
 
   private setupChangeDetection(): void {
     this.changeSubject$
       .pipe(
         takeUntil(this.destroy$),
-        debounceTime(300),
+        debounceTime(100),
         distinctUntilChanged((prev, curr) => 
           prev.month === curr.month && prev.year === curr.year
         )
@@ -289,8 +304,45 @@ export class BudgetPeriodFilterComponent implements OnInit, OnDestroy {
       });
   }
 
+  loadAvailablePeriods(): void {
+    const userId = 1;
+    
+    this.budgetService.getAvailableBudgetPeriods(userId)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (periods) => {
+          this.generateTimelinePeriodsFromData(periods);
+        },
+        error: (error) => {
+          this.loggingService.error('Error loading available periods:', error);
+          this.generateTimelinePeriods();
+        }
+      });
+  }
+
+  private generateTimelinePeriodsFromData(periods: BudgetPeriod[]): void {
+    const currentDate = new Date();
+    const currentYear = currentDate.getFullYear();
+    const currentMonth = currentDate.getMonth() + 1;
+
+    const displayPeriods: BudgetPeriodDisplay[] = periods.map(period => {
+      const date = new Date(period.year, period.month - 1);
+      const isCurrent = period.year === currentYear && period.month === currentMonth;
+      const isFuture = period.year > currentYear || (period.year === currentYear && period.month > currentMonth);
+
+      return {
+        ...period,
+        label: date.toLocaleString('default', { month: 'short', year: 'numeric' }),
+        isCurrent,
+        isFuture
+      };
+    });
+
+    this.timelinePeriodsSignal.set(displayPeriods);
+  }
+
   private generateTimelinePeriods(): void {
-    const periods: BudgetPeriod[] = [];
+    const periods: BudgetPeriodDisplay[] = [];
     const now = new Date();
     const currentMonth = now.getMonth() + 1;
     const currentYear = now.getFullYear();
@@ -310,25 +362,12 @@ export class BudgetPeriodFilterComponent implements OnInit, OnDestroy {
       }
     }
     
-    this.timelinePeriods = periods;
+    this.timelinePeriodsSignal.set(periods);
   }
 
-  private animateChange(callback: () => void): void {
-    this.isChanging = true;
-    this.cdr.markForCheck();
-    
-    setTimeout(() => {
-      callback();
-      this.cdr.markForCheck();
-      
-      setTimeout(() => {
-        this.isChanging = false;
-        this.cdr.markForCheck();
-      }, 150);
-    }, 75);
-  }
 
   private emitDate(): void {
-    this.changeSubject$.next({ month: this.currentMonth, year: this.currentYear });
+    this.dateChanged.emit({ month: this.currentMonth(), year: this.currentYear() });
+    this.changeSubject$.next({ month: this.currentMonth(), year: this.currentYear() });
   }
 }

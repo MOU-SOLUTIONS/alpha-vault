@@ -1,27 +1,44 @@
-// ====================================================================
-//             Coded by Mohamed Dhaoui for Alpha Vault
-// ====================================================================
+/*
+  Alpha Vault Financial System
+  
+  @author Mohamed Dhaoui
+  @component BudgetTableComponent
+  @description Budget table component for displaying and managing budget categories
+*/
 
-import { Component, Input, OnChanges, ChangeDetectionStrategy, ChangeDetectorRef, OnInit, OnDestroy } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { MatIconModule } from '@angular/material/icon';
+import { CommonModule, isPlatformBrowser } from '@angular/common';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, computed, DestroyRef, EventEmitter, inject, Input, OnChanges, OnDestroy, OnInit, Output, PLATFORM_ID, signal } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { MatButtonModule } from '@angular/material/button';
-import { MatTooltipModule } from '@angular/material/tooltip';
+import { MatIconModule } from '@angular/material/icon';
 import { MatPaginatorModule, PageEvent } from '@angular/material/paginator';
-import { Meta } from '@angular/platform-browser';
-import { Subject } from 'rxjs';
+import { MatTableDataSource, MatTableModule } from '@angular/material/table';
+import { MatTooltipModule } from '@angular/material/tooltip';
+import { debounceTime, fromEvent } from 'rxjs';
 
-import { BudgetCategory } from '../../../models/budget.model';
+import { META_FRAGMENT } from '../../../core/seo/page-meta.model';
 import { EXPENSE_CATEGORY_OPTIONS } from '../../../enums/expense-category';
+import { ExpenseCategoryIcons } from '../../../enums/expense-category-icons';
+import { BudgetCategory, ExpenseCategory } from '../../../models/budget.model';
 
 interface BudgetTableItem {
-  category: string;
+  category: ExpenseCategory;
   allocated: number;
   remaining: number;
   spent: number;
   usedPercent: number;
   status: 'excellent' | 'good' | 'warning' | 'danger';
   statusColor: string;
+  gradient: string;
+  icon: string;
+  formattedAllocated?: string;
+  formattedRemaining?: string;
+  formattedUsage?: string;
+  categoryLabel?: string;
+  categoryIcon?: string;
+  allocatedClass?: string;
+  remainingClass?: string;
+  usageClass?: string;
 }
 
 @Component({
@@ -32,17 +49,26 @@ interface BudgetTableItem {
     MatIconModule,
     MatButtonModule,
     MatTooltipModule,
-    MatPaginatorModule
+    MatPaginatorModule,
+    MatTableModule
   ],
   templateUrl: './budget-table.component.html',
   styleUrls: ['./budget-table.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
+  providers: [
+    {
+      provide: META_FRAGMENT,
+      useValue: {
+        description: 'Comprehensive budget breakdown table with category-wise allocations, spending tracking, usage percentages, and interactive management. View, edit, and delete budget categories with real-time summaries and pagination in Alpha Vault.'
+      }
+    }
+  ],
 })
 export class BudgetTableComponent implements OnInit, OnChanges, OnDestroy {
-  @Input() categories: BudgetCategory[] = [];
-  @Input() onAdd!: () => void;
-  @Input() onModify!: (budgetCategory: BudgetCategory) => void;
-  @Input() onDelete!: (category: string) => void;
+  @Input({ required: true }) categories: BudgetCategory[] = [];
+  @Input({ required: true }) onAdd!: () => void;
+  @Input({ required: true }) onModify!: (budgetTableItem: BudgetTableItem) => void;
+  @Output() delete = new EventEmitter<string>();
 
   isVisible = false;
   isInteractive = false;
@@ -59,44 +85,104 @@ export class BudgetTableComponent implements OnInit, OnChanges, OnDestroy {
   
   tableData: BudgetTableItem[] = [];
   paginatedData: BudgetTableItem[] = [];
-  private destroy$ = new Subject<void>();
+  
+  
+  public readonly displayedColumns: string[] = [
+    'category', 'allocated', 'remaining', 'usage', 'actions'
+  ];
+  
+  public dataSource = new MatTableDataSource<BudgetTableItem>();
+  private readonly cdr = inject(ChangeDetectorRef);
+  private readonly destroyRef = inject(DestroyRef);
+  private readonly isBrowser = isPlatformBrowser(inject(PLATFORM_ID));
+  
+  private readonly _categories = signal<BudgetCategory[]>([]);
+  private readonly _tableData = signal<BudgetTableItem[]>([]);
+  private readonly _isMobile = signal<boolean>(false);
 
-  constructor(
-    private metaService: Meta,
-    private cdr: ChangeDetectorRef
-  ) {
-    this.metaService.addTags([
-      { name: 'description', content: 'Elite budget allocation table with real-time spending analysis and category management' },
-      { name: 'robots', content: 'index,follow' },
-      { name: 'viewport', content: 'width=device-width, initial-scale=1' },
-    ]);
+  constructor() {
+    // SEO fragment provided via META_FRAGMENT token
+    // Parent component (BudgetComponent) aggregates all fragments via SeoService
   }
+  
+  readonly computedTableData = computed(() => {
+    const tableData = this._tableData();
+    return tableData.map(item => ({
+      ...item,
+      formattedAllocated: this.getFormattedAmount(item.allocated),
+      formattedRemaining: this.getFormattedAmount(item.remaining),
+      formattedUsage: item.usedPercent.toFixed(1),
+      categoryLabel: this.getCategoryLabel(item.category),
+      categoryIcon: this.getCategoryIcon(item.category),
+      allocatedClass: this.getAmountClassForElement(item, 'allocated'),
+      remainingClass: this.getAmountClassForElement(item, 'remaining'),
+      usageClass: this.getUsageClassForElement(item)
+    }));
+  });
+
+  readonly computedSummaryStats = computed(() => {
+    const tableData = this._tableData();
+    const totalAllocated = tableData.reduce((sum, item) => sum + item.allocated, 0);
+    const totalRemaining = tableData.reduce((sum, item) => sum + item.remaining, 0);
+    const totalSpent = tableData.reduce((sum, item) => sum + item.spent, 0);
+    const averageUsage = tableData.length > 0 
+      ? tableData.reduce((sum, item) => sum + item.usedPercent, 0) / tableData.length 
+      : 0;
+
+    return {
+      totalAllocatedFormatted: this.getFormattedAmount(totalAllocated),
+      totalRemainingFormatted: this.getFormattedAmount(totalRemaining),
+      totalSpentFormatted: this.getFormattedAmount(totalSpent),
+      averageUsageFormatted: averageUsage.toFixed(1)
+    };
+  });
+  
+  readonly isMobile = this._isMobile.asReadonly();
 
   ngOnInit(): void {
+    if (this.isBrowser) {
+      this.checkScreenSize();
+      this.setupResizeListener();
+    }
+    this._categories.set(this.categories);
     this.processData();
-    
-    setTimeout(() => {
-      this.isVisible = true;
-      this.isInteractive = true;
-      this.cdr.markForCheck();
-    }, 300);
+    this.isVisible = true;
+    this.isInteractive = true;
+    this.cdr.markForCheck();
+  }
+  
+  private setupResizeListener(): void {
+    fromEvent(window, 'resize')
+      .pipe(
+        debounceTime(100),
+        takeUntilDestroyed(this.destroyRef)
+      )
+      .subscribe(() => {
+        this.checkScreenSize();
+      });
   }
 
   ngOnChanges(): void {
+    this._categories.set(this.categories);
     this.processData();
     this.cdr.markForCheck();
   }
 
   ngOnDestroy(): void {
-    this.destroy$.next();
-    this.destroy$.complete();
+  }
+
+
+  private checkScreenSize(): void {
+    if (this.isBrowser) {
+      this._isMobile.set(window.innerWidth < 768);
+      this.cdr.markForCheck();
+    }
   }
 
   onPageChange(event: PageEvent): void {
     this.currentPage = event.pageIndex;
     this.pageSize = event.pageSize;
     this.updatePaginatedData();
-    this.cdr.markForCheck();
   }
 
   getCategoryLabel(value: string): string {
@@ -104,12 +190,16 @@ export class BudgetTableComponent implements OnInit, OnChanges, OnDestroy {
     return match ? match.label : value;
   }
 
+  getCategoryIcon(category: string): string {
+    return ExpenseCategoryIcons[category] || 'category';
+  }
+
   getStatusConfig(item: BudgetTableItem): { color: string; label: string } {
     const configs = {
-      excellent: { color: '#4caf50', label: 'Excellent' },
-      good: { color: '#8bc34a', label: 'Good' },
-      warning: { color: '#ff9800', label: 'Warning' },
-      danger: { color: '#f44336', label: 'Danger' }
+      excellent: { color: '#10b981', label: 'Excellent' },
+      good: { color: '#059669', label: 'Good' },
+      warning: { color: '#f59e0b', label: 'Warning' },
+      danger: { color: '#ef4444', label: 'Danger' }
     };
     return configs[item.status];
   }
@@ -139,66 +229,135 @@ export class BudgetTableComponent implements OnInit, OnChanges, OnDestroy {
     return this.averageUsage.toFixed(1);
   }
 
+  trackByStat(index: number, stat: { label: string }): string {
+    return stat.label;
+  }
+
+  trackByKey(index: number, item: { key: string; value: string }): string {
+    return item.key;
+  }
+
   trackByCategory(index: number, item: BudgetTableItem): string {
     return item.category;
+  }
+
+
+  onDelete(category: string): void {
+    this.delete.emit(category);
+  }
+
+  onAddKeydown(event: KeyboardEvent): void {
+    if (event.key === 'Enter' || event.key === ' ') {
+      event.preventDefault();
+      this.onAdd();
+    }
+  }
+
+  onModifyKeydown(event: KeyboardEvent, item: BudgetTableItem): void {
+    if (event.key === 'Enter' || event.key === ' ') {
+      event.preventDefault();
+      this.onModify(item);
+    }
+  }
+
+  onDeleteKeydown(event: KeyboardEvent, category: string): void {
+    if (event.key === 'Enter' || event.key === ' ') {
+      event.preventDefault();
+      this.onDelete(category);
+    }
+  }
+
+  getAmountClassForElement(item: BudgetTableItem, type: 'allocated' | 'remaining'): string {
+    const amount = type === 'allocated' ? item.allocated : item.remaining;
+    if (amount >= 1000) return 'high-amount';
+    if (amount >= 500) return 'medium-amount';
+    return 'regular-amount';
+  }
+
+  getUsageClassForElement(item: BudgetTableItem): string {
+    if (item.usedPercent >= 90) return 'danger';
+    if (item.usedPercent >= 75) return 'warning';
+    if (item.usedPercent >= 50) return 'good';
+    return 'excellent';
   }
 
   private updatePaginatedData(): void {
     const startIndex = this.currentPage * this.pageSize;
     const endIndex = startIndex + this.pageSize;
-    this.paginatedData = this.tableData.slice(startIndex, endIndex);
+    const tableData = this._tableData();
+    this.paginatedData = tableData.slice(startIndex, endIndex);
+    
+    this.dataSource.data = this.computedTableData();
+    this.cdr.markForCheck();
   }
 
   private processData(): void {
-    if (!this.categories || this.categories.length === 0) {
+    const categories = this._categories();
+    if (!categories || categories.length === 0) {
       this.hasData = false;
-      this.tableData = [];
+      this._tableData.set([]);
       this.paginatedData = [];
+      this.dataSource.data = [];
       this.resetTotals();
+      this.cdr.markForCheck();
       return;
     }
 
     this.hasData = true;
-    this.tableData = this.categories.map(cat => {
-      const spent = cat.allocated - cat.remaining;
+    const processedData = categories.map(cat => {
+      const remaining = cat.remaining ?? 0;
+      const spent = cat.allocated - remaining;
       const usedPercent = cat.allocated > 0 ? (spent / cat.allocated) * 100 : 0;
       
       let status: BudgetTableItem['status'] = 'excellent';
-      let statusColor = '#4caf50';
+      let statusColor = '#10b981';
+      let gradient = 'linear-gradient(135deg, #10b981 0%, #059669 100%)';
+      let icon = 'M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z';
 
       if (usedPercent >= 90) {
         status = 'danger';
-        statusColor = '#f44336';
+        statusColor = '#ef4444';
+        gradient = 'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)';
+        icon = 'M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z';
       } else if (usedPercent >= 75) {
         status = 'warning';
-        statusColor = '#ff9800';
+        statusColor = '#f59e0b';
+        gradient = 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)';
+        icon = 'M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z';
       } else if (usedPercent >= 50) {
         status = 'good';
-        statusColor = '#8bc34a';
+        statusColor = '#059669';
+        gradient = 'linear-gradient(135deg, #059669 0%, #047857 100%)';
+        icon = 'M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z';
       }
 
       return {
         category: cat.category,
         allocated: cat.allocated,
-        remaining: cat.remaining,
+        remaining: remaining,
         spent,
         usedPercent: +usedPercent.toFixed(1),
         status,
-        statusColor
+        statusColor,
+        gradient,
+        icon
       };
     });
 
-    this.totalItems = this.tableData.length;
+    this._tableData.set(processedData);
+    this.totalItems = processedData.length;
     this.updatePaginatedData();
     this.calculateTotals();
+    this.cdr.markForCheck();
   }
 
   private calculateTotals(): void {
-    this.totalAllocated = this.tableData.reduce((sum, item) => sum + item.allocated, 0);
-    this.totalRemaining = this.tableData.reduce((sum, item) => sum + item.remaining, 0);
-    this.totalSpent = this.tableData.reduce((sum, item) => sum + item.spent, 0);
-    this.averageUsage = this.tableData.length > 0 
-      ? this.tableData.reduce((sum, item) => sum + item.usedPercent, 0) / this.tableData.length 
+    const tableData = this._tableData();
+    this.totalAllocated = tableData.reduce((sum, item) => sum + item.allocated, 0);
+    this.totalRemaining = tableData.reduce((sum, item) => sum + item.remaining, 0);
+    this.totalSpent = tableData.reduce((sum, item) => sum + item.spent, 0);
+    this.averageUsage = tableData.length > 0 
+      ? tableData.reduce((sum, item) => sum + item.usedPercent, 0) / tableData.length 
       : 0;
   }
 

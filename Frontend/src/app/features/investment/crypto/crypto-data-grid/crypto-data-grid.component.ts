@@ -1,19 +1,26 @@
-// ====================================================================
-//      Coded by Mohamed Dhaoui for Alpha Vault
-// ====================================================================
+/*
+  Alpha Vault Financial System
+  
+  @author Mohamed Dhaoui
+  @component CryptoDataGridComponent
+  @description Crypto data grid component for displaying crypto data
+*/
 
-import { Component, OnInit, OnDestroy, ChangeDetectionStrategy, ChangeDetectorRef, HostListener } from '@angular/core';
-import { Meta } from '@angular/platform-browser';
+import { animate, keyframes, query, stagger, state, style, transition, trigger } from '@angular/animations';
+import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
-import { CommonModule } from '@angular/common';
-import { Subscription, interval, Subject, takeUntil } from 'rxjs';
-import { trigger, state, style, transition, animate, query, stagger, keyframes } from '@angular/animations';
-import { MatIconModule } from '@angular/material/icon';
-import { MatTooltipModule } from '@angular/material/tooltip';
+import { ChangeDetectionStrategy, Component, computed, DestroyRef, HostListener, inject, OnInit, PLATFORM_ID, signal } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { MatButtonModule } from '@angular/material/button';
 import { MatChipsModule } from '@angular/material/chips';
-import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { MatIconModule } from '@angular/material/icon';
 import { MatPaginatorModule, PageEvent } from '@angular/material/paginator';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { MatTooltipModule } from '@angular/material/tooltip';
+import { interval, timer } from 'rxjs';
+import { filter, finalize } from 'rxjs/operators';
+
+import { META_FRAGMENT } from '../../../../core/seo/page-meta.model';
 
 interface CryptoData {
   readonly id: string;
@@ -57,6 +64,14 @@ interface CryptoData {
   templateUrl: './crypto-data-grid.component.html',
   styleUrls: ['./crypto-data-grid.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
+  providers: [
+    {
+      provide: META_FRAGMENT,
+      useValue: {
+        description: 'Real-time cryptocurrency market data with live prices, market cap, and trading volume for top cryptocurrencies. View, analyze, and track cryptocurrency market trends with interactive data grids and detailed statistics.'
+      }
+    }
+  ],
   animations: [
     trigger('fadeInUp', [
       transition(':enter', [
@@ -102,127 +117,34 @@ interface CryptoData {
     ])
   ]
 })
-export class CryptoDataGridComponent implements OnInit, OnDestroy {
-  cryptoData: readonly CryptoData[] = [];
-  isLoading = false;
-  error: string | null = null;
-  lastUpdated: Date = new Date();
+export class CryptoDataGridComponent implements OnInit {
+  readonly cryptoData = signal<readonly CryptoData[]>([]);
+  readonly isLoading = signal(false);
+  readonly error = signal<string | null>(null);
+  readonly lastUpdated = signal<Date>(new Date());
   
   selectedCrypto: CryptoData | null = null;
   showDetails = false;
   viewMode: 'grid' | 'list' = 'grid';
-  sortBy: 'market_cap' | 'price' | 'change_24h' | 'volume' = 'market_cap';
-  sortOrder: 'asc' | 'desc' = 'desc';
+  readonly sortBy = signal<'market_cap' | 'price' | 'change_24h' | 'volume'>('market_cap');
+  readonly sortOrder = signal<'asc' | 'desc'>('desc');
   
-  readonly pageSize = 10;
+  pageSize = 10;
   readonly pageSizeOptions = [5, 10, 25, 50] as const;
-  currentPage = 0;
+  readonly currentPage = signal(0);
   
-  autoRefresh = true;
+  readonly autoRefresh = signal(true);
   readonly refreshInterval = 30000;
   
-  private readonly sub = new Subscription();
-  private readonly destroy$ = new Subject<void>();
-
-  constructor(
-    private readonly http: HttpClient,
-    private readonly cdr: ChangeDetectorRef,
-    private readonly meta: Meta
-  ) {
-    this.meta.addTags([
-      { name: 'description', content: 'Real-time cryptocurrency market data with live prices, market cap, and trading volume for top cryptocurrencies.' },
-      { name: 'viewport', content: 'width=device-width, initial-scale=1' },
-      { name: 'robots', content: 'index, follow' }
-    ]);
-  }
-
-  ngOnInit(): void {
-    this.loadSampleData();
-    this.loadData();
+  readonly sortedData = computed(() => {
+    const data = [...this.cryptoData()];
+    const field = this.sortBy();
+    const order = this.sortOrder();
     
-    setTimeout(() => {
-      this.startAutoRefresh();
-    }, this.refreshInterval);
-  }
-
-  ngOnDestroy(): void {
-    this.sub.unsubscribe();
-    this.destroy$.next();
-    this.destroy$.complete();
-  }
-
-  @HostListener('window:focus')
-  onWindowFocus(): void {
-    if (this.autoRefresh) {
-      this.loadData();
-    }
-  }
-
-  refreshData(): void {
-    this.loadData();
-  }
-
-  toggleAutoRefresh(): void {
-    this.autoRefresh = !this.autoRefresh;
-    if (this.autoRefresh) {
-      this.startAutoRefresh();
-    } else {
-      this.stopAutoRefresh();
-    }
-    this.cdr.detectChanges();
-  }
-
-  toggleViewMode(): void {
-    this.viewMode = this.viewMode === 'grid' ? 'list' : 'grid';
-    this.cdr.detectChanges();
-  }
-
-  sortData(field: 'market_cap' | 'price' | 'change_24h' | 'volume'): void {
-    if (this.sortBy === field) {
-      this.sortOrder = this.sortOrder === 'asc' ? 'desc' : 'asc';
-    } else {
-      this.sortBy = field;
-      this.sortOrder = 'desc';
-    }
-    this.cdr.detectChanges();
-  }
-
-  selectCrypto(crypto: CryptoData): void {
-    this.selectedCrypto = crypto;
-    this.showDetails = true;
-    this.cdr.detectChanges();
-  }
-
-  closeDetails(): void {
-    this.showDetails = false;
-    this.selectedCrypto = null;
-    this.cdr.detectChanges();
-  }
-
-  onPageChange(event: PageEvent): void {
-    this.currentPage = event.pageIndex;
-    this.cdr.detectChanges();
-  }
-
-  onCardHover(event: MouseEvent): void {
-    const target = event.target as HTMLElement;
-    if (target) {
-      target.style.transform = 'translateY(-8px) scale(1.02)';
-    }
-  }
-
-  onCardLeave(event: MouseEvent): void {
-    const target = event.target as HTMLElement;
-    if (target) {
-      target.style.transform = 'translateY(0) scale(1)';
-    }
-  }
-
-  getSortedData(): readonly CryptoData[] {
-    return [...this.cryptoData].sort((a, b) => {
+    return data.sort((a, b) => {
       let aValue: number, bValue: number;
       
-      switch (this.sortBy) {
+      switch (field) {
         case 'market_cap':
           aValue = a.market_cap;
           bValue = b.market_cap;
@@ -244,14 +166,102 @@ export class CryptoDataGridComponent implements OnInit, OnDestroy {
           bValue = b.market_cap;
       }
       
-      return this.sortOrder === 'asc' ? aValue - bValue : bValue - aValue;
+      return order === 'asc' ? aValue - bValue : bValue - aValue;
+    });
+  });
+
+  readonly paginatedData = computed(() => {
+    const sorted = this.sortedData();
+    const start = this.currentPage() * this.pageSize;
+    return sorted.slice(start, start + this.pageSize);
+  });
+
+  readonly timeAgo = computed(() => {
+    return this.getTimeAgo(this.lastUpdated());
+  });
+
+  private readonly isBrowser = isPlatformBrowser(inject(PLATFORM_ID));
+  private readonly destroyRef = inject(DestroyRef);
+  
+  constructor(
+    private readonly http: HttpClient
+  ) {
+  }
+
+  ngOnInit(): void {
+    this.loadSampleData();
+    this.loadData();
+    
+    timer(this.refreshInterval).pipe(
+      takeUntilDestroyed(this.destroyRef)
+    ).subscribe(() => {
+      this.startAutoRefresh();
     });
   }
 
-  getPaginatedData(): readonly CryptoData[] {
-    const sortedData = this.getSortedData();
-    const startIndex = this.currentPage * this.pageSize;
-    return sortedData.slice(startIndex, startIndex + this.pageSize);
+  @HostListener('window:focus')
+  onWindowFocus(): void {
+    if (this.autoRefresh() && this.isBrowser) {
+      this.loadData();
+    }
+  }
+
+  refreshData(): void {
+    this.loadData();
+  }
+
+  toggleAutoRefresh(): void {
+    this.autoRefresh.update(val => !val);
+    if (this.autoRefresh()) {
+      this.startAutoRefresh();
+    } else {
+      this.stopAutoRefresh();
+    }
+  }
+
+  toggleViewMode(): void {
+    if (this.isBrowser && window.innerWidth > 768) {
+      this.viewMode = this.viewMode === 'grid' ? 'list' : 'grid';
+    } else {
+      this.viewMode = 'grid';
+    }
+  }
+
+  sortData(field: 'market_cap' | 'price' | 'change_24h' | 'volume'): void {
+    if (this.sortBy() === field) {
+      this.sortOrder.update(order => order === 'asc' ? 'desc' : 'asc');
+    } else {
+      this.sortBy.set(field);
+      this.sortOrder.set('desc');
+    }
+    this.currentPage.set(0);
+  }
+
+  selectCrypto(crypto: CryptoData): void {
+    if (this.selectedCrypto?.id === crypto.id && this.showDetails) {
+      this.closeDetails();
+    } else {
+      this.selectedCrypto = crypto;
+      this.showDetails = true;
+    }
+  }
+
+  closeDetails(): void {
+    this.showDetails = false;
+    this.selectedCrypto = null;
+  }
+
+  onPageChange(event: PageEvent): void {
+    this.currentPage.set(event.pageIndex);
+    this.pageSize = event.pageSize;
+    const totalPages = Math.ceil(this.cryptoData().length / this.pageSize);
+    if (this.currentPage() >= totalPages && totalPages > 0) {
+      this.currentPage.set(totalPages - 1);
+    }
+  }
+
+  getChangeClass(percentage: number): string {
+    return percentage > 0 ? 'positive' : 'negative';
   }
 
   formatCurrency(value: number): string {
@@ -312,34 +322,38 @@ export class CryptoDataGridComponent implements OnInit, OnDestroy {
   private startAutoRefresh(): void {
     this.stopAutoRefresh();
     
-    this.sub.add(
-      interval(this.refreshInterval)
-        .pipe(takeUntil(this.destroy$))
-        .subscribe(() => {
-          if (this.autoRefresh) {
-            this.loadData();
-          }
-        })
-    );
+    interval(this.refreshInterval)
+      .pipe(
+        takeUntilDestroyed(this.destroyRef),
+        filter(() => this.autoRefresh())
+      )
+      .subscribe(() => {
+        this.loadData();
+      });
   }
 
   private stopAutoRefresh(): void {
-    this.sub.unsubscribe();
   }
 
   private loadData(): void {
-    this.isLoading = true;
-    this.error = null;
-    this.cdr.detectChanges();
+    this.isLoading.set(true);
+    this.error.set(null);
     
     this.http
       .get<readonly any[]>(
         'https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&order=market_cap_desc&per_page=10&page=1&sparkline=true&price_change_percentage=1h,24h,7d'
       )
+      .pipe(
+        takeUntilDestroyed(this.destroyRef),
+        finalize(() => {
+          this.isLoading.set(false);
+        })
+      )
       .subscribe({
         next: (data) => {
-          this.cryptoData = data.map((item, index) => {
-            const prev = this.cryptoData.find((c) => c.id === item.id)?.price;
+          const currentData = this.cryptoData();
+          this.cryptoData.set(data.map((item) => {
+            const prev = currentData.find((c) => c.id === item.id)?.price;
             const change: 1 | 0 | -1 =
               prev == null
                 ? 0
@@ -373,23 +387,23 @@ export class CryptoDataGridComponent implements OnInit, OnDestroy {
               sparkline_in_7d: item.sparkline_in_7d,
               change
             };
-          });
+          }));
           
-          this.lastUpdated = new Date();
-          this.isLoading = false;
-          this.error = null;
-          this.cdr.detectChanges();
+          this.lastUpdated.set(new Date());
+          this.error.set(null);
         },
         error: (error) => {
-          this.isLoading = false;
-          this.error = 'Failed to load live data. Showing sample data.';
-          this.cdr.detectChanges();
+          if (this.cryptoData().length === 0) {
+            this.error.set('Failed to load data. Please try again later.');
+          } else {
+            this.error.set(null);
+          }
         }
       });
   }
 
   private loadSampleData(): void {
-    this.cryptoData = [
+    this.cryptoData.set([
       {
         id: 'bitcoin',
         name: 'Bitcoin',
@@ -505,9 +519,8 @@ export class CryptoDataGridComponent implements OnInit, OnDestroy {
         last_updated: new Date().toISOString(),
         change: 0
       }
-    ];
+    ]);
     
-    this.lastUpdated = new Date();
-    this.cdr.detectChanges();
+    this.lastUpdated.set(new Date());
   }
 } 

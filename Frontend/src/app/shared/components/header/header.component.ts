@@ -1,5 +1,5 @@
-import { Component, Output, EventEmitter } from '@angular/core';
-import { RouterModule, Router } from '@angular/router';
+import { Component, EventEmitter,Output } from '@angular/core';
+import { Router,RouterModule } from '@angular/router';
 
 /**
  * HeaderComponent provides the main navigation for the application.

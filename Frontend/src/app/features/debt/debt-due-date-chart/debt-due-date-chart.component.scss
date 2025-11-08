@@ -1,14 +1,19 @@
-/* ===================================================================
-   Coded by Mohamed Dhaoui for Alpha Vault
-================================================================== */
+/*
+  Alpha Vault Financial System
+  
+  @author Mohamed Dhaoui
+  @component DebtDueDateChartComponent
+  @description Main debt dashboard component styles for managing debt payment deadlines
+*/
 
 :host {
   --primary-color: #EC4899;
-  --primary-light: #F472B6;
-  --primary-dark: #DB2777;
-  --accent-color: #F59E0B;
+  --primary-light: rgba(236, 72, 153, 0.1);
+  --primary-dark: #BE185D;
+  --accent-color: #8B5CF6;
   --success-color: #10B981;
   --danger-color: #EF4444;
+  --warning-color: #F59E0B;
   --info-color: #3B82F6;
   --white: #FFFFFF;
   --gray-50: #F9FAFB;
@@ -22,40 +27,60 @@
   --gray-800: #1F2937;
   --gray-900: #111827;
   
-  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-  --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  --text-color: var(--gray-700);
+  --text-color-dark: var(--gray-900);
+  --text-light: var(--gray-600);
+  --text-lighter: var(--gray-500);
+  --background-color: var(--white);
+  --background-alt: var(--gray-50);
+  --border-color: var(--gray-200);
+  --border-color-light: var(--gray-100);
+  
+  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.08);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.12);
+  --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.16);
+  --shadow-xl: 0 12px 32px rgba(0, 0, 0, 0.2);
   --shadow-2xl: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
   
-  --border-radius-sm: 0.375rem;
-  --border-radius-md: 0.5rem;
-  --border-radius-lg: 0.75rem;
+  --border-radius: 12px;
+  --border-radius-sm: 8px;
+  --border-radius-md: 10px;
+  --border-radius-lg: 16px;
   --border-radius-xl: 1rem;
   --border-radius-2xl: 1.5rem;
   
-  --transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
-  --transition-normal: 250ms cubic-bezier(0.4, 0, 0.2, 1);
-  --transition-slow: 350ms cubic-bezier(0.4, 0, 0.2, 1);
-  --transition-bounce: 400ms cubic-bezier(0.68, -0.55, 0.265, 1.55);
+  --transition-fast: 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-normal: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-slow: 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-bounce: 600ms cubic-bezier(0.68, -0.55, 0.265, 1.55);
+  --transition-elastic: 800ms cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  
+  --spacing-xs: 4px;
+  --spacing-sm: 8px;
+  --spacing-md: 16px;
+  --spacing-lg: 24px;
+  --spacing-xl: 32px;
+  
+  font-family: 'Inter', 'Segoe UI', 'Roboto', -apple-system, BlinkMacSystemFont, sans-serif;
 }
 
 .due-date-chart-container {
-  background: linear-gradient(135deg, var(--white) 0%, var(--gray-50) 100%);
-  border-radius: var(--border-radius-2xl);
-  padding: 1.5rem;
-  box-shadow: var(--shadow-lg);
+  background: var(--background-color);
+  border-radius: var(--border-radius);
+  padding: var(--spacing-md);
+  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--border-color);
   height: 100%;
-  border: 1px solid var(--gray-200);
-  transition: all var(--transition-normal);
+  transition: all var(--transition-fast);
   overflow: hidden;
   position: relative;
   display: flex;
   flex-direction: column;
 
   &:hover {
-    box-shadow: var(--shadow-xl);
-    transform: translateY(-2px);
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-md);
+    border-color: rgba(236, 72, 153, 0.3);
   }
 
   &::before {
@@ -64,61 +89,67 @@
     top: 0;
     left: 0;
     right: 0;
-    height: 4px;
-    background: linear-gradient(90deg, var(--primary-color), var(--accent-color), var(--success-color));
-    border-radius: var(--border-radius-2xl) var(--border-radius-2xl) 0 0;
+    height: 2px;
+    background: linear-gradient(90deg, var(--primary-color), var(--accent-color));
+    border-radius: var(--border-radius) var(--border-radius) 0 0;
+    opacity: 0.8;
   }
 
   .chart-header {
-    margin-bottom: 1.5rem;
+    margin-bottom: var(--spacing-xl);
+    flex-shrink: 0;
     display: flex;
     justify-content: space-between;
     align-items: flex-start;
-    gap: 1rem;
+    gap: var(--spacing-lg);
 
     .header-content {
       display: flex;
       align-items: center;
-      gap: 1rem;
+      gap: var(--spacing-sm);
+      flex: 1;
 
       .header-icon {
-        width: 48px;
-        height: 48px;
-        border-radius: var(--border-radius-lg);
-        background: linear-gradient(135deg, var(--primary-color), var(--primary-light));
+        width: 40px;
+        height: 40px;
+        border-radius: var(--border-radius-sm);
+        background: rgba(236, 72, 153, 0.06);
+        border: 1px solid rgba(236, 72, 153, 0.18);
         display: flex;
         align-items: center;
         justify-content: center;
-        color: var(--white);
-        box-shadow: 0 4px 12px rgba(236, 72, 153, 0.3);
-        transition: all var(--transition-bounce);
+        color: var(--primary-color);
+        transition: all var(--transition-fast);
+        flex-shrink: 0;
 
         &:hover {
-          transform: scale(1.1) rotate(5deg);
+          background: rgba(236, 72, 153, 0.1);
+          border-color: rgba(236, 72, 153, 0.3);
+          transform: scale(1.05);
         }
 
         svg {
-          width: 24px;
-          height: 24px;
-          filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.1));
+          width: 20px;
+          height: 20px;
         }
       }
 
       .header-text {
-        h3 {
-          margin: 0 0 0.25rem 0;
-          font-size: 1.5rem;
+        .header-title {
+          margin: 0 0 2px 0;
+          font-size: 1rem;
           font-weight: 700;
-          color: var(--gray-900);
+          color: var(--text-color-dark);
           line-height: 1.2;
-          letter-spacing: -0.025em;
+          letter-spacing: -0.01em;
         }
 
         .chart-subtitle {
-          color: var(--gray-600);
-          font-size: 0.875rem;
-          font-weight: 500;
           margin: 0;
+          font-size: 0.75rem;
+          color: var(--text-light);
+          line-height: 1.4;
+          font-weight: 500;
         }
       }
     }
@@ -132,30 +163,42 @@
 
     .no-data {
       text-align: center;
-      padding: 3rem 1rem;
-      color: var(--gray-500);
-
+      padding: var(--spacing-xl) 0;
+      color: var(--text-lighter);
+      animation: fadeIn 0.6s ease-out;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      
       .no-data-icon {
-        margin-bottom: 1rem;
-        color: var(--gray-400);
-
+        font-size: 3rem;
+        margin-bottom: var(--spacing-md);
+        opacity: 0.6;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--text-lighter);
+        
         svg {
-          width: 64px;
-          height: 64px;
+          width: 48px;
+          height: 48px;
         }
       }
-
-      h4 {
-        margin: 0 0 0.5rem 0;
-        font-size: 1.25rem;
+      
+      .no-data-title {
+        margin: 0 0 var(--spacing-sm) 0;
+        font-size: 1.125rem;
         font-weight: 600;
-        color: var(--gray-700);
+        color: var(--text-color);
       }
-
-      p {
-        margin: 0 0 1.5rem 0;
-        font-size: 1rem;
-        color: var(--gray-600);
+      
+      .no-data-description {
+        margin: 0;
+        font-size: 0.875rem;
+        color: var(--text-light);
+        line-height: 1.4;
       }
     }
 
@@ -343,6 +386,14 @@
 
             .badge-icon {
               font-size: 0.5rem;
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              
+              svg {
+                width: 12px;
+                height: 12px;
+              }
             }
           }
 
@@ -500,7 +551,6 @@
   }
 }
 
-// Responsive Design
 @media (max-width: 1200px) {
   .due-date-chart-container {
     .chart-summary .summary-grid {
@@ -530,48 +580,105 @@
 
 @media (max-width: 768px) {
   .due-date-chart-container {
-    padding: 1rem;
+    padding: var(--spacing-lg);
 
     .chart-header {
-      flex-direction: column;
-      align-items: flex-start;
-      gap: 1rem;
+      margin-bottom: var(--spacing-lg);
+      gap: var(--spacing-md);
 
       .header-content {
-        width: 100%;
-        justify-content: space-between;
+        gap: var(--spacing-sm);
 
         .header-icon {
-          width: 40px;
-          height: 40px;
+          width: 36px;
+          height: 36px;
 
           svg {
-            width: 20px;
-            height: 20px;
+            width: 18px;
+            height: 18px;
           }
         }
 
-        .header-text h3 {
-          font-size: 1.25rem;
+        .header-text .header-title {
+          font-size: 0.875rem;
+        }
+        
+        .header-text .chart-subtitle {
+          font-size: 0.625rem;
         }
       }
     }
 
-    .chart-content .due-date-list .due-date-item {
-      flex-direction: column;
-      align-items: flex-start;
-      gap: 0.75rem;
-      padding: 1rem;
+    .chart-content .due-date-list {
+      gap: var(--spacing-md);
+      
+      .due-date-item {
+        flex-direction: row;
+        align-items: center;
+        gap: var(--spacing-md);
+        padding: var(--spacing-md);
+        margin-bottom: 0;
+        border-radius: var(--border-radius-sm);
+        border-left-width: 3px;
+        border-left-style: solid;
 
-      .debt-amount {
-        margin: 0;
-        align-items: flex-start;
-        min-width: auto;
-      }
+        &:hover {
+          transform: translateY(-1px);
+          box-shadow: var(--shadow-md);
+        }
 
-      .status-section {
-        align-self: flex-end;
-        min-width: auto;
+        .item-priority .priority-indicator {
+          width: 6px;
+          height: 6px;
+        }
+
+        .due-date-info {
+          flex: 1;
+          
+          .creditor-name {
+            font-size: 0.875rem;
+            margin-bottom: var(--spacing-xs);
+            line-height: 1.3;
+          }
+
+          .due-date {
+            font-size: 0.75rem;
+            
+            svg {
+              width: 12px;
+              height: 12px;
+            }
+          }
+        }
+
+        .debt-amount {
+          margin: 0;
+          align-items: flex-end;
+          min-width: 70px;
+          
+          .amount-label {
+            font-size: 0.625rem;
+          }
+          
+          .amount-value {
+            font-size: 0.875rem;
+          }
+        }
+
+        .status-section {
+          min-width: 70px;
+          gap: var(--spacing-xs);
+          
+          .status-badge {
+            padding: var(--spacing-xs) var(--spacing-sm);
+            font-size: 0.625rem;
+            border-radius: var(--border-radius-sm);
+          }
+          
+          .days-remaining {
+            font-size: 0.625rem;
+          }
+        }
       }
     }
 
@@ -606,27 +713,118 @@
 
 @media (max-width: 480px) {
   .due-date-chart-container {
-    padding: 0.75rem;
+    padding: var(--spacing-md);
 
-    .chart-header .header-content .header-text h3 {
-      font-size: 1.125rem;
+    .chart-header {
+      margin-bottom: var(--spacing-md);
+      
+      .header-content {
+        gap: var(--spacing-xs);
+        
+        .header-icon {
+          width: 32px;
+          height: 32px;
+
+          svg {
+            width: 16px;
+            height: 16px;
+          }
+        }
+
+        .header-text .header-title {
+          font-size: 0.8125rem;
+        }
+        
+        .header-text .chart-subtitle {
+          font-size: 0.5625rem;
+        }
+      }
     }
 
-    .chart-content .due-date-list .due-date-item {
-      padding: 0.75rem;
+    .chart-content .due-date-list {
+      gap: var(--spacing-sm);
+      
+      .due-date-item {
+        flex-direction: row;
+        align-items: center;
+        padding: var(--spacing-sm) var(--spacing-md);
+        margin-bottom: 0;
+        gap: var(--spacing-sm);
+        border-left-width: 3px;
+        border-left-style: solid;
 
-      .due-date-info .creditor-name {
-        font-size: 0.8125rem;
-      }
+        &:hover {
+          transform: translateY(-1px);
+          box-shadow: var(--shadow-md);
+        }
 
-      .debt-amount .amount-value {
-        font-size: 0.8125rem;
+        .item-priority .priority-indicator {
+          width: 5px;
+          height: 5px;
+        }
+
+        .due-date-info {
+          flex: 1;
+          min-width: 0;
+          
+          .creditor-name {
+            font-size: 0.8125rem;
+            margin-bottom: 2px;
+            line-height: 1.3;
+          }
+
+          .due-date {
+            font-size: 0.6875rem;
+            
+            svg {
+              width: 11px;
+              height: 11px;
+            }
+          }
+        }
+
+        .debt-amount {
+          margin: 0;
+          align-items: flex-end;
+          min-width: 60px;
+          
+          .amount-label {
+            font-size: 0.5625rem;
+          }
+          
+          .amount-value {
+            font-size: 0.8125rem;
+          }
+        }
+
+        .status-section {
+          min-width: 60px;
+          gap: 4px;
+          
+          .status-badge {
+            padding: 4px 8px;
+            font-size: 0.5625rem;
+            border-radius: var(--border-radius-sm);
+          }
+          
+          .days-remaining {
+            font-size: 0.5625rem;
+          }
+        }
       }
     }
   }
 }
 
-// Animations
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
 @keyframes slideInUp {
   from {
     opacity: 0;
@@ -642,7 +840,6 @@
   animation: slideInUp 0.6s cubic-bezier(0.4, 0, 0.2, 1) both;
 }
 
-// Accessibility
 @media (prefers-reduced-motion: reduce) {
   .due-date-chart-container,
   .due-date-item,
@@ -664,7 +861,6 @@
   }
 }
 
-// High contrast mode
 @media (prefers-contrast: high) {
   .due-date-chart-container {
     border-width: 2px;
@@ -678,3 +874,4 @@
     border-width: 2px;
   }
 }
+

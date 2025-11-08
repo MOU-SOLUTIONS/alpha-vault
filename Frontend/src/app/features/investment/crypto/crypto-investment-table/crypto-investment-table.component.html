@@ -1,6 +1,10 @@
-<!-- ====================================================================
-     Coded by Mohamed Dhaoui for Alpha Vault
-==================================================================== -->
+<!--
+  Alpha Vault Financial System
+  
+  @author Mohamed Dhaoui
+  @component CryptoInvestmentTableComponent
+  @description Crypto investment table component for displaying crypto investments
+-->
 
 <section class="crypto-investment-table-section">
   <div class="container">
@@ -20,6 +24,8 @@
                 [class.active]="hasActiveFilters()"
                 type="button" 
                 (click)="toggleFilterSection()"
+                (keydown.enter)="toggleFilterSection()"
+                (keydown.space)="toggleFilterSection(); $event.preventDefault()"
                 [matBadge]="hasActiveFilters() ? '!' : null"
                 matBadgeColor="warn"
                 matTooltip="Toggle filter panel"
@@ -35,6 +41,8 @@
                 mat-flat-button 
                 type="button" 
                 (click)="onAddClicked()"
+                (keydown.enter)="onAddClicked()"
+                (keydown.space)="onAddClicked(); $event.preventDefault()"
                 matTooltip="Add new investment"
                 aria-label="Add new investment">
                 <mat-icon>add</mat-icon>
@@ -64,6 +72,8 @@
                 color="warn"
                 type="button"
                 (click)="resetFilters()"
+                (keydown.enter)="resetFilters()"
+                (keydown.space)="resetFilters()"
                 matTooltip="Reset all filters"
                 aria-label="Reset all filters"
                 [disabled]="!hasActiveFilters()">
@@ -71,59 +81,80 @@
                 <span class="button-text">Reset</span>
               </button>
             </div>
-            <div class="row g-3">
+            <div class="col-12 col-md-12">
+              <mat-form-field appearance="outline" class="w-100">
+                <mat-label for="searchInput">Search anything</mat-label>
+                <input
+                  matInput
+                  id="searchInput"
+                  formControlName="search"
+                  placeholder="e.g. Bitcoin, Ethereum, BTC, 1000"
+                  aria-label="Search investment records" />
+                <mat-icon matSuffix>search</mat-icon>
+              </mat-form-field>
+            </div>
+            <div class="row g-1">
               <div class="col-12 col-md-3">
-                <mat-form-field appearance="outline" class="w-100">
-                  <mat-label>Search investments</mat-label>
-                  <input
-                    matInput
-                    formControlName="search"
-                    placeholder="e.g. Bitcoin, Ethereum, BTC"
-                    aria-label="Search investment records" />
-                  <mat-icon matSuffix>search</mat-icon>
-                </mat-form-field>
+                <div class="select-input-wrapper">
+                  <label class="select-label" for="soldStatus">Status</label>
+                  <mat-form-field appearance="outline" class="w-100 filter-select-field">
+                    <mat-select 
+                      id="soldStatus"
+                      formControlName="sold"
+                      aria-label="Filter by status">
+                      <mat-option value="all">All</mat-option>
+                      <mat-option value="unsold">Active</mat-option>
+                      <mat-option value="sold">Sold</mat-option>
+                    </mat-select>
+                  </mat-form-field>
+                </div>
               </div>
-              <div class="col-6 col-md-3">
-                <mat-form-field appearance="outline" class="w-100">
-                  <mat-label>Status</mat-label>
-                  <mat-select 
-                    formControlName="sold"
-                    aria-label="Filter by status">
-                    <mat-option value="all">All</mat-option>
-                    <mat-option value="unsold">Active</mat-option>
-                    <mat-option value="sold">Sold</mat-option>
-                  </mat-select>
-                  <mat-icon matSuffix>check_circle</mat-icon>
-                </mat-form-field>
+              <div class="col-12 col-md-3">
+                <div class="select-input-wrapper">
+                  <label class="select-label" for="riskLevel">Risk Level</label>
+                  <mat-form-field appearance="outline" class="w-100 filter-select-field">
+                    <mat-select 
+                      id="riskLevel"
+                      formControlName="risk"
+                      aria-label="Filter by risk level">
+                      <mat-option value="all">All</mat-option>
+                      <mat-option *ngFor="let risk of riskLevels" [value]="risk.value">
+                        {{ risk.label }}
+                      </mat-option>
+                    </mat-select>
+                  </mat-form-field>
+                </div>
               </div>
-              <div class="col-6 col-md-3">
-                <mat-form-field appearance="outline" class="w-100">
-                  <mat-label>Risk Level</mat-label>
-                  <mat-select 
-                    formControlName="risk"
-                    aria-label="Filter by risk level">
-                    <mat-option value="all">All Risks</mat-option>
-                    <mat-option *ngFor="let risk of riskLevels" [value]="risk.value">
-                      {{ risk.label }}
-                    </mat-option>
-                  </mat-select>
-                  <mat-icon matSuffix>warning</mat-icon>
-                </mat-form-field>
+              <div class="col-12 col-md-3">
+                <div class="select-input-wrapper">
+                  <label class="select-label" for="sortBy">Sort By</label>
+                  <mat-form-field appearance="outline" class="w-100 filter-select-field">
+                    <mat-select 
+                      id="sortBy"
+                      formControlName="sortBy"
+                      aria-label="Sort by field">
+                      <mat-option value="name">Name</mat-option>
+                      <mat-option value="amountInvested">Amount Invested</mat-option>
+                      <mat-option value="currentValue">Current Value</mat-option>
+                      <mat-option value="profitLoss">Profit/Loss</mat-option>
+                      <mat-option value="startDate">Start Date</mat-option>
+                    </mat-select>
+                  </mat-form-field>
+                </div>
               </div>
-              <div class="col-6 col-md-3">
-                <mat-form-field appearance="outline" class="w-100">
-                  <mat-label>Sort By</mat-label>
-                  <mat-select 
-                    formControlName="sortBy"
-                    aria-label="Sort by field">
-                    <mat-option value="name">Name</mat-option>
-                    <mat-option value="amountInvested">Amount Invested</mat-option>
-                    <mat-option value="currentValue">Current Value</mat-option>
-                    <mat-option value="profitLoss">Profit/Loss</mat-option>
-                    <mat-option value="startDate">Start Date</mat-option>
-                  </mat-select>
-                  <mat-icon matSuffix>sort</mat-icon>
-                </mat-form-field>
+              <div class="col-12 col-md-3">
+                <div class="select-input-wrapper">
+                  <label class="select-label" for="sortOrder">Sort Order</label>
+                  <mat-form-field appearance="outline" class="w-100 filter-select-field">
+                    <mat-select 
+                      id="sortOrder"
+                      formControlName="sortOrder"
+                      aria-label="Sort order">
+                      <mat-option value="asc">Ascending</mat-option>
+                      <mat-option value="desc">Descending</mat-option>
+                    </mat-select>
+                  </mat-form-field>
+                </div>
               </div>
             </div>
           </form>
@@ -170,7 +201,7 @@
               *ngIf="!isMobile">
               <table mat-table [dataSource]="dataSource" class="w-100">
                 <ng-container matColumnDef="name">
-                  <th mat-header-cell *matHeaderCellDef>Investment</th>
+                  <th mat-header-cell *matHeaderCellDef style="text-align: center !important;">Investment</th>
                   <td mat-cell *matCellDef="let element">
                     <div class="investment-elite">
                       <div class="investment-icon">
@@ -184,7 +215,7 @@
                   </td>
                 </ng-container>
                 <ng-container matColumnDef="amountInvested">
-                  <th mat-header-cell *matHeaderCellDef>Invested</th>
+                  <th mat-header-cell *matHeaderCellDef style="text-align: center !important;">Invested</th>
                   <td mat-cell *matCellDef="let element">
                     <div class="amount-elite">
                       <div class="amount-content">
@@ -195,7 +226,7 @@
                   </td>
                 </ng-container>
                 <ng-container matColumnDef="currentValue">
-                  <th mat-header-cell *matHeaderCellDef>Current Value</th>
+                  <th mat-header-cell *matHeaderCellDef style="text-align: center !important;">Current Value</th>
                   <td mat-cell *matCellDef="let element">
                     <div class="current-elite">
                       <div class="current-content">
@@ -206,7 +237,7 @@
                   </td>
                 </ng-container>
                 <ng-container matColumnDef="profitLoss">
-                  <th mat-header-cell *matHeaderCellDef>Profit/Loss</th>
+                  <th mat-header-cell *matHeaderCellDef style="text-align: center !important;">Profit/Loss</th>
                   <td mat-cell *matCellDef="let element">
                     <div class="profit-elite" [ngClass]="getProfitLossClass(element)">
                       <div class="profit-header">
@@ -220,31 +251,30 @@
                   </td>
                 </ng-container>
                 <ng-container matColumnDef="startDate">
-                  <th mat-header-cell *matHeaderCellDef>Started</th>
+                  <th mat-header-cell *matHeaderCellDef style="text-align: center !important;">Started</th>
                   <td mat-cell *matCellDef="let element">
                     <span class="date-text">{{ element.startDate | date:'MMM dd, yyyy' }}</span>
                   </td>
                 </ng-container>
                 <ng-container matColumnDef="riskLevel">
-                  <th mat-header-cell *matHeaderCellDef>Risk</th>
+                  <th mat-header-cell *matHeaderCellDef style="text-align: center !important;">Risk</th>
                   <td mat-cell *matCellDef="let element">
-                    <span class="risk-text" [ngClass]="getRiskLevelClass(element.riskLevel)">
-                      <mat-icon class="risk-icon">{{ getRiskIcon(element.riskLevel) }}</mat-icon>
-                      {{ element.riskLevel }}
+                    <span class="risk-badge" [ngClass]="getRiskLevelClass(element.riskLevel)">
+                      {{ getRiskLevelLabel(element.riskLevel) }}
                     </span>
                   </td>
                 </ng-container>
-                <ng-container matColumnDef="isSold">
-                  <th mat-header-cell *matHeaderCellDef>Status</th>
+                <ng-container matColumnDef="status">
+                  <th mat-header-cell *matHeaderCellDef style="text-align: center !important;">Status</th>
                   <td mat-cell *matCellDef="let element">
-                    <span class="status-text" [class.sold]="element.isSold" [class.active]="!element.isSold">
-                      <mat-icon class="status-icon">{{ element.isSold ? 'check_circle' : 'pending' }}</mat-icon>
-                      {{ element.isSold ? 'Sold' : 'Active' }}
+                    <span class="status-text" [class.sold]="element.status === InvestmentStatus.CLOSED" [class.active]="element.status === InvestmentStatus.OPEN">
+                      <mat-icon class="status-icon">{{ element.status === InvestmentStatus.CLOSED ? 'check_circle' : 'pending' }}</mat-icon>
+                      {{ element.status === InvestmentStatus.CLOSED ? 'Sold' : 'Active' }}
                     </span>
                   </td>
                 </ng-container>
                 <ng-container matColumnDef="actions">
-                  <th mat-header-cell *matHeaderCellDef>Actions</th>
+                  <th mat-header-cell *matHeaderCellDef style="text-align: center !important;">Actions</th>
                   <td mat-cell *matCellDef="let element">
                     <div class="actions-wrapper">
                       <button
@@ -286,6 +316,8 @@
                   class="mobile-row"
                   [class.expanded]="expandedElement === element"
                   (click)="toggleRowExpand(element)"
+                  (keydown.enter)="toggleRowExpand(element)"
+                  (keydown.space)="toggleRowExpand(element); $event.preventDefault()"
                   tabindex="0"
                   role="button"
                   [attr.aria-expanded]="expandedElement === element"
@@ -319,7 +351,7 @@
                     <div class="detail-item">
                       <mat-icon class="detail-icon">trending_up</mat-icon>
                       <span class="detail-label">Current Value:</span>
-                      <span class="detail-value">{{ formatCurrency(element.currentValue) }}</span>
+                        <span class="detail-value">{{ formatCurrency(element.currentValue || 0) }}</span>
                     </div>
                     <div class="detail-item">
                       <mat-icon class="detail-icon">event</mat-icon>
@@ -330,8 +362,8 @@
                       <mat-icon class="detail-icon">warning</mat-icon>
                       <span class="detail-label">Risk:</span>
                       <span class="detail-value">
-                        <span class="risk-text" [ngClass]="getRiskLevelClass(element.riskLevel)">
-                          {{ element.riskLevel }}
+                        <span class="risk-badge" [ngClass]="getRiskLevelClass(element.riskLevel)">
+                          {{ getRiskLevelLabel(element.riskLevel) }}
                         </span>
                       </span>
                     </div>
@@ -339,8 +371,8 @@
                       <mat-icon class="detail-icon">check_circle</mat-icon>
                       <span class="detail-label">Status:</span>
                       <span class="detail-value">
-                        <span class="status-text" [class.sold]="element.isSold" [class.active]="!element.isSold">
-                          {{ element.isSold ? 'Sold' : 'Active' }}
+                        <span class="status-text" [class.sold]="element.status === InvestmentStatus.CLOSED" [class.active]="element.status === InvestmentStatus.OPEN">
+                          {{ element.status === InvestmentStatus.CLOSED ? 'Sold' : 'Active' }}
                         </span>
                       </span>
                     </div>

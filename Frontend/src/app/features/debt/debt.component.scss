@@ -1,12 +1,16 @@
-// ====================================================================
-//             Coded by Mohamed Dhaoui for Alpha Vault
-// ====================================================================
+/*
+  Alpha Vault Financial System
+  
+  @author Mohamed Dhaoui
+  @component DebtComponent
+  @description Main debt dashboard component styles for managing debt dashboard
+*/
 
 :host {
   --text-medium: #475569;
 }
 
-.second-row, .third-row, .fourth-row, .fifth-row {
+.second-row, .third-row, .fifth-row {
   margin-bottom: 10px;
 }
 
@@ -30,21 +34,16 @@
   width: 100%;
   margin: 0;
   
-  .top-5-table,
+  .debt-evaluation,
   .due-date-chart {
     display: flex;
     flex-direction: column;
   }
   
-  .top-5-table app-debt-top5,
+  .debt-evaluation app-debt-evaluation,
   .due-date-chart app-debt-due-date-chart {
     flex: 1;
   }
-}
-
-.fourth-row {
-  width: 100%;
-  margin: 0;
 }
 
 .fifth-row {
@@ -64,7 +63,7 @@
   .third-row {
     .debt-progress,
     .debt-creditor-chart,
-    .top-5-table,
+    .debt-evaluation,
     .due-date-chart {
       height: auto;
       min-height: 400px;
@@ -80,7 +79,7 @@
     padding-top: 10px !important;
   }
   
-  .third-row .top-5-table {
+  .third-row .debt-evaluation {
     padding: 0 !important;
     padding-top: 10px !important;
   }
@@ -90,7 +89,6 @@
     padding-top: 10px !important;
   }
 
-  .fourth-row,
   .fifth-row {
     padding-top: 10px !important;
   }
@@ -109,7 +107,7 @@
     padding-left: 5px !important;
   }
   
-  .third-row .top-5-table {
+  .third-row .debt-evaluation {
     padding: 0 !important;
     padding-top: 10px !important;
     padding-right: 5px !important;
@@ -142,7 +140,7 @@
       padding: 0 !important;
     }
 
-    .top-5-table {
+    .debt-evaluation {
       padding-right: 5px !important;
     }
 
@@ -155,367 +153,17 @@
   .third-row {
     .debt-progress,
     .debt-creditor-chart,
-    .top-5-table,
+    .debt-evaluation,
     .due-date-chart {
       min-height: 500px;
     }
   }
   
-  .second-row, .third-row, .fourth-row, .fifth-row {
+  .second-row, .third-row, .fifth-row {
     margin-bottom: 10px;
   }
 }
 
-.quick-actions-row {
-  margin: 10px 0 0 0;
-  
-  .row {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 10px;
-    align-items: stretch;
-    
-    .col-12.col-md-4 {
-      width: 100%;
-      padding: 0;
-      margin: 0;
-    }
-  }
-  
-  .debt-card {
-    height: 100%;
-    display: flex;
-    flex-direction: column;
-    background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
-    border-radius: 16px;
-    border: 1px solid rgba(229, 231, 235, 0.4);
-    box-shadow: 
-      0 4px 6px -1px rgba(0, 0, 0, 0.1),
-      0 2px 4px -1px rgba(0, 0, 0, 0.06),
-      inset 0 1px 0 rgba(255, 255, 255, 0.9);
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    overflow: hidden;
-    position: relative;
-    
-    &::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: 0;
-      right: 0;
-      height: 4px;
-      background: linear-gradient(90deg, #EC4899 0%, #F472B6 50%, #EC4899 100%);
-      opacity: 0.8;
-    }
-    
-    &:hover {
-      transform: translateY(-4px);
-      box-shadow: 
-        0 20px 25px -5px rgba(0, 0, 0, 0.1),
-        0 10px 10px -5px rgba(0, 0, 0, 0.04),
-        inset 0 1px 0 rgba(255, 255, 255, 0.9);
-    }
-    
-    .card-header {
-      padding: 1.5rem 1.5rem 1rem;
-      position: relative;
-      display: flex;
-      align-items: center;
-      gap: 0.75rem;
-      flex-shrink: 0;
-      
-      .header-icon {
-        width: 48px;
-        height: 48px;
-        background: linear-gradient(135deg, #EC4899 0%, #F472B6 100%);
-        border-radius: 12px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        color: white;
-        box-shadow: 0 4px 12px rgba(236, 72, 153, 0.3);
-        
-        svg {
-          filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.1));
-        }
-      }
-      
-      h3 {
-        margin: 0;
-        font-size: 1.25rem;
-        font-weight: 700;
-        color: #1e293b;
-        flex: 1;
-      }
-      
-      .header-accent {
-        width: 24px;
-        height: 24px;
-        background: linear-gradient(135deg, #EC4899 0%, #F472B6 100%);
-        border-radius: 50%;
-        opacity: 0.6;
-        animation: pulse 2s infinite;
-      }
-    }
-    
-    .card-content {
-      padding: 0 1.5rem 1.5rem;
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-    }
-  }
-  
-  .quick-action-card {
-    .card-content {
-      justify-content: flex-start;
-      
-      .quick-action-buttons {
-        display: flex;
-        flex-direction: column;
-        gap: 0.75rem;
-        flex: 1;
-        
-        .action-btn {
-          display: flex;
-          align-items: center;
-          gap: 0.75rem;
-          padding: 1rem 1.25rem;
-          border: none;
-          border-radius: 12px;
-          font-weight: 600;
-          font-size: 0.95rem;
-          cursor: pointer;
-          transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-          position: relative;
-          overflow: hidden;
-          
-          &::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: -100%;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
-            transition: left 0.5s;
-          }
-          
-          &:hover::before {
-            left: 100%;
-          }
-          
-          .btn-icon {
-            width: 40px;
-            height: 40px;
-            border-radius: 10px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            flex-shrink: 0;
-          }
-          
-          span {
-            color: white;
-            font-weight: 600;
-          }
-          
-          &.btn-add {
-            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
-            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
-            
-            &:hover {
-              transform: translateY(-2px);
-              box-shadow: 0 8px 20px rgba(16, 185, 129, 0.4);
-            }
-          }
-          
-          &.btn-calculator {
-            background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
-            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
-            
-            &:hover {
-              transform: translateY(-2px);
-              box-shadow: 0 8px 20px rgba(59, 130, 246, 0.4);
-            }
-          }
-          
-          &.btn-snowball {
-            background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
-            box-shadow: 0 4px 12px rgba(139, 92, 246, 0.3);
-            
-            &:hover {
-              transform: translateY(-2px);
-              box-shadow: 0 8px 20px rgba(139, 92, 246, 0.4);
-            }
-          }
-        }
-      }
-    }
-  }
-  
-  .insight-card {
-    .card-content {
-      justify-content: flex-start;
-      
-      .insight-item {
-        display: flex;
-        align-items: flex-start;
-        gap: 1rem;
-        padding: 1rem;
-        background: linear-gradient(135deg, rgba(236, 72, 153, 0.05) 0%, rgba(244, 114, 182, 0.05) 100%);
-        border-radius: 12px;
-        margin-bottom: 1rem;
-        border: 1px solid rgba(236, 72, 153, 0.1);
-        transition: all 0.25s ease;
-        
-        &:hover {
-          background: linear-gradient(135deg, rgba(236, 72, 153, 0.1) 0%, rgba(244, 114, 182, 0.1) 100%);
-          transform: translateX(4px);
-        }
-        
-        .insight-icon {
-          width: 40px;
-          height: 40px;
-          background: linear-gradient(135deg, #EC4899 0%, #F472B6 100%);
-          border-radius: 10px;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          color: white;
-          flex-shrink: 0;
-          box-shadow: 0 2px 8px rgba(236, 72, 153, 0.3);
-        }
-        
-        .insight-text {
-          flex: 1;
-          min-width: 0;
-          
-          strong {
-            display: block;
-            color: #1e293b;
-            font-size: 0.95rem;
-            font-weight: 700;
-            margin-bottom: 0.25rem;
-          }
-          
-          p {
-            margin: 0;
-            color: #64748b;
-            font-size: 0.875rem;
-            line-height: 1.5;
-          }
-        }
-      }
-      
-      .insight-placeholder {
-        text-align: center;
-        padding: 2rem 1rem;
-        color: #94a3b8;
-        flex: 1;
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-        
-        .placeholder-icon {
-          margin-bottom: 1rem;
-          opacity: 0.5;
-        }
-        
-        p {
-          margin: 0;
-          font-size: 0.875rem;
-        }
-      }
-    }
-  }
-  
-  .progress-card {
-    .card-content {
-      justify-content: flex-start;
-      
-      .progress-item {
-        margin-bottom: 1.5rem;
-        
-        &:last-child {
-          margin-bottom: 0;
-        }
-        
-        .progress-header {
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-          margin-bottom: 0.75rem;
-          
-          .progress-label {
-            color: #374151;
-            font-weight: 600;
-            font-size: 0.9rem;
-          }
-          
-          .progress-value {
-            color: #EC4899;
-            font-weight: 700;
-            font-size: 1rem;
-          }
-        }
-        
-        .progress-container {
-          width: 100%;
-          height: 8px;
-          background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%);
-          border-radius: 4px;
-          overflow: hidden;
-          position: relative;
-          box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1);
-          
-          .progress-bar {
-            height: 100%;
-            background: linear-gradient(90deg, #EC4899 0%, #F472B6 100%);
-            border-radius: 4px;
-            position: relative;
-            transition: width 1s cubic-bezier(0.4, 0, 0.2, 1);
-            box-shadow: 0 2px 8px rgba(236, 72, 153, 0.3);
-            
-            .progress-glow {
-              position: absolute;
-              top: 0;
-              right: 0;
-              width: 20px;
-              height: 100%;
-              background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.6));
-              animation: shimmer 2s infinite;
-            }
-          }
-        }
-      }
-    }
-  }
-}
-
-@media (max-width: 767px) {
-  .quick-actions-row {
-    .row {
-      grid-template-columns: 1fr;
-      gap: 10px;
-    }
-    
-    .debt-card {
-      height: auto;
-      min-height: 200px;
-    }
-  }
-}
-
-@media (min-width: 768px) and (max-width: 1199px) {
-  .quick-actions-row {
-    .row {
-      grid-template-columns: repeat(3, 1fr);
-      gap: 10px;
-    }
-  }
-}
 
 .delete-text {
   margin-bottom: 1.5rem;
@@ -579,5 +227,29 @@
   }
   100% {
     transform: translateX(100%);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .delete-button-group .btn {
+    transition: none;
+    
+    &:hover {
+      transform: none;
+    }
+  }
+  
+  @keyframes pulse {
+    0%, 100% {
+      opacity: 1;
+      transform: none;
+    }
+  }
+  
+  @keyframes shimmer {
+    0%, 100% {
+      opacity: 1;
+      transform: none;
+    }
   }
 }

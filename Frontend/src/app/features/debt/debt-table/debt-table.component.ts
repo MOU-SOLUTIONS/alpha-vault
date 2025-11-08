@@ -1,18 +1,30 @@
-// ====================================================================
-//             Coded by Mohamed Dhaoui for Alpha Vault
-// ====================================================================
+/*
+  Alpha Vault Financial System
+  
+  @author Mohamed Dhaoui
+  @component DebtTableComponent
+  @description Main debt dashboard component for managing debt table
+*/
 
-import { ChangeDetectionStrategy, Component, Input, Output, EventEmitter, OnInit, OnDestroy, OnChanges, SimpleChanges, ChangeDetectorRef } from '@angular/core';
+import { animate, style, transition, trigger } from '@angular/animations';
 import { CommonModule } from '@angular/common';
-import { Meta } from '@angular/platform-browser';
-import { Subject, takeUntil } from 'rxjs';
-import { trigger, style, transition, animate } from '@angular/animations';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, EventEmitter, Input, OnChanges, OnDestroy, OnInit, Output, SimpleChanges } from '@angular/core';
+import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { MatButtonModule } from '@angular/material/button';
+import { MatIconModule } from '@angular/material/icon';
+import { PageEvent } from '@angular/material/paginator';
+import { MatTableDataSource, MatTableModule } from '@angular/material/table';
+import { MatTooltipModule } from '@angular/material/tooltip';
+import { Subject } from 'rxjs';
 
+import { META_FRAGMENT } from '../../../core/seo/page-meta.model';
 import { Debt } from '../../../models/debt.model';
+import { DebtFormComponent } from '../debt-form/debt-form.component';
+import { DebtTablePaginatorComponent } from './components/debt-table-paginator/debt-table-paginator.component';
 
 export interface DebtTableFilters {
   searchTerm: string;
-  sortBy: 'creditorName' | 'totalAmount' | 'remainingAmount' | 'interestRate' | 'dueDate' | 'minPayment';
+  sortBy: 'creditorName' | 'principalAmount' | 'remainingAmount' | 'interestRateApr' | 'dueDate' | 'minPayment';
   sortOrder: 'asc' | 'desc';
   showOverdueOnly: boolean;
   showHighInterestOnly: boolean;
@@ -21,10 +33,27 @@ export interface DebtTableFilters {
 @Component({
   selector: 'app-debt-table',
   standalone: true,
-  imports: [CommonModule],
+  imports: [
+    CommonModule,
+    ReactiveFormsModule,
+    MatTableModule,
+    MatButtonModule,
+    MatIconModule,
+    MatTooltipModule,
+    DebtFormComponent,
+    DebtTablePaginatorComponent
+  ],
   templateUrl: './debt-table.component.html',
   styleUrls: ['./debt-table.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
+  providers: [
+    {
+      provide: META_FRAGMENT,
+      useValue: {
+        description: 'Manage and track your debts with comprehensive filtering, sorting, and bulk operations. View detailed debt information, track payment progress, and efficiently organize your financial obligations in Alpha Vault.'
+      }
+    }
+  ],
   animations: [
     trigger('fadeInUp', [
       transition(':enter', [
@@ -41,8 +70,19 @@ export interface DebtTableFilters {
   ]
 })
 export class DebtTableComponent implements OnInit, OnDestroy, OnChanges {
+  /**
+   * Array of debt records to display in the table
+   */
   @Input() debts: Debt[] = [];
+  
+  /**
+   * Loading state indicator
+   */
   @Input() loading = false;
+  
+  /**
+   * Total number of debts
+   */
   @Input() totalDebts = 0;
 
   @Output() onAdd = new EventEmitter<void>();
@@ -50,6 +90,7 @@ export class DebtTableComponent implements OnInit, OnDestroy, OnChanges {
   @Output() onDelete = new EventEmitter<number>();
   @Output() onExport = new EventEmitter<void>();
   @Output() onFiltersChange = new EventEmitter<DebtTableFilters>();
+  @Output() onFormSubmit = new EventEmitter<{ mode: 'add' | 'edit'; formValue: any; debtId?: number }>();
 
   private destroy$ = new Subject<void>();
   filters: DebtTableFilters = {
@@ -60,22 +101,65 @@ export class DebtTableComponent implements OnInit, OnDestroy, OnChanges {
     showHighInterestOnly: false
   };
   filteredDebts: Debt[] = [];
+  paginatedDebts: Debt[] = [];
   selectedDebts = new Set<number>();
   showBulkActions = false;
+  
+  // Pagination properties
+  pageSize = 10;
+  currentPage = 0;
+  pageSizeOptions: number[] = [5, 10, 25, 50];
+
+  showAddForm = false;
+  isModifyMode = false;
+  selectedDebtForModify: Debt | null = null;
+  debtForm: FormGroup;
+  
+  isDeleteOverlayVisible = false;
+  debtIdToDelete: number | null = null;
+  
+  dataSource = new MatTableDataSource<Debt>([]);
+  displayedColumns: string[] = [
+    'checkbox',
+    'creditor',
+    'principalAmount',
+    'remainingAmount',
+    'interestRateApr',
+    'dueDate',
+    'minPayment',
+    'progress',
+    'actions'
+  ];
+
+  private _debtStatusCache = new Map<number, {
+    isOverdue: boolean;
+    daysUntilDue: number;
+    overdueDays: number;
+    urgencyClass: string;
+    interestRateClass: string;
+    progressPercentage: number;
+    formattedDate: string;
+  }>();
+
+  private _lastDebtsArray?: Debt[];
 
   constructor(
-    private meta: Meta,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
+    private fb: FormBuilder
   ) {
-    this.meta.addTags([
-      { name: 'description', content: 'Manage and track your debts with comprehensive filtering, sorting, and bulk operations' },
-      { name: 'robots', content: 'index,follow' },
-      { name: 'viewport', content: 'width=device-width, initial-scale=1' }
-    ]);
+    this.debtForm = this.fb.group({
+      creditorName: ['', Validators.required],
+      principalAmount: [0, [Validators.required, Validators.min(0.01)]],
+      remainingAmount: [0, [Validators.required, Validators.min(0)]],
+      interestRateApr: [0, [Validators.min(0), Validators.max(999.9999)]],
+      dueDate: ['', Validators.required],
+      minPayment: [0, [Validators.required, Validators.min(0)]]
+    });
   }
 
   ngOnInit(): void {
     this.applyFilters();
+    this.applyPagination();
   }
 
   ngOnDestroy(): void {
@@ -85,13 +169,96 @@ export class DebtTableComponent implements OnInit, OnDestroy, OnChanges {
 
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['debts']) {
+      this.invalidateCache();
       this.applyFilters();
-      this.cdr.detectChanges();
+      this.cdr.markForCheck();
     }
+  }
+
+  private invalidateCache(): void {
+    this._debtStatusCache.clear();
+    this._lastDebtsArray = undefined;
+  }
+
+  private isDebtsArrayEqual(a: Debt[] | undefined, b: Debt[]): boolean {
+    if (!a || a.length !== b.length) return false;
+    for (let i = 0; i < a.length; i++) {
+      if (a[i].id !== b[i].id || 
+          a[i].dueDate !== b[i].dueDate || 
+          a[i].interestRateApr !== b[i].interestRateApr ||
+          a[i].principalAmount !== b[i].principalAmount ||
+          a[i].remainingAmount !== b[i].remainingAmount) {
+        return false;
+      }
+    }
+    return true;
   }
 
   get currentDebts(): Debt[] {
     return this.debts;
+  }
+
+  getDebtStatus(debt: Debt): {
+    isOverdue: boolean;
+    daysUntilDue: number;
+    overdueDays: number;
+    urgencyClass: string;
+    interestRateClass: string;
+    progressPercentage: number;
+    formattedDate: string;
+  } {
+    if (this._debtStatusCache.has(debt.id)) {
+      return this._debtStatusCache.get(debt.id)!;
+    }
+
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const due = new Date(debt.dueDate);
+    due.setHours(0, 0, 0, 0);
+    const daysUntilDue = Math.ceil((due.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+    const isOverdue = due < today;
+    const overdueDays = Math.abs(daysUntilDue);
+
+    let urgencyClass: string;
+    if (daysUntilDue < 0) {
+      urgencyClass = 'critical';
+    } else if (daysUntilDue <= 3) {
+      urgencyClass = 'urgent';
+    } else if (daysUntilDue <= 7) {
+      urgencyClass = 'warning';
+    } else {
+      urgencyClass = 'normal';
+    }
+
+    let interestRateClass: string;
+    if (debt.interestRateApr >= 25) {
+      interestRateClass = 'critical';
+    } else if (debt.interestRateApr >= 15) {
+      interestRateClass = 'high';
+    } else if (debt.interestRateApr >= 10) {
+      interestRateClass = 'medium';
+    } else if (debt.interestRateApr >= 5) {
+      interestRateClass = 'low';
+    } else {
+      interestRateClass = 'very-low';
+    }
+
+    const paid = debt.principalAmount - debt.remainingAmount;
+    const progressPercentage = Math.round((paid / debt.principalAmount) * 100);
+    const formattedDate = new Date(debt.dueDate).toLocaleDateString();
+
+    const status = {
+      isOverdue,
+      daysUntilDue,
+      overdueDays,
+      urgencyClass,
+      interestRateClass,
+      progressPercentage,
+      formattedDate
+    };
+
+    this._debtStatusCache.set(debt.id, status);
+    return status;
   }
 
   formatDate(date: string): string {
@@ -135,8 +302,8 @@ export class DebtTableComponent implements OnInit, OnDestroy, OnChanges {
   }
 
   getProgressPercentage(debt: Debt): number {
-    const paid = debt.totalAmount - debt.remainingAmount;
-    return Math.round((paid / debt.totalAmount) * 100);
+    const paid = debt.principalAmount - debt.remainingAmount;
+    return Math.round((paid / debt.principalAmount) * 100);
   }
 
   onSearchChange(event: Event): void {
@@ -161,13 +328,21 @@ export class DebtTableComponent implements OnInit, OnDestroy, OnChanges {
   }
 
   applyFilters(): void {
+    if (!this.isDebtsArrayEqual(this._lastDebtsArray, this.debts)) {
+      this.invalidateCache();
+      this._lastDebtsArray = [...this.debts];
+    }
+
+    // Reset to first page when filters change
+    this.currentPage = 0;
+
     let filtered = [...this.currentDebts];
 
     if (this.filters.searchTerm) {
       const search = this.filters.searchTerm.toLowerCase();
       filtered = filtered.filter(debt =>
         debt.creditorName.toLowerCase().includes(search) ||
-        debt.totalAmount.toString().includes(search) ||
+        debt.principalAmount.toString().includes(search) ||
         debt.remainingAmount.toString().includes(search)
       );
     }
@@ -177,7 +352,7 @@ export class DebtTableComponent implements OnInit, OnDestroy, OnChanges {
     }
 
     if (this.filters.showHighInterestOnly) {
-      filtered = filtered.filter(debt => debt.interestRate > 15);
+      filtered = filtered.filter(debt => debt.interestRateApr > 15);
     }
 
     filtered.sort((a, b) => {
@@ -192,15 +367,38 @@ export class DebtTableComponent implements OnInit, OnDestroy, OnChanges {
     });
 
     this.filteredDebts = filtered;
+    this.applyPagination();
     this.updateBulkActions();
+    this.cdr.markForCheck();
+  }
+
+  private applyPagination(): void {
+    // If current page is beyond available data, reset to first page
+    const totalPages = Math.ceil(this.filteredDebts.length / this.pageSize);
+    if (this.currentPage >= totalPages && totalPages > 0) {
+      this.currentPage = 0;
+    }
+    
+    const startIndex = this.currentPage * this.pageSize;
+    const endIndex = startIndex + this.pageSize;
+    this.paginatedDebts = this.filteredDebts.slice(startIndex, endIndex);
+    this.dataSource.data = this.paginatedDebts;
+  }
+
+  onPageChange(event: PageEvent): void {
+    this.pageSize = event.pageSize;
+    this.currentPage = event.pageIndex;
+    this.applyPagination();
+    this.updateBulkActions();
+    this.cdr.markForCheck();
   }
 
   private getSortValue(debt: Debt, field: DebtTableFilters['sortBy']): any {
     switch (field) {
       case 'creditorName': return debt.creditorName.toLowerCase();
-      case 'totalAmount': return debt.totalAmount;
+      case 'principalAmount': return debt.principalAmount;
       case 'remainingAmount': return debt.remainingAmount;
-      case 'interestRate': return debt.interestRate;
+      case 'interestRateApr': return debt.interestRateApr;
       case 'dueDate': return new Date(debt.dueDate).getTime();
       case 'minPayment': return debt.minPayment;
       default: return 0;
@@ -217,10 +415,10 @@ export class DebtTableComponent implements OnInit, OnDestroy, OnChanges {
   }
 
   selectAllDebts(): void {
-    if (this.selectedDebts.size === this.filteredDebts.length) {
+    if (this.selectedDebts.size === this.paginatedDebts.length) {
       this.selectedDebts.clear();
     } else {
-      this.filteredDebts.forEach(debt => this.selectedDebts.add(debt.id));
+      this.paginatedDebts.forEach(debt => this.selectedDebts.add(debt.id));
     }
     this.updateBulkActions();
   }
@@ -248,6 +446,117 @@ export class DebtTableComponent implements OnInit, OnDestroy, OnChanges {
 
   refreshData(): void {
     this.applyFilters();
-    this.cdr.detectChanges();
+    this.cdr.markForCheck();
+  }
+
+  toggleAddForm(): void {
+    this.showAddForm = !this.showAddForm;
+    if (this.showAddForm && !this.isModifyMode) {
+      this.debtForm.reset();
+      const today = new Date();
+      const nextMonth = new Date(today.getFullYear(), today.getMonth() + 1, today.getDate());
+      const nextMonthStr = nextMonth.toISOString().split('T')[0];
+      this.debtForm.patchValue({ dueDate: nextMonthStr });
+    }
+    this.cdr.markForCheck();
+  }
+
+  closeAddForm(): void {
+    this.showAddForm = false;
+    this.isModifyMode = false;
+    this.selectedDebtForModify = null;
+    this.debtForm.reset();
+    this.cdr.markForCheck();
+  }
+
+  onFormHeaderKeydown(event: KeyboardEvent): void {
+    if (event.key === 'Enter' || event.key === ' ') {
+      event.preventDefault();
+      this.toggleAddForm();
+    }
+  }
+
+  onAddFromHeader(): void {
+    this.isModifyMode = false;
+    this.selectedDebtForModify = null;
+    this.debtForm.reset();
+    const today = new Date();
+    const nextMonth = new Date(today.getFullYear(), today.getMonth() + 1, today.getDate());
+    const nextMonthStr = nextMonth.toISOString().split('T')[0];
+    this.debtForm.patchValue({ dueDate: nextMonthStr });
+    this.showAddForm = true;
+    this.cdr.markForCheck();
+  }
+
+  handleFormSubmit(): void {
+    if (this.debtForm.invalid) {
+      this.debtForm.markAllAsTouched();
+      return;
+    }
+
+    const formValue = this.debtForm.value;
+    
+    if (this.isModifyMode && this.selectedDebtForModify) {
+      this.onFormSubmit.emit({
+        mode: 'edit',
+        formValue: formValue,
+        debtId: this.selectedDebtForModify.id
+      });
+    } else {
+      this.onFormSubmit.emit({
+        mode: 'add',
+        formValue: formValue
+      });
+    }
+
+    this.closeAddForm();
+  }
+
+  handleModifyClick(debt: Debt): void {
+    this.selectedDebtForModify = debt;
+    this.isModifyMode = true;
+    
+    const dueDateStr = this.toHtmlDateFormat(debt.dueDate);
+    
+    this.debtForm.reset();
+    this.debtForm.patchValue({
+      creditorName: debt.creditorName,
+      principalAmount: debt.principalAmount,
+      remainingAmount: debt.remainingAmount,
+      interestRateApr: debt.interestRateApr || 0,
+      dueDate: dueDateStr,
+      minPayment: debt.minPayment
+    });
+    
+    this.showAddForm = true;
+    this.cdr.markForCheck();
+  }
+
+  private toHtmlDateFormat(dateStr: string): string {
+    if (!dateStr) return '';
+    const parts = dateStr.split('/');
+    if (parts.length === 3) {
+      return `${parts[2]}-${parts[0].padStart(2, '0')}-${parts[1].padStart(2, '0')}`;
+    }
+    return dateStr;
+  }
+
+  handleDeleteClick(id: number): void {
+    this.debtIdToDelete = id;
+    this.isDeleteOverlayVisible = true;
+    this.cdr.markForCheck();
+  }
+
+  confirmDelete(): void {
+    if (this.debtIdToDelete !== null) {
+      this.onDelete.emit(this.debtIdToDelete);
+      this.closeDeleteOverlay();
+    }
+  }
+
+  closeDeleteOverlay(): void {
+    this.isDeleteOverlayVisible = false;
+    this.debtIdToDelete = null;
+    this.cdr.markForCheck();
   }
 }

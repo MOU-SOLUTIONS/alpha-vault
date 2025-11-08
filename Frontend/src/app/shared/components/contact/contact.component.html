@@ -22,7 +22,7 @@
           <i class="fas fa-envelope" aria-hidden="true"></i>
           <div>
             <h3>Email Us</h3>
-            <p><a href="mailto:support@alphavault.com">supportalphavault.com</a></p>
+            <p><a href="mailto:support&#64;alphavault.com">support&#64;alphavault.com</a></p>
           </div>
         </div>
         
@@ -42,21 +42,25 @@
               href="#" 
               class="social-icon" 
               aria-label="Facebook"
+              rel="noopener noreferrer"
             ><i class="fab fa-facebook-f" aria-hidden="true"></i></a>
             <a 
               href="#" 
               class="social-icon" 
               aria-label="Twitter"
+              rel="noopener noreferrer"
             ><i class="fab fa-twitter" aria-hidden="true"></i></a>
             <a 
               href="#" 
               class="social-icon" 
               aria-label="Instagram"
+              rel="noopener noreferrer"
             ><i class="fab fa-instagram" aria-hidden="true"></i></a>
             <a 
               href="#" 
               class="social-icon" 
               aria-label="LinkedIn"
+              rel="noopener noreferrer"
             ><i class="fab fa-linkedin-in" aria-hidden="true"></i></a>
           </div>
         </div>
@@ -67,16 +71,16 @@
         <h3>Send Us a Message</h3>
         
         <!-- Success Message -->
-        <div *ngIf="isSubmitted" class="form-success">
+        <div *ngIf="isSubmitted" class="form-success" role="alert" aria-live="polite">
           <i class="fas fa-check-circle" aria-hidden="true"></i>
           <h4>Thank you for your message!</h4>
           <p>We've received your inquiry and will get back to you shortly.</p>
         </div>
         
         <!-- Contact Form -->
-        <form (ngSubmit)="onSubmit($event)" *ngIf="!isSubmitted">
+        <form (ngSubmit)="onSubmit($event)" (keydown)="onFormKeydown($event)" *ngIf="!isSubmitted">
           <!-- Error Message -->
-          <div *ngIf="submitError" class="form-error">
+          <div *ngIf="submitError" class="form-error" role="alert" aria-live="assertive">
             <p>{{ submitError }}</p>
           </div>
           

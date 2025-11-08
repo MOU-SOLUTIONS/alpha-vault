@@ -1,6 +1,10 @@
-<!-- ====================================================================
-     Coded by Mohamed Dhaoui for Alpha Vault
-==================================================================== -->
+<!--
+  Alpha Vault Financial System
+  
+  @author Mohamed Dhaoui
+  @component CryptoValueChartComponent
+  @description Crypto value chart component for displaying crypto portfolio value
+-->
 
 <!-- Section: Portfolio Value Chart Container -->
 <section class="crypto-value-container" [@fadeInUp] role="region" aria-labelledby="valueChartTitle">
@@ -28,14 +32,14 @@
           matTooltip="Refresh data"
           type="button"
         >
-          <mat-icon [class.spinning]="isLoading">refresh</mat-icon>
+          <mat-icon [class.spinning]="isLoading" aria-hidden="true">refresh</mat-icon>
         </button>
       </div>
     </div>
   </header>
 
   <!-- Section: Portfolio Summary -->
-  <section class="stats-section" [@staggerCards] role="region" aria-labelledby="valueStatsTitle">
+  <section class="stats-section" [@staggerCards] role="region" aria-labelledby="valueStatsTitle" aria-live="polite">
     <h3 id="valueStatsTitle" class="sr-only">Portfolio Value Statistics</h3>
     <article class="stat-card total-invested" [@slideIn]>
       <div class="stat-icon" role="img" aria-label="Total invested icon">
@@ -82,38 +86,14 @@
     </article>
   </section>
 
-  <!-- Section: Performance Cards -->
-  <section class="performance-section" [@staggerCards] role="region" aria-labelledby="performanceTitle">
-    <h3 id="performanceTitle" class="sr-only">Portfolio Performance</h3>
-    <article class="performance-card best-performer" [@slideIn]>
-      <div class="card-icon" role="img" aria-label="Best performer icon">
-        <mat-icon>emoji_events</mat-icon>
-      </div>
-      <div class="card-content">
-        <h4 class="card-title">Best Performer</h4>
-        <span class="card-value">{{ bestPerformer || 'N/A' }}</span>
-      </div>
-    </article>
-
-    <article class="performance-card worst-performer" [@slideIn]>
-      <div class="card-icon" role="img" aria-label="Worst performer icon">
-        <mat-icon>warning</mat-icon>
-      </div>
-      <div class="card-content">
-        <h4 class="card-title">Worst Performer</h4>
-        <span class="card-value">{{ worstPerformer || 'N/A' }}</span>
-      </div>
-    </article>
-  </section>
-
   <!-- Section: Chart Display -->
   <section class="chart-section" [@slideIn]>
     <header class="chart-header">
-      <h3 class="chart-title">Portfolio Performance - {{ getTimeframeLabel() }}</h3>
+      <h3 class="chart-title">Portfolio Performance - {{ timeframeLabel }}</h3>
       <div class="chart-controls">
         <div class="timeframe-controls">
           <button 
-            *ngFor="let timeframe of getTimeframes(); trackBy: trackByTimeframe"
+            *ngFor="let timeframe of timeframes; trackBy: trackByTimeframe"
             class="timeframe-btn"
             [class.active]="selectedTimeframe === timeframe"
             (click)="changeTimeframe(timeframe)"
@@ -138,41 +118,10 @@
       
       <div *ngIf="isLoading" class="loading-overlay" role="status" aria-label="Loading chart data">
         <div class="loading-content">
-          <mat-icon class="loading-spinner spinning">sync</mat-icon>
+          <mat-icon class="loading-spinner spinning" aria-hidden="true">sync</mat-icon>
           <span class="loading-text">Updating chart data...</span>
         </div>
       </div>
     </div>
   </section>
-
-  <!-- Section: Empty State -->
-  <section *ngIf="investments.length === 0" class="empty-state" [@fadeInUp] role="status" aria-label="No investments found">
-    <div class="empty-content">
-      <div class="empty-icon" role="img" aria-label="Analytics icon">
-        <mat-icon>analytics</mat-icon>
-      </div>
-      <h3 class="empty-title">No Crypto Investments Yet</h3>
-      <p class="empty-description">
-        Start tracking your cryptocurrency investments to see your portfolio performance here.
-      </p>
-      <button class="empty-action-btn" aria-label="Add new investment" type="button">
-        <mat-icon>add</mat-icon>
-        Add Investment
-      </button>
-    </div>
-  </section>
 </section>
-
-<style>
-.sr-only {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  padding: 0;
-  margin: -1px;
-  overflow: hidden;
-  clip: rect(0, 0, 0, 0);
-  white-space: nowrap;
-  border: 0;
-}
-</style>

@@ -1,8 +1,11 @@
-<!-- ================================================================
-              Coded by Mohamed Dhaoui for Alpha Vault
-================================================================ -->
+<!--
+  Alpha Vault Financial System
+  
+  @author Mohamed Dhaoui
+  @component SavingOverlayComponent
+  @description Saving overlay component template for displaying saving goal details
+-->
 
-<!-- Section: Backdrop -->
 <div class="overlay-backdrop" 
      [@backdropAnimation]
      (click)="onCancel()"
@@ -10,28 +13,34 @@
      aria-modal="true"
      [attr.aria-label]="'Saving goal details for ' + goal.name">
   
-  <!-- Section: Main Content -->
   <div class="overlay-content" 
+       #overlayContent
        [@overlayAnimation]
        (click)="$event.stopPropagation()"
-       [@contentAnimation]>
+       (keydown)="onKeyDown($event)"
+       [@contentAnimation]
+       [ngStyle]="overlayPosition"
+       tabindex="-1"
+       [attr.aria-labelledby]="'goal-title-' + goal.id"
+       [attr.aria-describedby]="'goal-description-' + goal.id">
     
-    <!-- Section: Close Button -->
     <button class="close-btn" 
             (click)="onCancel()" 
+            (keydown.enter)="onCancel()"
+            (keydown.space)="onCancel()"
             type="button"
-            aria-label="Close overlay">
+            aria-label="Close overlay"
+            tabindex="0">
       <i class="fa fa-times" aria-hidden="true"></i>
     </button>
 
-    <!-- Section: Header -->
     <header class="overlay-header">
       <div class="header-main">
         <div class="goal-icon">
           <i class="fa" [ngClass]="getCategoryIcon(goal.category)" aria-hidden="true"></i>
         </div>
         <div class="header-content">
-          <h2 class="goal-title">{{ goal.name }}</h2>
+          <h2 class="goal-title" [id]="'goal-title-' + goal.id">{{ goal.name }}</h2>
           <div class="goal-meta">
             <span class="category-badge" [ngClass]="goal.category.toLowerCase()">
               <i class="fa" [ngClass]="getCategoryIcon(goal.category)" aria-hidden="true"></i>
@@ -41,21 +50,20 @@
               <i class="fa fa-flag" aria-hidden="true"></i>
               {{ goal.priority }}
             </span>
-            <span class="status-badge" [ngClass]="getStatusClass(goal)">
-              <i class="fa" [ngClass]="getStatusIcon(goal)" aria-hidden="true"></i>
-              {{ getStatusText(goal) }}
+            <span class="status-badge" [ngClass]="computedStatusClass()">
+              <i class="fa" [ngClass]="computedStatusIcon()" aria-hidden="true"></i>
+              {{ computedStatusText() }}
             </span>
           </div>
         </div>
       </div>
     </header>
 
-    <!-- Section: Progress Overview -->
     <section class="progress-wrapper">
       <div class="progress-header">
         <h3>Progress Overview</h3>
         <div class="progress-stats">
-          <span class="progress-percentage">{{ calculateProgress(goal) }}%</span>
+          <span class="progress-percentage">{{ computedProgress() }}%</span>
           <span class="progress-amount">{{ goal.currentAmount | currency:'USD':'symbol':'1.0-0' }} / {{ goal.targetAmount | currency:'USD':'symbol':'1.0-0' }}</span>
         </div>
       </div>
@@ -65,10 +73,11 @@
           <div class="progress-fill"
                [@progressAnimation]
                [ngStyle]="{
-                 width: calculateProgress(goal) + '%',
-                 background: getProgressGradient(goal)
+                 width: computedProgress() + '%',
+                 background: computedProgressGradient()
                }">
             <div class="progress-glow"></div>
+            <div class="progress-shine"></div>
           </div>
         </div>
         <div class="progress-labels">
@@ -78,10 +87,9 @@
       </div>
     </section>
 
-    <!-- Section: Goal Details -->
     <section class="overlay-body">
       <div class="details-grid">
-        <article class="detail-card">
+        <article class="detail-card" [@cardAnimation]>
           <div class="detail-icon">
             <i class="fa fa-bullseye" aria-hidden="true"></i>
           </div>
@@ -91,7 +99,7 @@
           </div>
         </article>
 
-        <article class="detail-card">
+        <article class="detail-card" [@cardAnimation]>
           <div class="detail-icon">
             <i class="fa fa-piggy-bank" aria-hidden="true"></i>
           </div>
@@ -101,74 +109,81 @@
           </div>
         </article>
 
-        <article class="detail-card">
+        <article class="detail-card" [@cardAnimation]>
           <div class="detail-icon">
             <i class="fa fa-calculator" aria-hidden="true"></i>
           </div>
           <div class="detail-content">
             <h4>Remaining</h4>
-            <p class="detail-value">{{ getRemainingAmount(goal) | currency:'USD':'symbol':'1.0-0' }}</p>
+            <p class="detail-value">{{ computedRemainingAmount() | currency:'USD':'symbol':'1.0-0' }}</p>
           </div>
         </article>
 
-        <article class="detail-card">
+        <article class="detail-card" [@cardAnimation]>
           <div class="detail-icon">
             <i class="fa fa-calendar" aria-hidden="true"></i>
           </div>
           <div class="detail-content">
             <h4>Deadline</h4>
             <p class="detail-value">{{ goal.deadline | date:'MMM dd, yyyy' }}</p>
-            <p class="detail-subtitle">{{ getTimeRemaining(goal) }}</p>
+            <p class="detail-subtitle">{{ computedTimeRemaining() }}</p>
           </div>
         </article>
 
-        <article class="detail-card">
+        <article class="detail-card" [@cardAnimation]>
           <div class="detail-icon">
             <i class="fa fa-clock" aria-hidden="true"></i>
           </div>
           <div class="detail-content">
             <h4>Time Remaining</h4>
-            <p class="detail-value">{{ getDaysLeft(goal) }}</p>
+            <p class="detail-value">{{ computedDaysLeft() }}</p>
             <p class="detail-subtitle">days left</p>
           </div>
         </article>
 
-        <article class="detail-card">
+        <article class="detail-card" [@cardAnimation]>
           <div class="detail-icon">
             <i class="fa fa-calendar-plus" aria-hidden="true"></i>
           </div>
           <div class="detail-content">
             <h4>Created</h4>
-            <p class="detail-value">{{ goal.creationDate | date:'MMM dd, yyyy' }}</p>
+            <p class="detail-value">{{ goal.createdAt | date:'MMM dd, yyyy' }}</p>
           </div>
         </article>
       </div>
     </section>
 
-    <!-- Section: Actions -->
     <footer class="overlay-actions">
       <button class="btn btn-secondary" 
               (click)="onCancel()"
-              type="button">
+              (keydown.enter)="onCancel()"
+              (keydown.space)="onCancel()"
+              type="button"
+              tabindex="0">
         <i class="fa fa-times" aria-hidden="true"></i>
         Close
       </button>
       <button class="btn btn-primary" 
               (click)="onModify()"
-              type="button">
+              (keydown.enter)="onModify()"
+              (keydown.space)="onModify()"
+              type="button"
+              tabindex="0">
         <i class="fa fa-edit" aria-hidden="true"></i>
         Modify Goal
       </button>
       <button class="btn btn-danger" 
               (click)="onDelete()"
-              type="button">
+              (keydown.enter)="onDelete()"
+              (keydown.space)="onDelete()"
+              type="button"
+              tabindex="0">
         <i class="fa fa-trash" aria-hidden="true"></i>
         Delete Goal
       </button>
     </footer>
   </div>
 
-  <!-- Section: Delete Confirmation Modal -->
   <div class="delete-modal" 
        *ngIf="showDeleteConfirmation"
        [@overlayAnimation]
@@ -187,12 +202,18 @@
       <footer class="delete-actions">
         <button class="btn btn-secondary" 
                 (click)="cancelDelete()"
-                type="button">
+                (keydown.enter)="cancelDelete()"
+                (keydown.space)="cancelDelete()"
+                type="button"
+                tabindex="0">
           Cancel
         </button>
         <button class="btn btn-danger" 
                 (click)="confirmDelete()"
-                type="button">
+                (keydown.enter)="confirmDelete()"
+                (keydown.space)="confirmDelete()"
+                type="button"
+                tabindex="0">
           <i class="fa fa-trash" aria-hidden="true"></i>
           Delete Goal
         </button>

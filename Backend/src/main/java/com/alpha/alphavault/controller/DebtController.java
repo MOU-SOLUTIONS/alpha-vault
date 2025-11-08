@@ -1,114 +1,130 @@
+/**
+ * ================================================================
+ *  Coded by Mohamed Dhaoui for Alpha Vault - Financial System
+ *  Controller: DebtController — CRUD, payments, windows, totals
+ * ================================================================
+ */
 package com.alpha.alphavault.controller;
 
-import com.alpha.alphavault.dto.DebtRequestDTO;
-import com.alpha.alphavault.dto.DebtResponseDTO;
-import com.alpha.alphavault.mapper.DebtMapper;
-import com.alpha.alphavault.model.Debt;
-import com.alpha.alphavault.model.DebtHistory;
+import com.alpha.alphavault.dto.common.ApiResponse;
+import com.alpha.alphavault.dto.debt.*;
+import com.alpha.alphavault.enums.DebtStatus;
 import com.alpha.alphavault.service.DebtService;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
+import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.*;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
+@RequiredArgsConstructor
 @RestController
-@RequestMapping("/api/debt")
+@RequestMapping("/api/debts")
 public class DebtController {
 
-    private final DebtService debtService;
-    private final DebtMapper debtMapper;
+    private final DebtService service;
 
-    @Autowired
-    public DebtController(DebtService debtService, DebtMapper debtMapper) {
-        this.debtService = debtService;
-        this.debtMapper = debtMapper;
-    }
+    // ===================== CRUD (DTO) =====================
 
-    // CREATE or UPDATE
     @PostMapping
-    public ResponseEntity<DebtResponseDTO> saveDebt(@RequestBody DebtRequestDTO dto) {
-        Debt debt = debtMapper.toEntity(dto);  // Use the mapper here
-        Debt saved = debtService.saveDebt(debt);
-        return ResponseEntity.status(HttpStatus.CREATED).body(debtMapper.fromEntity(saved));  // Use the mapper again
+    public ResponseEntity<ApiResponse<DebtResponseDTO>> create(@Valid @RequestBody DebtRequestDTO dto) {
+        var data = service.create(dto);
+        return ResponseEntity.status(201).body(ApiResponse.created("Debt created", data, "/api/debts"));
     }
 
-    // DELETE
-    @DeleteMapping("/{id}")
-    public ResponseEntity<String> deleteDebt(@PathVariable Long id) {
-        debtService.deleteDebt(id);
-        return ResponseEntity.ok("Debt deleted successfully.");
+    @PutMapping("/{id}")
+    public ResponseEntity<ApiResponse<DebtResponseDTO>> update(@PathVariable Long id,
+                                                               @Valid @RequestBody DebtRequestDTO dto) {
+        var data = service.update(id, dto);
+        return ResponseEntity.ok(ApiResponse.ok("Debt updated", data, "/api/debts/" + id));
     }
 
-    // GET by ID
     @GetMapping("/{id}")
-    public ResponseEntity<DebtResponseDTO> getDebtById(@PathVariable Long id) {
-        return ResponseEntity.ok(debtMapper.fromEntity(debtService.getDebtById(id)));
+    public ResponseEntity<ApiResponse<DebtResponseDTO>> get(@PathVariable Long id) {
+        var data = service.getDtoById(id);
+        return ResponseEntity.ok(ApiResponse.ok("Debt fetched", data, "/api/debts/" + id));
     }
 
-    // GET all debts for a user
     @GetMapping("/user/{userId}")
-    public ResponseEntity<List<DebtResponseDTO>> getAllDebts(@PathVariable Long userId) {
-        return ResponseEntity.ok(debtService.getDebtsByUserId(userId)
-                .stream().map(debtMapper::fromEntity).collect(Collectors.toList()));
+    public ResponseEntity<ApiResponse<Page<DebtResponseDTO>>> list(@PathVariable Long userId,
+                                                                   @PageableDefault(size = 20, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable) {
+        var page = service.listByUser(userId, pageable);
+        return ResponseEntity.ok(ApiResponse.ok("Debts fetched", page, "/api/debts/user/" + userId));
     }
 
-    // GET total debt for a user
-    @GetMapping("/total/{userId}")
-    public ResponseEntity<Double> getTotalDebt(@PathVariable Long userId) {
-        return ResponseEntity.ok(debtService.getTotalDebt(userId));
+    @DeleteMapping("/{id}")
+    public ResponseEntity<ApiResponse<Void>> delete(@PathVariable Long id) {
+        service.delete(id);
+        return ResponseEntity.ok(ApiResponse.ok("Debt deleted", null, "/api/debts/" + id));
     }
 
-    // GET overdue debts for a user
-    @GetMapping("/overdue/{userId}")
-    public ResponseEntity<List<DebtResponseDTO>> getOverdueDebts(@PathVariable Long userId) {
-        return ResponseEntity.ok(debtService.getOverdueDebts(userId)
-                .stream().map(debtMapper::fromEntity).collect(Collectors.toList()));
+    @PostMapping("/{id}/restore")
+    public ResponseEntity<ApiResponse<Void>> restore(@PathVariable Long id) {
+        service.restore(id);
+        return ResponseEntity.ok(ApiResponse.ok("Debt restored", null, "/api/debts/" + id + "/restore"));
     }
 
-    // GET debt payment history for a debt
-    @GetMapping("/payment-history/{debtId}")
-    public ResponseEntity<List<Map<String, Object>>> getDebtPaymentHistory(@PathVariable Long debtId) {
-        return ResponseEntity.ok(debtService.getDebtPaymentHistory(debtId)
-                .stream().map(payment -> {
-                    Map<String, Object> result = Map.of(
-                            "paymentDate", payment.getPaymentDate(),
-                            "paymentAmount", payment.getPaymentAmount(),
-                            "remainingAmount", payment.getRemainingAmount(),
-                            "note", payment.getNote()
-                    );
-                    return result;
-                }).collect(Collectors.toList()));
+    // ===================== Payments =====================
+
+    @PostMapping("/{id}/payments")
+    public ResponseEntity<ApiResponse<DebtPaymentResponseDTO>> addPayment(@PathVariable Long id,
+                                                                          @Valid @RequestBody DebtPaymentRequestDTO body) {
+        DebtPaymentRequestDTO dto = body.debtId() == null
+                ? new DebtPaymentRequestDTO(id, body.paymentAmount(), body.paymentMethod(), body.paymentDate(), body.note())
+                : body;
+        var data = service.addPayment(dto);
+        return ResponseEntity.ok(ApiResponse.ok("Payment recorded", data, "/api/debts/" + id + "/payments"));
     }
 
-    // GET total minimum payments for a user
-    @GetMapping("/total-min-payments/{userId}")
-    public ResponseEntity<Double> getTotalMinPayments(@PathVariable Long userId) {
-        return ResponseEntity.ok(debtService.getTotalMinPayments(userId));
+    @GetMapping("/{id}/payments")
+    public ResponseEntity<ApiResponse<List<DebtPaymentResponseDTO>>> listPayments(@PathVariable Long id) {
+        var data = service.listPayments(id);
+        return ResponseEntity.ok(ApiResponse.ok("Payments fetched", data, "/api/debts/" + id + "/payments"));
     }
 
-    // GET debts summarized by creditor for a user
-    @GetMapping("/creditor-summary/{userId}")
-    public ResponseEntity<Map<String, Double>> getDebtCreditorSummary(@PathVariable Long userId) {
-        return ResponseEntity.ok(debtService.getDebtCreditorSummary(userId));
+    // ===================== Status / windows =====================
+
+    @PatchMapping("/{id}/status")
+    public ResponseEntity<ApiResponse<Void>> setStatus(@PathVariable Long id,
+                                                       @RequestParam("value") DebtStatus status) {
+        service.setStatus(id, status);
+        return ResponseEntity.ok(ApiResponse.ok("Status updated", null, "/api/debts/" + id + "/status"));
     }
 
-    // GET top 5 largest debts for a user
-    @GetMapping("/top5/{userId}")
-    public ResponseEntity<List<Map<String, Object>>> getTop5LargestDebts(@PathVariable Long userId) {
-        return ResponseEntity.ok(debtService.getTop5LargestDebts(userId));
+    @GetMapping("/user/{userId}/overdue")
+    public ResponseEntity<ApiResponse<List<DebtResponseDTO>>> overdue(@PathVariable Long userId) {
+        var data = service.overdue(userId);
+        return ResponseEntity.ok(ApiResponse.ok("Overdue debts", data, "/api/debts/user/" + userId + "/overdue"));
     }
 
-    // ADD payment to a debt
-    @PostMapping("/add-payment/{debtId}")
-    public ResponseEntity<Map<String, Object>> addPaymentToDebt(@PathVariable Long debtId, @RequestBody Map<String, Object> paymentDetails) {
-        Double paymentAmount = (Double) paymentDetails.get("paymentAmount");
-        String note = (String) paymentDetails.get("note");
-        DebtHistory payment = new DebtHistory(paymentAmount, note);  // Assuming constructor exists
-        debtService.addPaymentToDebt(debtId, payment);
-        return ResponseEntity.ok(Map.of("message", "Payment added successfully"));
+    @GetMapping("/user/{userId}/due-in")
+    public ResponseEntity<ApiResponse<List<DebtResponseDTO>>> dueWithin(@PathVariable Long userId,
+                                                                        @RequestParam("days") int days) {
+        var data = service.dueWithinDays(userId, days);
+        return ResponseEntity.ok(ApiResponse.ok("Debts due within window", data, "/api/debts/user/" + userId + "/due-in?days=" + days));
+    }
+
+    // ===================== Aggregates =====================
+
+    @GetMapping("/user/{userId}/totals")
+    public ResponseEntity<ApiResponse<Map<String, Object>>> totals(@PathVariable Long userId) {
+        var data = service.totals(userId);
+        return ResponseEntity.ok(ApiResponse.ok("Debt totals", data, "/api/debts/user/" + userId + "/totals"));
+    }
+
+    @GetMapping("/user/{userId}/creditor-summary")
+    public ResponseEntity<ApiResponse<Map<String, BigDecimal>>> creditorSummary(@PathVariable Long userId) {
+        var data = service.creditorSummary(userId);
+        return ResponseEntity.ok(ApiResponse.ok("Debt by creditor", data, "/api/debts/user/" + userId + "/creditor-summary"));
+    }
+
+    @GetMapping("/user/{userId}/top5")
+    public ResponseEntity<ApiResponse<List<Map<String, Object>>>> top5(@PathVariable Long userId) {
+        var data = service.top5Largest(userId);
+        return ResponseEntity.ok(ApiResponse.ok("Top 5 largest debts", data, "/api/debts/user/" + userId + "/top5"));
     }
 }

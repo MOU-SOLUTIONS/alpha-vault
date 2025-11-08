@@ -1,9 +1,16 @@
+/**
+ * ================================================================
+ *  Coded by Mohamed Dhaoui for Alpha Vault - Financial System
+ *  License: Proprietary. All rights reserved.
+ * ================================================================
+ */
 package com.alpha.alphavault.enums;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
 
-@JsonFormat(shape = JsonFormat.Shape.STRING)
 public enum ExpenseCategory {
+
     // ===== FIXED LIVING EXPENSES =====
     RENT,
     MORTGAGE,
@@ -87,5 +94,17 @@ public enum ExpenseCategory {
     SERVICE_CHARGES,
     FOREIGN_FEES;
 
-}
+    // ============================================================
+    // == JSON Serialization / Deserialization
+    // ============================================================
 
+    @JsonValue
+    public String toJson() {
+        return name().toLowerCase();
+    }
+
+    @JsonCreator(mode = JsonCreator.Mode.DELEGATING)
+    public static ExpenseCategory fromJson(String value) {
+        return ExpenseCategory.valueOf(value.toUpperCase());
+    }
+}

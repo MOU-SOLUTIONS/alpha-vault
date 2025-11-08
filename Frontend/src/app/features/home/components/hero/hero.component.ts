@@ -1,58 +1,90 @@
-import { Component, ElementRef, ViewChild, AfterViewInit, Renderer2 } from '@angular/core';
-import { RouterLink } from '@angular/router';
+import { 
+  AfterViewInit, 
+  ChangeDetectionStrategy,
+  Component, 
+  ElementRef, 
+  inject,
+  OnDestroy,
+  PLATFORM_ID,
+  Renderer2,
+  ViewChild 
+} from '@angular/core';
+import { isPlatformBrowser } from '@angular/common';
+import { Router, RouterLink } from '@angular/router';
 
 /**
  * Hero component for the home page
  * Displays the main hero section with animated device mockup
+ * 
+ * @component
+ * @standalone
  */
 @Component({
   selector: 'app-hero',
   standalone: true,
   imports: [RouterLink],
   templateUrl: './hero.component.html',
-  styleUrls: ['./hero.component.scss']
+  styleUrls: ['./hero.component.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class HeroComponent implements AfterViewInit {
+export class HeroComponent implements AfterViewInit, OnDestroy {
   // Inputs / Outputs
   // None currently
   
   // Public properties
   @ViewChild('heroSection') public heroSection!: ElementRef;
   
-  /**
-   * Creates an instance of HeroComponent
-   * @param renderer Angular Renderer2 for DOM manipulation
-   */
-  constructor(private readonly renderer: Renderer2) {}
+  // Private properties
+  private readonly renderer = inject(Renderer2);
+  private readonly platformId = inject(PLATFORM_ID);
+  private readonly isBrowser = isPlatformBrowser(this.platformId);
+  private readonly router = inject(Router);
+  private clickListeners: Array<() => void> = [];
+  private timeouts: Array<number> = [];
   
   /**
    * Lifecycle hook that is called after the view has been initialized
    * Initializes animations and effects
    */
   public ngAfterViewInit(): void {
+    if (!this.isBrowser) return;
     this.addRippleEffectToButtons();
     this.initDeviceTurnOnAnimation();
     this.triggerHeroAnimations();
   }
-  
+
   /**
-   * Handles demo video playback
-   * Currently shows an alert as placeholder functionality
+   * Cleanup event listeners and timeouts on component destruction
    */
-  public playDemo(): void {
-    // Implement demo video playback functionality
-    alert('Demo video will play here');
+  public ngOnDestroy(): void {
+    // Remove all event listeners
+    this.clickListeners.forEach(removeListener => removeListener());
+    this.clickListeners = [];
+    
+    // Clear all timeouts
+    this.timeouts.forEach(timeoutId => clearTimeout(timeoutId));
+    this.timeouts = [];
+  }
+
+  /**
+   * Navigates to the authentication page
+   * Used for keyboard navigation support
+   */
+  public navigateToAuth(): void {
+    this.router.navigate(['/auth']);
   }
   
   /**
-   * Adds ripple effect to primary and secondary buttons
+   * Adds ripple effect to primary buttons
    * Creates and animates a ripple element on click
    */
   private addRippleEffectToButtons(): void {
-    const buttons = this.heroSection.nativeElement.querySelectorAll('.btn-primary, .btn-secondary');
+    if (!this.isBrowser || !this.heroSection?.nativeElement) return;
+    
+    const buttons = this.heroSection.nativeElement.querySelectorAll('.btn-primary');
     
     buttons.forEach((button: HTMLElement) => {
-      this.renderer.listen(button, 'click', (event: MouseEvent) => {
+      const removeListener = this.renderer.listen(button, 'click', (event: MouseEvent) => {
         const ripple = this.renderer.createElement('span');
         this.renderer.addClass(ripple, 'ripple');
         this.renderer.appendChild(button, ripple);
@@ -64,10 +96,12 @@ export class HeroComponent implements AfterViewInit {
         this.renderer.setStyle(ripple, 'left', `${x}px`);
         this.renderer.setStyle(ripple, 'top', `${y}px`);
         
-        setTimeout(() => {
+        const timeoutId = window.setTimeout(() => {
           this.renderer.removeChild(button, ripple);
         }, 600);
+        this.timeouts.push(timeoutId);
       });
+      this.clickListeners.push(removeListener);
     });
   }
 
@@ -76,8 +110,10 @@ export class HeroComponent implements AfterViewInit {
    * Adds classes to trigger power button glow and screen activation
    */
   private initDeviceTurnOnAnimation(): void {
+    if (!this.isBrowser || !this.heroSection?.nativeElement) return;
+    
     // Wait 1 second before starting the animation
-    setTimeout(() => {
+    const timeoutId1 = window.setTimeout(() => {
       const screenOverlay = this.heroSection.nativeElement.querySelector('.screen-overlay');
       const screenContent = this.heroSection.nativeElement.querySelector('.screen-content');
       const powerButton = this.heroSection.nativeElement.querySelector('.device-power-button');
@@ -87,12 +123,14 @@ export class HeroComponent implements AfterViewInit {
         this.renderer.addClass(powerButton, 'power-on');
         
         // After a short delay, start the screen turn-on animation
-        setTimeout(() => {
+        const timeoutId2 = window.setTimeout(() => {
           this.renderer.addClass(screenContent, 'active');
           this.renderer.addClass(screenOverlay, 'fade-out');
         }, 500);
+        this.timeouts.push(timeoutId2);
       }
     }, 1000);
+    this.timeouts.push(timeoutId1);
   }
   
   /**
@@ -100,6 +138,8 @@ export class HeroComponent implements AfterViewInit {
    * Forces reflow and adds animation classes to elements
    */
   private triggerHeroAnimations(): void {
+    if (!this.isBrowser || !this.heroSection?.nativeElement) return;
+    
     // Force a reflow to ensure animations start properly
     const heroContent = this.heroSection.nativeElement.querySelector('.hero-content');
     const heroVisual = this.heroSection.nativeElement.querySelector('.hero-visual');

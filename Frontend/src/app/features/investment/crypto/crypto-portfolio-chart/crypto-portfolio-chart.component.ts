@@ -1,17 +1,25 @@
-// ====================================================================
-//      Coded by Mohamed Dhaoui for Alpha Vault
-// ====================================================================
+/*
+  Alpha Vault Financial System
+  
+  @author Mohamed Dhaoui
+  @component CryptoPortfolioChartComponent
+  @description Crypto portfolio chart component for displaying crypto portfolio allocation
+*/
 
-import { Component, Input, OnChanges, ChangeDetectionStrategy, OnInit, OnDestroy } from '@angular/core';
-import { Meta } from '@angular/platform-browser';
-import { CommonModule } from '@angular/common';
-import { Subject, takeUntil, interval } from 'rxjs';
-import { trigger, state, style, transition, animate, query, stagger } from '@angular/animations';
-import { NgChartsModule } from 'ng2-charts';
-import { ChartConfiguration, ChartData } from 'chart.js';
+import { animate, query, stagger, style, transition, trigger } from '@angular/animations';
+import { FocusTrapFactory } from '@angular/cdk/a11y';
+import { CommonModule, isPlatformBrowser } from '@angular/common';
+import { AfterViewChecked, ChangeDetectionStrategy, Component, computed, DestroyRef, effect, ElementRef, EventEmitter, inject, Input, OnChanges, OnInit, Output, PLATFORM_ID, signal, ViewChild } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { MatIconModule } from '@angular/material/icon';
 import { MatTooltipModule } from '@angular/material/tooltip';
+import { ChartConfiguration, ChartData } from 'chart.js';
+import { NgChartsModule } from 'ng2-charts';
+import { interval } from 'rxjs';
+import { filter } from 'rxjs/operators';
 
+import { LoggingService } from '../../../../core/services/logging.service';
+import { META_FRAGMENT } from '../../../../core/seo/page-meta.model';
 import { Investment } from '../../../../models/investment.model';
 
 type ChartType = 'pie' | 'doughnut';
@@ -33,6 +41,14 @@ interface LegendItem {
   styleUrls: ['./crypto-portfolio-chart.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [CommonModule, NgChartsModule, MatIconModule, MatTooltipModule],
+  providers: [
+    {
+      provide: META_FRAGMENT,
+      useValue: {
+        description: 'View your cryptocurrency portfolio allocation and performance breakdown with interactive charts and detailed analytics.'
+      }
+    }
+  ],
   animations: [
     trigger('fadeInUp', [
       transition(':enter', [
@@ -64,20 +80,78 @@ interface LegendItem {
     ])
   ]
 })
-export class CryptoPortfolioChartComponent implements OnChanges, OnInit, OnDestroy {
+export class CryptoPortfolioChartComponent implements OnChanges, OnInit, AfterViewChecked {
   @Input() investments: readonly Investment[] = [];
+  @Output() addInvestment = new EventEmitter<void>();
 
-  totalInvested = 0;
-  totalProfitLoss = 0;
-  totalProfitLossPercentage = 0;
-  readonly isLoading = false;
-  readonly autoRefresh = true;
-  selectedChartType: ChartType = 'pie';
+  readonly totalInvested = signal(0);
+  readonly totalProfitLoss = signal(0);
+  readonly totalProfitLossPercentage = signal(0);
+  readonly isLoading = signal(false);
+  readonly autoRefresh = signal(true);
+  readonly selectedChartType = signal<ChartType>('pie');
+  readonly showDetails = signal(false);
+  readonly selectedItem = signal<LegendItem | null>(null);
+  readonly legendItems = signal<LegendItem[]>([]);
 
-  showDetails = false;
-  selectedItem: LegendItem | null = null;
+  readonly chartTypeIcon = computed(() => 
+    this.selectedChartType() === 'pie' ? 'donut_large' : 'pie_chart'
+  );
+  
+  readonly chartTypeLabel = computed(() => 
+    this.selectedChartType() === 'pie' ? 'Switch to Doughnut Chart' : 'Switch to Pie Chart'
+  );
 
-  pieData: ChartData<'pie' | 'doughnut'> = {
+  readonly formattedTotalInvested = computed(() => 
+    this.formatCurrency(this.totalInvested())
+  );
+
+  readonly formattedTotalProfitLoss = computed(() => 
+    this.formatCurrency(this.totalProfitLoss())
+  );
+
+  readonly formattedTotalProfitLossPercentage = computed(() => 
+    this.formatPercentage(this.totalProfitLossPercentage())
+  );
+
+  readonly profitLossColor = computed(() => 
+    this.getProfitLossColor(this.totalProfitLoss() >= 0)
+  );
+
+  readonly profitLossPercentageColor = computed(() => 
+    this.getProfitLossColor(this.totalProfitLossPercentage() >= 0)
+  );
+
+  readonly profitLossIcon = computed(() => 
+    this.getProfitLossIcon(this.totalProfitLoss() >= 0)
+  );
+
+  readonly computedLegendItems = computed(() => 
+    this.legendItems().map(item => ({
+      ...item,
+      formattedPercentage: this.formatPercentage(item.percentage),
+      formattedInvested: this.formatCurrency(item.invested),
+      formattedProfitLoss: this.formatCurrency(item.profitLoss),
+      formattedProfitLossPercentage: this.formatPercentage(item.profitLossPercentage),
+      profitLossColor: this.getProfitLossColor(item.isPositive),
+      profitLossIcon: this.getProfitLossIcon(item.isPositive)
+    }))
+  );
+
+  readonly selectedItemFormatted = computed(() => {
+    const item = this.selectedItem();
+    if (!item) return null;
+    return {
+      ...item,
+      formattedPercentage: this.formatPercentage(item.percentage),
+      formattedInvested: this.formatCurrency(item.invested),
+      formattedProfitLoss: this.formatCurrency(item.profitLoss),
+      formattedProfitLossPercentage: this.formatPercentage(item.profitLossPercentage),
+      profitLossColor: this.getProfitLossColor(item.isPositive)
+    };
+  });
+
+  readonly pieData = signal<ChartData<'pie' | 'doughnut'>>({
     labels: [],
     datasets: [{
       data: [],
@@ -87,9 +161,9 @@ export class CryptoPortfolioChartComponent implements OnChanges, OnInit, OnDestr
       hoverBorderWidth: 3,
       hoverBorderColor: '#ffffff'
     }]
-  };
+  });
 
-  readonly pieOptions: ChartConfiguration<'pie' | 'doughnut'>['options'] = {
+  readonly pieOptions: Readonly<ChartConfiguration<'pie' | 'doughnut'>['options']> = {
     responsive: true,
     maintainAspectRatio: false,
     plugins: {
@@ -131,27 +205,61 @@ export class CryptoPortfolioChartComponent implements OnChanges, OnInit, OnDestr
     }
   };
 
-  legendItems: LegendItem[] = [];
+  private readonly destroyRef = inject(DestroyRef);
+  private readonly isBrowser = isPlatformBrowser(inject(PLATFORM_ID));
+  private readonly focusTrapFactory = inject(FocusTrapFactory);
+  private readonly loggingService = inject(LoggingService);
+  private focusTrap: any;
 
-  private readonly destroy$ = new Subject<void>();
+  @ViewChild('modalRef', { read: ElementRef }) modalElementRef?: ElementRef<HTMLElement>;
 
-  constructor(
-    private readonly meta: Meta,
-  ) {
-    this.meta.addTags([
-      { name: 'description', content: 'View your cryptocurrency portfolio allocation and performance breakdown with interactive charts and detailed analytics.' },
-      { name: 'robots', content: 'index,follow' },
-      { name: 'viewport', content: 'width=device-width, initial-scale=1' },
-    ]);
+  constructor() {
+    effect(() => {
+      const isVisible = this.showDetails();
+      
+      if (!isVisible && this.focusTrap) {
+        this.removeFocusTrap();
+        return;
+      }
+      
+      if (isVisible && this.isBrowser && this.modalElementRef?.nativeElement) {
+        setTimeout(() => {
+          if (this.showDetails() && !this.focusTrap && this.modalElementRef?.nativeElement) {
+            try {
+              const element = this.modalElementRef.nativeElement;
+              this.focusTrap = this.focusTrapFactory.create(element);
+              const closeButton = element.querySelector(
+                '.close-btn'
+              ) as HTMLElement;
+              if (closeButton) {
+                closeButton.focus();
+              }
+            } catch (error) {
+              this.loggingService.warn('Failed to create focus trap:', error);
+            }
+          }
+        }, 0);
+      }
+    });
   }
 
   ngOnInit(): void {
     this.startAutoRefresh();
   }
 
-  ngOnDestroy(): void {
-    this.destroy$.next();
-    this.destroy$.complete();
+  ngAfterViewChecked(): void {
+    if (this.showDetails() && this.isBrowser && this.modalElementRef?.nativeElement && !this.focusTrap) {
+      try {
+        const element = this.modalElementRef.nativeElement;
+        this.focusTrap = this.focusTrapFactory.create(element);
+        const closeButton = element.querySelector('.close-btn') as HTMLElement;
+        if (closeButton) {
+          closeButton.focus();
+        }
+      } catch (error) {
+        this.loggingService.warn('Failed to create focus trap in ngAfterViewChecked:', error);
+      }
+    }
   }
 
   ngOnChanges(): void {
@@ -160,22 +268,13 @@ export class CryptoPortfolioChartComponent implements OnChanges, OnInit, OnDestr
   }
 
   toggleChartType(): void {
-    this.selectedChartType = this.selectedChartType === 'pie' ? 'doughnut' : 'pie';
+    this.selectedChartType.update(type => type === 'pie' ? 'doughnut' : 'pie');
     this.updateChart();
   }
 
-  getChartTypeIcon(): string {
-    return this.selectedChartType === 'pie' ? 'donut_large' : 'pie_chart';
-  }
-
-  getChartTypeLabel(): string {
-    return this.selectedChartType === 'pie' ? 'Switch to Doughnut Chart' : 'Switch to Pie Chart';
-  }
-
   toggleAutoRefresh(): void {
-    if (this.autoRefresh) {
-      this.stopAutoRefresh();
-    } else {
+    this.autoRefresh.update(val => !val);
+    if (this.autoRefresh()) {
       this.startAutoRefresh();
     }
   }
@@ -186,8 +285,8 @@ export class CryptoPortfolioChartComponent implements OnChanges, OnInit, OnDestr
   }
 
   selectItem(item: LegendItem): void {
-    this.selectedItem = item;
-    this.showDetails = true;
+    this.selectedItem.set(item);
+    this.showDetails.set(true);
   }
 
   onItemKeyDown(event: KeyboardEvent, item: LegendItem): void {
@@ -198,7 +297,16 @@ export class CryptoPortfolioChartComponent implements OnChanges, OnInit, OnDestr
   }
 
   closeDetails(): void {
-    this.showDetails = false;
+    this.removeFocusTrap();
+    this.showDetails.set(false);
+    this.selectedItem.set(null);
+  }
+
+  private removeFocusTrap(): void {
+    if (this.focusTrap) {
+      this.focusTrap.destroy();
+      this.focusTrap = undefined;
+    }
   }
 
   formatCurrency(value: number): string {
@@ -222,20 +330,20 @@ export class CryptoPortfolioChartComponent implements OnChanges, OnInit, OnDestr
     return isPositive ? 'trending_up' : 'trending_down';
   }
 
-  trackByLegendItem(index: number, item: LegendItem): string {
+  trackByLegendItem(index: number, item: LegendItem | ReturnType<typeof this.computedLegendItems>[number]): string {
     return item.name;
   }
 
   private startAutoRefresh(): void {
+    if (!this.isBrowser) return;
     interval(30000)
-      .pipe(takeUntil(this.destroy$))
+      .pipe(
+        takeUntilDestroyed(this.destroyRef),
+        filter(() => this.autoRefresh())
+      )
       .subscribe(() => {
         this.refreshData();
       });
-  }
-
-  private stopAutoRefresh(): void {
-    this.destroy$.next();
   }
 
   private computePortfolioMetrics(): void {
@@ -244,10 +352,14 @@ export class CryptoPortfolioChartComponent implements OnChanges, OnInit, OnDestr
       return;
     }
 
-    this.totalInvested = this.investments.reduce((sum, inv) => sum + Number(inv.amountInvested), 0);
-    const totalCurrentValue = this.investments.reduce((sum, inv) => sum + Number(inv.currentValue), 0);
-    this.totalProfitLoss = totalCurrentValue - this.totalInvested;
-    this.totalProfitLossPercentage = this.totalInvested > 0 ? (this.totalProfitLoss / this.totalInvested) * 100 : 0;
+    const totalInv = this.investments.reduce((sum, inv) => sum + Number(inv.amountInvested), 0);
+    const totalCurrentValue = this.investments.reduce((sum, inv) => sum + Number(inv.currentValue || 0), 0);
+    const profitLoss = totalCurrentValue - totalInv;
+    const profitLossPct = totalInv > 0 ? (profitLoss / totalInv) * 100 : 0;
+    
+    this.totalInvested.set(totalInv);
+    this.totalProfitLoss.set(profitLoss);
+    this.totalProfitLossPercentage.set(profitLossPct);
 
     this.calculatePortfolioMetrics();
   }
@@ -265,9 +377,9 @@ export class CryptoPortfolioChartComponent implements OnChanges, OnInit, OnDestr
 
     const totalInvested = portfolioData.reduce((sum, item) => sum + item.invested, 0);
 
-    this.legendItems = portfolioData.map(item => ({
+    const items = portfolioData.map((item, index) => ({
       name: item.name,
-      color: this.getRandomColor(),
+      color: this.getDeterministicColor(item.name, index),
       percentage: totalInvested > 0 ? (item.invested / totalInvested) * 100 : 0,
       invested: item.invested,
       profitLoss: item.profitLoss,
@@ -275,15 +387,17 @@ export class CryptoPortfolioChartComponent implements OnChanges, OnInit, OnDestr
       isPositive: item.profitLoss >= 0
     }));
 
+    this.legendItems.set(items);
     this.generateChartData();
   }
 
   private generateChartData(): void {
-    const labels = this.legendItems.map(item => item.name);
-    const data = this.legendItems.map(item => item.invested);
-    const colors = this.legendItems.map(item => item.color);
+    const items = this.legendItems();
+    const labels = items.map(item => item.name);
+    const data = items.map(item => item.invested);
+    const colors = items.map(item => item.color);
 
-    this.pieData = {
+    this.pieData.set({
       labels,
       datasets: [{
         data,
@@ -293,7 +407,7 @@ export class CryptoPortfolioChartComponent implements OnChanges, OnInit, OnDestr
         hoverBorderWidth: 3,
         hoverBorderColor: '#ffffff'
       }]
-    };
+    });
   }
 
   private updateChart(): void {
@@ -301,11 +415,11 @@ export class CryptoPortfolioChartComponent implements OnChanges, OnInit, OnDestr
   }
 
   private setEmptyState(): void {
-    this.totalInvested = 0;
-    this.totalProfitLoss = 0;
-    this.totalProfitLossPercentage = 0;
-    this.legendItems = [];
-    this.pieData = {
+    this.totalInvested.set(0);
+    this.totalProfitLoss.set(0);
+    this.totalProfitLossPercentage.set(0);
+    this.legendItems.set([]);
+    this.pieData.set({
       labels: [],
       datasets: [{
         data: [],
@@ -315,14 +429,19 @@ export class CryptoPortfolioChartComponent implements OnChanges, OnInit, OnDestr
         hoverBorderWidth: 3,
         hoverBorderColor: '#ffffff'
       }]
-    };
+    });
   }
 
-  private getRandomColor(): string {
+  private getDeterministicColor(name: string, index: number): string {
     const colors = [
       '#7E57C2', '#9575CD', '#B39DDB', '#D1C4E9', '#EDE7F6',
       '#5E35B1', '#512DA8', '#4527A0', '#311B92', '#4A148C'
     ];
-    return colors[Math.floor(Math.random() * colors.length)];
+    
+    let hash = 0;
+    for (let i = 0; i < name.length; i++) {
+      hash = name.charCodeAt(i) + ((hash << 5) - hash);
+    }
+    return colors[Math.abs(hash + index) % colors.length];
   }
 }

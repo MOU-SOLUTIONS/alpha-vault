@@ -1,0 +1,54 @@
+<!--
+  Alpha Vault Financial System
+  
+  @author Mohamed Dhaoui
+  @component DashboardDebtSummaryComponent
+  @description Debt summary template
+-->
+
+<article class="debt-card" role="article" aria-labelledby="debtTitle">
+  <header class="debt-header">
+    <h2 id="debtTitle" class="debt-title">
+      <i class="fas fa-credit-card" aria-hidden="true"></i>
+      Debt Overview
+    </h2>
+    <a 
+      routerLink="/main/body/debt" 
+      class="view-all-link" 
+      aria-label="View all debts"
+      (keydown.enter)="$event.preventDefault(); $event.stopPropagation();"
+      (keydown.space)="$event.preventDefault(); $event.stopPropagation();">
+      View All
+      <i class="fas fa-arrow-right" aria-hidden="true"></i>
+    </a>
+  </header>
+
+  <div *ngIf="isLoading" class="loading-state">
+    <div class="loading-spinner-small"></div>
+  </div>
+
+  <div *ngIf="!isLoading" class="debt-content">
+    <div class="debt-stats">
+      <div class="stat-item">
+        <span class="stat-label">Total Debt</span>
+        <span class="stat-value total">{{ totalDebt | currency:'USD':'symbol':'1.0-0' }}</span>
+      </div>
+      <div class="stat-item">
+        <span class="stat-label">Total Paid</span>
+        <span class="stat-value paid">{{ totalPaid | currency:'USD':'symbol':'1.0-0' }}</span>
+      </div>
+      <div class="stat-item">
+        <span class="stat-label">Creditors</span>
+        <span class="stat-value creditors">{{ creditorCount }}</span>
+      </div>
+    </div>
+
+    <div class="payment-section">
+      <div class="payment-header">
+        <span class="payment-label">Monthly Minimum</span>
+        <span class="payment-amount">{{ totalMinPayments | currency:'USD':'symbol':'1.0-0' }}</span>
+      </div>
+    </div>
+  </div>
+</article>
+

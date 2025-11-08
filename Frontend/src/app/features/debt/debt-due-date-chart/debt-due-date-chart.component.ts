@@ -1,16 +1,27 @@
-// ====================================================================
-//             Coded by Mohamed Dhaoui for Alpha Vault
-// ====================================================================
+/*
+  Alpha Vault Financial System
+  
+  @author Mohamed Dhaoui
+  @component DebtDueDateChartComponent
+  @description Main debt dashboard component for managing debt payment deadlines
+*/
 
-import { Component, Input, ChangeDetectionStrategy, OnInit } from '@angular/core';
-import { Meta } from '@angular/platform-browser';
+import { animate, style, transition, trigger } from '@angular/animations';
 import { CommonModule, DecimalPipe } from '@angular/common';
-import { trigger, transition, style, animate } from '@angular/animations';
+import { ChangeDetectionStrategy, Component, Input, OnChanges, OnInit, SimpleChanges } from '@angular/core';
+import { META_FRAGMENT } from '../../../core/seo/page-meta.model';
 
 interface Debt {
   creditorName: string;
   dueDate: string;
   remainingAmount: number;
+}
+
+interface DebtStatus {
+  class: 'overdue' | 'urgent' | 'warning' | 'normal';
+  text: string;
+  iconType: 'overdue' | 'urgent' | 'warning' | 'normal';
+  daysRemaining: string;
 }
 
 @Component({
@@ -20,6 +31,14 @@ interface Debt {
   templateUrl: './debt-due-date-chart.component.html',
   styleUrls: ['./debt-due-date-chart.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
+  providers: [
+    {
+      provide: META_FRAGMENT,
+      useValue: {
+        description: 'Track your debt due dates with visual indicators for overdue, urgent, and upcoming payments. Monitor payment deadlines effectively in Alpha Vault.'
+      }
+    }
+  ],
   animations: [
     trigger('slideInUp', [
       transition(':enter', [
@@ -30,111 +49,196 @@ interface Debt {
     ])
   ]
 })
-export class DebtDueDateChartComponent implements OnInit {
+export class DebtDueDateChartComponent implements OnInit, OnChanges {
+
   @Input() debts: Debt[] = [];
 
-  constructor(
-    private meta: Meta
-  ) {}
+  private _cachedSortedDebts?: Debt[];
+  private _cachedDebtStatuses = new Map<string, DebtStatus>();
+  private _cachedOverdueCount?: number;
+  private _cachedUrgentCount?: number;
+  private _cachedUpcomingCount?: number;
+  private _cachedHasData?: boolean;
+  private _lastDebtsArray?: Debt[];
 
   ngOnInit(): void {
-    this.setSEOMeta();
+    this.invalidateCache();
+    this.computeValues();
   }
 
-  getSortedDebts(): Debt[] {
-    if (!this.debts) return [];
-    return [...this.debts].sort((a, b) => new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime());
+  ngOnChanges(changes: SimpleChanges): void {
+    if (changes['debts']) {
+      this.invalidateCache();
+      this.computeValues();
+    }
   }
 
-  isOverdue(dueDate: string): boolean {
-    return new Date(dueDate) < new Date();
+  private invalidateCache(): void {
+    this._cachedSortedDebts = undefined;
+    this._cachedDebtStatuses.clear();
+    this._cachedOverdueCount = undefined;
+    this._cachedUrgentCount = undefined;
+    this._cachedUpcomingCount = undefined;
+    this._cachedHasData = undefined;
+    this._lastDebtsArray = undefined;
   }
 
-  isUrgent(dueDate: string): boolean {
-    const due = new Date(dueDate);
-    const today = new Date();
-    const diffTime = due.getTime() - today.getTime();
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-    return diffDays >= 0 && diffDays <= 7;
+  private computeValues(): void {
+    this.sortedDebts;
+    this.hasDebtData;
+    this.overdueCount;
+    this.urgentCount;
+    this.upcomingCount;
   }
 
-  isWarning(dueDate: string): boolean {
-    const due = new Date(dueDate);
-    const today = new Date();
-    const diffTime = due.getTime() - today.getTime();
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-    return diffDays > 7 && diffDays <= 30;
+  private isDebtsArrayEqual(a: Debt[] | undefined, b: Debt[]): boolean {
+    if (!a || a.length !== b.length) return false;
+    for (let i = 0; i < a.length; i++) {
+      if (a[i].creditorName !== b[i].creditorName || 
+          a[i].dueDate !== b[i].dueDate || 
+          a[i].remainingAmount !== b[i].remainingAmount) {
+        return false;
+      }
+    }
+    return true;
   }
 
-  getStatusClass(dueDate: string): string {
-    if (this.isOverdue(dueDate)) return 'overdue';
-    if (this.isUrgent(dueDate)) return 'urgent';
-    if (this.isWarning(dueDate)) return 'warning';
-    return 'normal';
+  get sortedDebts(): Debt[] {
+    if (this.isDebtsArrayEqual(this._lastDebtsArray, this.debts) && this._cachedSortedDebts !== undefined) {
+      return this._cachedSortedDebts;
+    }
+    
+    this._lastDebtsArray = [...this.debts];
+    
+    if (!this.debts || this.debts.length === 0) {
+      this._cachedSortedDebts = [];
+      return [];
+    }
+    
+    this._cachedSortedDebts = [...this.debts].sort((a, b) => new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime());
+    return this._cachedSortedDebts;
   }
 
-  getStatusText(dueDate: string): string {
-    if (this.isOverdue(dueDate)) return 'Overdue';
-    if (this.isUrgent(dueDate)) return 'Due Soon';
-    if (this.isWarning(dueDate)) return 'Upcoming';
-    return 'Future';
-  }
+  getDebtStatus(dueDate: string): DebtStatus {
+    if (this._cachedDebtStatuses.has(dueDate)) {
+      return this._cachedDebtStatuses.get(dueDate)!;
+    }
 
-  getStatusIcon(dueDate: string): string {
-    if (this.isOverdue(dueDate)) return '⏰';
-    if (this.isUrgent(dueDate)) return '🔥';
-    if (this.isWarning(dueDate)) return '⚠️';
-    return '📅';
-  }
-
-  getDaysRemaining(dueDate: string): string {
     const due = new Date(dueDate);
     const today = new Date();
     const diffTime = due.getTime() - today.getTime();
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
     
+    let status: DebtStatus;
+    
     if (diffDays < 0) {
-      return `${Math.abs(diffDays)} days overdue`;
-    } else if (diffDays === 0) {
-      return 'Due today';
-    } else if (diffDays === 1) {
-      return 'Due tomorrow';
-    } else if (diffDays <= 7) {
-      return `${diffDays} days`;
-    } else if (diffDays <= 30) {
+      status = {
+        class: 'overdue',
+        text: 'Overdue',
+        iconType: 'overdue',
+        daysRemaining: `${Math.abs(diffDays)} days overdue`
+      };
+    } else if (diffDays >= 0 && diffDays <= 7) {
+      status = {
+        class: 'urgent',
+        text: 'Due Soon',
+        iconType: 'urgent',
+        daysRemaining: diffDays === 0 ? 'Due today' : diffDays === 1 ? 'Due tomorrow' : `${diffDays} days`
+      };
+    } else if (diffDays > 7 && diffDays <= 30) {
       const weeks = Math.ceil(diffDays / 7);
-      return `${weeks} week${weeks > 1 ? 's' : ''}`;
+      status = {
+        class: 'warning',
+        text: 'Upcoming',
+        iconType: 'warning',
+        daysRemaining: `${weeks} week${weeks > 1 ? 's' : ''}`
+      };
     } else {
       const months = Math.ceil(diffDays / 30);
-      return `${months} month${months > 1 ? 's' : ''}`;
+      status = {
+        class: 'normal',
+        text: 'Future',
+        iconType: 'normal',
+        daysRemaining: `${months} month${months > 1 ? 's' : ''}`
+      };
     }
+    
+    this._cachedDebtStatuses.set(dueDate, status);
+    return status;
   }
 
-  getOverdueCount(): number {
-    return this.debts?.filter(debt => this.isOverdue(debt.dueDate)).length || 0;
+  get overdueCount(): number {
+    if (this._cachedOverdueCount !== undefined && this.isDebtsArrayEqual(this._lastDebtsArray, this.debts)) {
+      return this._cachedOverdueCount;
+    }
+    
+    this._lastDebtsArray = [...this.debts];
+    
+    if (!this.debts) {
+      this._cachedOverdueCount = 0;
+      return 0;
+    }
+    
+    const today = new Date();
+    this._cachedOverdueCount = this.debts.filter(debt => new Date(debt.dueDate) < today).length;
+    return this._cachedOverdueCount;
   }
 
-  getUrgentCount(): number {
-    return this.debts?.filter(debt => this.isUrgent(debt.dueDate)).length || 0;
+  get urgentCount(): number {
+    if (this._cachedUrgentCount !== undefined && this.isDebtsArrayEqual(this._lastDebtsArray, this.debts)) {
+      return this._cachedUrgentCount;
+    }
+    
+    this._lastDebtsArray = [...this.debts];
+    
+    if (!this.debts) {
+      this._cachedUrgentCount = 0;
+      return 0;
+    }
+    
+    const today = new Date();
+    this._cachedUrgentCount = this.debts.filter(debt => {
+      const due = new Date(debt.dueDate);
+      const diffTime = due.getTime() - today.getTime();
+      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+      return diffDays >= 0 && diffDays <= 7;
+    }).length;
+    return this._cachedUrgentCount;
   }
 
-  getUpcomingCount(): number {
-    return this.debts?.filter(debt => this.isWarning(debt.dueDate)).length || 0;
+  get upcomingCount(): number {
+    if (this._cachedUpcomingCount !== undefined && this.isDebtsArrayEqual(this._lastDebtsArray, this.debts)) {
+      return this._cachedUpcomingCount;
+    }
+    
+    this._lastDebtsArray = [...this.debts];
+    
+    if (!this.debts) {
+      this._cachedUpcomingCount = 0;
+      return 0;
+    }
+    
+    const today = new Date();
+    this._cachedUpcomingCount = this.debts.filter(debt => {
+      const due = new Date(debt.dueDate);
+      const diffTime = due.getTime() - today.getTime();
+      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+      return diffDays > 7 && diffDays <= 30;
+    }).length;
+    return this._cachedUpcomingCount;
   }
 
   trackByDebt(index: number, debt: Debt): string {
     return debt.creditorName;
   }
 
-  hasDebtData(): boolean {
-    return this.debts && this.debts.length > 0;
-  }
-
-  private setSEOMeta(): void {
-    this.meta.addTags([
-      { name: 'description', content: 'Track your debt due dates with visual indicators for overdue, urgent, and upcoming payments. Monitor payment deadlines effectively.' },
-      { name: 'robots', content: 'index,follow' },
-      { name: 'viewport', content: 'width=device-width, initial-scale=1' },
-    ]);
+  get hasDebtData(): boolean {
+    if (this._cachedHasData !== undefined && this.isDebtsArrayEqual(this._lastDebtsArray, this.debts)) {
+      return this._cachedHasData;
+    }
+    
+    this._lastDebtsArray = [...this.debts];
+    this._cachedHasData = this.debts && this.debts.length > 0;
+    return this._cachedHasData;
   }
 }

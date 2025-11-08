@@ -1,12 +1,16 @@
-// ====================================================================
-//             Coded by Mohamed Dhaoui for Alpha Vault
-// ====================================================================
+/*
+  Alpha Vault Financial System
+  
+  @author Mohamed Dhaoui
+  @component IncomeSourceChartComponent
+  @description Income source chart component for displaying income data
+*/    
 
-import { Component, Input, ChangeDetectionStrategy, OnChanges, SimpleChanges } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { NgChartsModule } from 'ng2-charts';
-import { ChartData, ChartOptions } from 'chart.js';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, inject, Input, OnChanges, SimpleChanges } from '@angular/core';
 import { Meta } from '@angular/platform-browser';
+import { ChartData, ChartOptions } from 'chart.js';
+import { NgChartsModule } from 'ng2-charts';
 
 @Component({
   selector: 'app-income-source-chart',
@@ -17,10 +21,9 @@ import { Meta } from '@angular/platform-browser';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class IncomeSourceChartComponent implements OnChanges {
-  @Input() sourceData: { [key: string]: number } = {};
+  @Input() sourceData: Record<string, number> = {};
 
-  rawData: { [key: string]: number } = {};
-  isLoading = true;
+  rawData: Record<string, number> = {};
   hasData = false;
 
   pieChartLabels: string[] = [];
@@ -34,6 +37,7 @@ export class IncomeSourceChartComponent implements OnChanges {
   pieChartOptions: ChartOptions<'pie'> = {
     responsive: true,
     maintainAspectRatio: false,
+    aspectRatio: 1,
     plugins: {
       legend: { display: false },
       tooltip: {
@@ -60,9 +64,12 @@ export class IncomeSourceChartComponent implements OnChanges {
     },
   };
 
-  constructor( private meta: Meta) {
+  private meta = inject(Meta);
+  private cdr = inject(ChangeDetectorRef);
+
+  constructor() {
     this.meta.addTags([
-      { name: 'description', content: 'Visual breakdown of this month’s income categorized by source in Alpha Vault.' },
+      { name: 'description', content: 'Visual breakdown of current month income categorized by source in Alpha Vault.' },
       { name: 'robots', content: 'index,follow' },
       { name: 'viewport', content: 'width=device-width, initial-scale=1' }
     ]);
@@ -72,10 +79,10 @@ export class IncomeSourceChartComponent implements OnChanges {
     if (changes['sourceData']) {
       this.updateChart();
     }
+    this.cdr.markForCheck();
   }
 
   updateChart(): void {
-    this.isLoading = true;
     this.rawData = this.sourceData || {};
 
     const labels = Object.keys(this.rawData);
@@ -112,7 +119,7 @@ export class IncomeSourceChartComponent implements OnChanges {
       };
     }
 
-    this.isLoading = false;
+    this.cdr.markForCheck();
   }
 
   getBackgroundColor(i: number): string {

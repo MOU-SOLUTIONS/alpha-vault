@@ -1,4 +1,69 @@
-<!-- The main container for the body content of the application -->
-<div class="body-content">
-  <router-outlet></router-outlet>
+<!--
+  Alpha Vault Financial System
+  
+  @author Mohamed Dhaoui
+  @component BodyComponent
+  @description Main content area template with router outlet and enhanced states
+-->
+
+<div class="body-content" 
+     role="main" 
+     aria-label="Main application content"
+     [class.content-loading]="isContentLoading"
+     [class.content-error]="hasContentError">
+
+  <div class="content-placeholder" 
+       *ngIf="!isComponentLoaded || isContentLoading" 
+       role="status" 
+       aria-live="polite">
+    <div class="placeholder-spinner" aria-label="Loading content"></div>
+    <p class="placeholder-text">
+      {{ isContentLoading ? 'Loading new content...' : 'Loading content...' }}
+    </p>
+  </div>
+
+  <div class="content-error-state" 
+       *ngIf="hasContentError" 
+       role="alert" 
+       aria-live="assertive">
+    <div class="error-icon" aria-hidden="true">
+      <i class="fas fa-exclamation-triangle"></i>
+    </div>
+    <h3 class="error-title">Content Loading Error</h3>
+    <p class="error-message">{{ contentErrorMessage || 'Failed to load content. Please try again.' }}</p>
+    <div class="error-actions">
+      <button class="retry-button" 
+              (click)="retryContentLoad()" 
+              (keydown.enter)="retryContentLoad()"
+              (keydown.space)="retryContentLoad(); $event.preventDefault()"
+              type="button"
+              aria-label="Retry loading content">
+        <i class="fas fa-redo" aria-hidden="true"></i>
+        Retry
+      </button>
+      <button class="clear-error-button" 
+              (click)="clearContentError()" 
+              (keydown.enter)="clearContentError()"
+              (keydown.space)="clearContentError(); $event.preventDefault()"
+              type="button"
+              aria-label="Clear error message">
+        <i class="fas fa-times" aria-hidden="true"></i>
+        Dismiss
+      </button>
+    </div>
+  </div>
+
+  <div class="router-outlet-container" 
+       *ngIf="isComponentLoaded && !isContentLoading && !hasContentError"
+       role="region" 
+       aria-label="Dynamic content area">
+    <router-outlet></router-outlet>
+  </div>
+
+  <div class="sr-only" 
+       aria-live="polite" 
+       aria-atomic="true">
+    {{ statusAnnouncement }}
+  </div>
+
 </div>

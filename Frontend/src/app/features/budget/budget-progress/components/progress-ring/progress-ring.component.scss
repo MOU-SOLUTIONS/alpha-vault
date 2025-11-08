@@ -1,0 +1,102 @@
+/*
+  Alpha Vault Financial System
+  
+  @author Mohamed Dhaoui
+  @styles ProgressRingComponent
+  @description Optimized progress ring styles with smooth animations
+*/
+
+.progress-ring {
+  position: relative;
+  width: 200px;
+  height: 200px;
+  flex-shrink: 0;
+}
+
+.progress-svg {
+  width: 100%;
+  height: 100%;
+  transform: none;
+  filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.1));
+}
+
+.progress-bg {
+  stroke: #e5e7eb;
+  opacity: 0.3;
+}
+
+.progress-fill {
+  stroke-linecap: round;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
+}
+
+.progress-fill.excellent {
+  stroke: #06b6d4;
+}
+
+.progress-fill.good {
+  stroke: #22c55e;
+}
+
+.progress-fill.warning {
+  stroke: #eab308;
+}
+
+.progress-fill.danger {
+  stroke: #f97316;
+}
+
+.progress-fill.critical {
+  stroke: #ef4444;
+}
+
+.progress-glow {
+  stroke-linecap: round;
+  filter: blur(4px);
+}
+
+.progress-center {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  text-align: center;
+}
+
+.center-content {
+  .center-value {
+    display: block;
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #1a202c;
+    line-height: 1.2;
+  }
+  
+  .center-label {
+    display: block;
+    font-size: 0.75rem;
+    color: #718096;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+}
+
+@media (max-width: 768px) {
+  .progress-ring {
+    width: 150px;
+    height: 150px;
+  }
+  
+  .center-content {
+    .center-value {
+      font-size: 1.25rem;
+    }
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .progress-fill,
+  .progress-glow {
+    transition: none;
+  }
+}

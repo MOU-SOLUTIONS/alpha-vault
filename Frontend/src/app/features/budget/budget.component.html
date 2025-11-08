@@ -1,0 +1,147 @@
+<!--
+  Alpha Vault Financial System
+  
+  @author Mohamed Dhaoui
+  @component BudgetComponent
+  @description Main budget dashboard component template for managing budget allocations
+-->
+
+<main class="parent-container" role="main" aria-live="polite">
+    
+  <section class="first-row" aria-labelledby="budgetFilter">
+    <h2 id="budgetFilter" class="sr-only">Budget Period Filter</h2>
+    <app-budget-period-filter
+      (dateChanged)="onDateChanged($event)"
+      (prev)="prevMonth()"
+      (next)="nextMonth()"
+    ></app-budget-period-filter>
+  </section>
+
+  <section class="second-row" aria-labelledby="budgetProgress">
+    <h2 id="budgetProgress" class="sr-only">Budget Progress</h2>
+    <app-budget-progress
+      [totalBudget]="budget?.totalBudget ?? 0"
+      [totalSpent]="budget?.totalSpent ?? 0"
+      [totalRemaining]="budget?.totalRemaining ?? 0"
+      [month]="selectedMonth"
+      [year]="selectedYear"
+    ></app-budget-progress>
+  </section>
+
+  <section class="third-row" aria-labelledby="budgetCharts">
+    <h2 id="budgetCharts" class="sr-only">Budget Charts</h2>
+    <div class="charts-container">
+      <div class="chart-item pie-chart">
+        <app-budget-pie-chart [chartData]="pieChartData" (addBudget)="onAddExpense()"></app-budget-pie-chart>
+      </div>
+      <div class="chart-item bar-chart">
+        <app-budget-bar-chart [chartData]="barChartData" (addBudget)="onAddExpense()"></app-budget-bar-chart>
+      </div>
+    </div>
+  </section>
+
+  <section class="fourth-row" aria-labelledby="budgetTable">
+    <h2 id="budgetTable" class="sr-only">Budget Categories</h2>
+    
+    <div class="budget-form-section" [class.expanded]="showAddForm">
+      <div class="form-header" 
+           [class.modify-mode]="isModifyMode" 
+           (click)="toggleAddForm()" 
+           (keydown.enter)="toggleAddForm()" 
+           (keydown.space)="toggleAddForm()" 
+           tabindex="0" 
+           role="button" 
+           [attr.aria-expanded]="showAddForm" 
+           aria-controls="budgetFormContent"
+           [attr.aria-label]="isModifyMode ? 'Modify budget allocation' : 'Add new budget allocation'">
+        <div class="form-header-content">
+          <h3 class="form-title">
+            <i class="fas" [ngClass]="isModifyMode ? 'fa-edit' : 'fa-plus-circle'" aria-hidden="true"></i>
+            {{ isModifyMode ? 'Modify Budget Allocation' : 'Add New Budget Allocation' }}
+          </h3>
+          <p class="form-subtitle">
+            {{ isModifyMode ? 'Edit the selected budget allocation' : 'Click to add a new budget allocation' }}
+          </p>
+        </div>
+        <div class="form-toggle">
+          <i class="fas fa-chevron-down" [class.rotated]="showAddForm" aria-hidden="true"></i>
+        </div>
+      </div>
+      
+      <div class="form-content" [class.visible]="showAddForm" id="budgetFormContent">
+        <div class="form-wrapper">
+          <app-budget-form
+            [formGroup]="budgetForm"
+            [mode]="isModifyMode ? 'modify' : 'add'"
+            [expenseCategories]="expenseCategories"
+            [alreadyUsedCategories]="usedCategories"
+            (formSubmit)="isModifyMode ? modifyBudget() : handleAddCategory()"
+            (cancel)="closeAddForm()"
+          />
+        </div>
+      </div>
+    </div>
+
+    <div class="budget-table-section">
+      <app-budget-table
+        [categories]="budget?.categories || []"
+        [onAdd]="onAddExpense.bind(this)"
+        [onModify]="onModifyExpense.bind(this)"
+        (delete)="showDeleteConfirmation($event)"
+      ></app-budget-table>
+      
+      <div *ngIf="isDeleteOverlayVisible" 
+           class="delete-confirmation-overlay"
+           role="dialog"
+           aria-labelledby="deleteModalTitle"
+           aria-describedby="deleteModalDescription"
+           aria-modal="true">
+        <div class="delete-confirmation-modal">
+          <div class="delete-modal-header">
+            <h3 id="deleteModalTitle" class="delete-modal-title">
+              <i class="fas fa-exclamation-triangle" aria-hidden="true"></i>
+              Confirm Deletion
+            </h3>
+            <button 
+              class="delete-modal-close" 
+              (click)="closeOverlay()"
+              (keydown.enter)="closeOverlay()"
+              (keydown.space)="closeOverlay()"
+              (keydown.escape)="closeOverlay()"
+              aria-label="Close confirmation dialog">
+              <i class="fas fa-times" aria-hidden="true"></i>
+            </button>
+          </div>
+          <div class="delete-modal-body">
+            <p id="deleteModalDescription" class="delete-warning-text">
+              Are you sure you want to delete this budget allocation? This action cannot be undone.
+            </p>
+            <div class="delete-budget-details" *ngIf="selectedCategoryToDelete">
+              <div class="delete-detail-item">
+                <span class="delete-detail-label">Category:</span>
+                <span class="delete-detail-value">{{ selectedCategoryToDelete }}</span>
+              </div>
+            </div>
+          </div>
+          <div class="delete-modal-footer">
+            <button 
+              class="btn btn-secondary" 
+              (click)="closeOverlay()"
+              (keydown.enter)="closeOverlay()"
+              (keydown.space)="closeOverlay()">
+              Cancel
+            </button>
+            <button 
+              class="btn btn-danger" 
+              (click)="deleteBudget()"
+              (keydown.enter)="deleteBudget()"
+              (keydown.space)="deleteBudget()">
+              <i class="fas fa-trash" aria-hidden="true"></i>
+              Delete Budget
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>

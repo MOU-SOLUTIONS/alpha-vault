@@ -7,7 +7,26 @@
     "start": "ng serve",
     "build": "ng build",
     "watch": "ng build --watch --configuration development",
-    "test": "ng test"
+    "test": "ng test",
+    "lint": "ng lint || eslint \"src/**/*.{ts,html}\"",
+    "lint:fix": "eslint \"src/**/*.{ts,html}\" --fix",
+    "style": "stylelint \"src/**/*.{scss,css}\"",
+    "style:fix": "stylelint \"src/**/*.{scss,css}\" --fix",
+    "format": "prettier --check .",
+    "format:fix": "prettier --write .",
+    "clean:all": "npm run lint:fix && npm run style:fix && npm run format:fix",
+    "prepare": "husky"
+  },
+  "lint-staged": {
+    "*.{ts,html}": [
+      "eslint --fix --max-warnings=0"
+    ],
+    "*.{scss,css}": [
+      "stylelint --fix"
+    ],
+    "*.{ts,html,scss,css,md,json}": [
+      "prettier --write"
+    ]
   },
   "dependencies": {
     "@angular/animations": "19.2.14",
@@ -29,16 +48,26 @@
     "zone.js": "0.15.0"
   },
   "devDependencies": {
-    "@angular-devkit/build-angular": "19.2.14",
+    "@angular-devkit/build-angular": "^19.2.19",
     "@angular/cli": "19.2.14",
     "@angular/compiler-cli": "19.2.14",
     "@types/jasmine": "~5.1.0",
+    "angular-eslint": "20.2.0",
+    "eslint": "^9.33.0",
+    "eslint-import-resolver-typescript": "^4.4.4",
+    "eslint-plugin-import": "^2.32.0",
+    "eslint-plugin-simple-import-sort": "^12.1.1",
+    "eslint-plugin-unused-imports": "^4.2.0",
+    "husky": "^9.1.7",
     "jasmine-core": "~5.6.0",
     "karma": "~6.4.0",
     "karma-chrome-launcher": "~3.2.0",
     "karma-coverage": "~2.2.0",
     "karma-jasmine": "~5.1.0",
     "karma-jasmine-html-reporter": "~2.1.0",
-    "typescript": "5.6.3"
+    "lint-staged": "^16.1.5",
+    "prettier": "^3.6.2",
+    "typescript": "5.6.3",
+    "typescript-eslint": "8.40.0"
   }
 }

@@ -1,89 +1,128 @@
-<!-- ================================================================
-               Coded by Mohamed Dhaoui for Alpha Vault
-=============================================================== -->
+<!--
+  Alpha Vault Financial System
+  
+  @author Mohamed Dhaoui
+  @component BudgetBarChartComponent
+  @description Budget bar chart component template for displaying budget data visualization
+-->
 
 <section 
-  class="elite-bar-chart"
-  [class.animate-in]="isVisible"
+  class="premium-bar-chart"
   [class.has-data]="hasData"
   [class.no-data]="!hasData"
   role="region"
   aria-label="Budget Allocation Bar Chart"
+  aria-live="polite"
 >
   <header class="chart-header">
-    <h3 class="chart-title">
-      <svg class="title-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
-      </svg>
-      {{ title }}
-    </h3>
-    
-    <div class="chart-stats" *ngIf="hasData">
-      <div class="stat-item">
-        <span class="stat-label">Allocated</span>
-        <span class="stat-value allocated">{{ getTotalAllocatedFormatted() }}</span>
+    <div class="header-content">
+      <div class="title-section">
+        <div class="title-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                  d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+          </svg>
+        </div>
+        <div class="title-text">
+          <h2 class="chart-title">{{ title }}</h2>
+          <p class="chart-subtitle">Budget allocation vs remaining analysis</p>
+        </div>
       </div>
-      <div class="stat-item">
-        <span class="stat-label">Remaining</span>
-        <span class="stat-value remaining">{{ getTotalRemainingFormatted() }}</span>
-      </div>
-      <div class="stat-item">
-        <span class="stat-label">Spent</span>
-        <span class="stat-value spent">{{ getTotalSpentFormatted() }}</span>
+      
+      <div class="chart-stats" *ngIf="hasData">
+        <div class="stat-card allocated">
+          <div class="stat-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                    d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1"/>
+            </svg>
+          </div>
+          <div class="stat-content">
+            <span class="stat-label">Allocated</span>
+            <span class="stat-value">{{ getTotalAllocatedFormatted() }}</span>
+          </div>
+        </div>
+        
+        <div class="stat-card remaining">
+          <div class="stat-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                    d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+          </div>
+          <div class="stat-content">
+            <span class="stat-label">Remaining</span>
+            <span class="stat-value">{{ getTotalRemainingFormatted() }}</span>
+          </div>
+        </div>
+        
+        <div class="stat-card spent">
+          <div class="stat-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                    d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/>
+            </svg>
+          </div>
+          <div class="stat-content">
+            <span class="stat-label">Spent</span>
+            <span class="stat-value">{{ getTotalSpentFormatted() }}</span>
+          </div>
+        </div>
       </div>
     </div>
   </header>
 
   <div class="chart-container">
     <div class="chart-content" *ngIf="hasData">
-      <div class="bar-chart-wrapper">
-        <canvas
-          baseChart
-          [data]="barChartData"
-          [options]="barChartOptions"
-          [type]="'bar'"
-          class="chart-canvas"
-          role="img"
-          aria-label="Bar chart showing budget allocation vs remaining by category"
-        ></canvas>
-      </div>
-
-      <div class="category-breakdown" *ngIf="showLegend">
-        <h4 class="breakdown-title">Category Breakdown</h4>
-        <div class="breakdown-items">
-          <div 
-            class="breakdown-item" 
-            *ngFor="let category of getTopCategories(8); trackBy: trackByCategory"
-          >
-            <div class="category-header">
-              <span class="category-name">{{ category.category }}</span>
-              <span class="category-percentage">{{ getCategoryPercentage(category) }}% used</span>
-            </div>
-            <div class="category-bars">
-              <div class="bar allocated" [style.width.%]="100">
-                <span class="bar-label">Allocated: {{ getCategoryAllocated(category) }}</span>
-              </div>
-              <div class="bar remaining" [style.width.%]="(category.remaining / category.allocated) * 100">
-                <span class="bar-label">Remaining: {{ getCategoryRemaining(category) }}</span>
-              </div>
-            </div>
-          </div>
+      <div class="bar-chart-section">
+        <div class="bar-chart-wrapper">
+          <canvas
+            baseChart
+            [data]="barChartData"
+            [options]="barChartOptions"
+            [type]="'bar'"
+            class="chart-canvas"
+            role="img"
+            aria-label="Bar chart showing budget allocation vs remaining by category"
+          ></canvas>
         </div>
       </div>
+
     </div>
 
     <div class="empty-state" *ngIf="!hasData">
-      <div class="empty-icon">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
-        </svg>
+      <div class="empty-visual">
+        <div class="empty-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" 
+                  d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+          </svg>
+        </div>
+        <div class="empty-particles">
+          <div class="particle" *ngFor="let i of [1,2,3,4,5]"></div>
+        </div>
       </div>
       
       <div class="empty-content">
-        <h4 class="empty-title">No Budget Data Available</h4>
+        <h3 class="empty-title">No Budget Data Available</h3>
         <p class="empty-description">
           Start by adding budget allocations to see your spending breakdown visualized in this beautiful bar chart.
         </p>
+        <div class="empty-action">
+          <button 
+            class="action-button" 
+            role="button" 
+            tabindex="0"
+            (click)="onActionButtonClick()"
+            (keydown.enter)="onActionButtonKeydown($event)"
+            (keydown.space)="onActionButtonKeydown($event)"
+          >
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
+            </svg>
+            Add Budget Data
+          </button>
+        </div>
       </div>
     </div>
   </div>

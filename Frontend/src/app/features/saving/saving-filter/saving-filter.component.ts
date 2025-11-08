@@ -1,47 +1,59 @@
-// ====================================================================
-//             Coded by Mohamed Dhaoui for Alpha Vault
-// ====================================================================
+/*
+  Alpha Vault Financial System
+  
+  @author Mohamed Dhaoui
+  @component SavingFilterComponent
+  @description Saving filter component for filtering saving goals
+*/
 
-import { Component, EventEmitter, Output, ChangeDetectionStrategy, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { ChangeDetectionStrategy, Component, computed, EventEmitter, OnInit, Output, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { Meta } from '@angular/platform-browser';
-import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
-import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatChipsModule } from '@angular/material/chips';
+import { MatIconModule } from '@angular/material/icon';
+import { MatTooltipModule } from '@angular/material/tooltip';
 
-import { SAVING_GOAL_CATEGORY_OPTIONS, SavingGoalCategory } from '../../../enums/saving-goal';
-import { PRIORITY_LEVEL_OPTIONS, PriorityLevel } from '../../../enums/priority-level';
+import { META_FRAGMENT } from '../../../core/seo/page-meta.model';
+import { SAVING_GOAL_CATEGORY_OPTIONS, SAVING_GOAL_PRIORITY_OPTIONS, SavingGoalCategory, SavingGoalPriority } from '../../../enums/saving-goal';
 
 @Component({
   standalone: true,
   selector: 'app-saving-filter',
+  providers: [
+    {
+      provide: META_FRAGMENT,
+      useValue: {
+        description: 'Advanced filtering controls for saving goals by category and priority. Filter your saving goals dynamically with category selection, priority levels, and active filter indicators in Alpha Vault.'
+      }
+    }
+  ],
   template: `
-    <!-- Section: Saving Filter -->
     <section class="filter-container" role="region" aria-labelledby="filterTitle">
       <div class="filter-header">
         <h3 id="filterTitle" class="filter-title">
           <i class="fa fa-filter me-2" aria-hidden="true"></i>Filter Goals
         </h3>
-        <div class="active-filters" *ngIf="hasActiveFilters">
+        <div class="active-filters" *ngIf="hasActiveFilters()">
           <mat-chip-set>
             <mat-chip 
-              *ngIf="selectedCategory" 
+              *ngIf="selectedCategory() !== 'ALL'" 
               (removed)="clearCategory()"
               color="primary"
               variant="outlined"
+              aria-label="Remove category filter"
             >
-              {{ getCategoryLabel(selectedCategory) }}
+              {{ categoryLabel() }}
               <mat-icon matChipRemove>cancel</mat-icon>
             </mat-chip>
             <mat-chip 
-              *ngIf="selectedPriority" 
+              *ngIf="selectedPriority() !== 'ALL'" 
               (removed)="clearPriority()"
               color="accent"
               variant="outlined"
+              aria-label="Remove priority filter"
             >
-              {{ getPriorityLabel(selectedPriority) }}
+              {{ priorityLabel() }}
               <mat-icon matChipRemove>cancel</mat-icon>
             </mat-chip>
           </mat-chip-set>
@@ -50,7 +62,6 @@ import { PRIORITY_LEVEL_OPTIONS, PriorityLevel } from '../../../enums/priority-l
 
       <form class="filter-form" (ngSubmit)="applyFilters()">
         <div class="filter-grid">
-          <!-- Section: Category Filter -->
           <div class="filter-item category-filter">
             <label class="custom-select-label" for="categorySelect">
               <i class="fa fa-tag me-2" aria-hidden="true"></i>Goal Category
@@ -58,13 +69,16 @@ import { PRIORITY_LEVEL_OPTIONS, PriorityLevel } from '../../../enums/priority-l
             <div class="custom-select-wrapper">
               <select
                 id="categorySelect"
-                [(ngModel)]="selectedCategory"
+                [ngModel]="selectedCategory()"
+                (ngModelChange)="selectedCategory.set($event); onCategoryChange()"
                 name="category"
-                (change)="onCategoryChange()"
                 class="custom-select"
                 aria-label="Select goal category"
+                aria-describedby="categoryDescription"
+                (keydown.enter)="onCategoryChange()"
+                (keydown.space)="onCategoryChange()"
               >
-                <option [value]="null">All Categories</option>
+                <option value="ALL">All Categories</option>
                 <option 
                   *ngFor="let option of categories; trackBy: trackByCategory" 
                   [value]="option.value"
@@ -76,9 +90,11 @@ import { PRIORITY_LEVEL_OPTIONS, PriorityLevel } from '../../../enums/priority-l
                 <i class="fa fa-chevron-down"></i>
               </div>
             </div>
+            <div id="categoryDescription" class="sr-only">
+              Select a category to filter saving goals. Choose "All Categories" to show all goals.
+            </div>
           </div>
 
-          <!-- Section: Priority Filter -->
           <div class="filter-item priority-filter">
             <label class="custom-select-label" for="prioritySelect">
               <i class="fa fa-flag me-2" aria-hidden="true"></i>Priority Level
@@ -86,13 +102,16 @@ import { PRIORITY_LEVEL_OPTIONS, PriorityLevel } from '../../../enums/priority-l
             <div class="custom-select-wrapper">
               <select
                 id="prioritySelect"
-                [(ngModel)]="selectedPriority"
+                [ngModel]="selectedPriority()"
+                (ngModelChange)="selectedPriority.set($event); onPriorityChange()"
                 name="priority"
-                (change)="onPriorityChange()"
                 class="custom-select"
                 aria-label="Select priority level"
+                aria-describedby="priorityDescription"
+                (keydown.enter)="onPriorityChange()"
+                (keydown.space)="onPriorityChange()"
               >
-                <option [value]="null">All Priorities</option>
+                <option value="ALL">All Priorities</option>
                 <option 
                   *ngFor="let option of priorities; trackBy: trackByPriority" 
                   [value]="option.value"
@@ -104,9 +123,11 @@ import { PRIORITY_LEVEL_OPTIONS, PriorityLevel } from '../../../enums/priority-l
                 <i class="fa fa-chevron-down"></i>
               </div>
             </div>
+            <div id="priorityDescription" class="sr-only">
+              Select a priority level to filter saving goals. Choose "All Priorities" to show all goals.
+            </div>
           </div>
 
-          <!-- Section: Action Buttons -->
           <div class="filter-actions">
             <button
               mat-stroked-button
@@ -114,22 +135,12 @@ import { PRIORITY_LEVEL_OPTIONS, PriorityLevel } from '../../../enums/priority-l
               (click)="resetFilters()"
               class="reset-btn"
               matTooltip="Clear all filters"
-              [disabled]="!hasActiveFilters"
+              [disabled]="!hasActiveFilters()"
               aria-label="Reset all filters"
+              (keydown.enter)="resetFilters()"
+              (keydown.space)="resetFilters()"
             >
               <i class="fa fa-refresh me-2" aria-hidden="true"></i>Reset
-            </button>
-            
-            <button
-              mat-raised-button
-              color="primary"
-              type="button"
-              (click)="onAdd()"
-              class="add-btn"
-              matTooltip="Add new saving goal"
-              aria-label="Add new saving goal"
-            >
-              <i class="fa fa-plus me-2" aria-hidden="true"></i>Add Goal
             </button>
           </div>
         </div>
@@ -148,34 +159,41 @@ import { PRIORITY_LEVEL_OPTIONS, PriorityLevel } from '../../../enums/priority-l
   ],
 })
 export class SavingFilterComponent implements OnInit {
-  @Output() filterChange = new EventEmitter<{
-    category: SavingGoalCategory | null;
-    priority: PriorityLevel | null;
+  @Output() readonly filterChange = new EventEmitter<{
+    category: SavingGoalCategory | 'ALL';
+    priority: SavingGoalPriority | 'ALL';
   }>();
-  @Output() addGoal = new EventEmitter<void>();
 
   readonly categories = Object.values(SAVING_GOAL_CATEGORY_OPTIONS);
-  readonly priorities = Object.values(PRIORITY_LEVEL_OPTIONS);
+  readonly priorities = Object.values(SAVING_GOAL_PRIORITY_OPTIONS);
 
-  selectedCategory: SavingGoalCategory | null = null;
-  selectedPriority: PriorityLevel | null = null;
+  selectedCategory = signal<SavingGoalCategory | 'ALL'>('ALL');
+  selectedPriority = signal<SavingGoalPriority | 'ALL'>('ALL');
 
-  constructor(
-    private meta: Meta,
-  ) {
-    this.meta.addTags([
-      { name: 'description', content: 'Filter and manage your saving goals by category and priority level with intuitive controls.' },
-      { name: 'robots', content: 'index,follow' },
-      { name: 'viewport', content: 'width=device-width, initial-scale=1' },
-    ]);
+  readonly hasActiveFilters = computed(() => 
+    this.selectedCategory() !== 'ALL' || this.selectedPriority() !== 'ALL'
+  );
+
+  readonly categoryLabel = computed(() => {
+    const value = this.selectedCategory();
+    if (value === 'ALL') return 'All Categories';
+    const category = this.categories.find(c => c.value === value);
+    return category?.label || '';
+  });
+
+  readonly priorityLabel = computed(() => {
+    const value = this.selectedPriority();
+    if (value === 'ALL') return 'All Priorities';
+    const priority = this.priorities.find(p => p.value === value);
+    return priority?.label || '';
+  });
+
+  constructor() {
+    // SEO fragment provided via META_FRAGMENT token
+    // Parent component aggregates all fragments via SeoService
   }
 
   ngOnInit(): void {
-    this.applyFilters();
-  }
-
-  get hasActiveFilters(): boolean {
-    return this.selectedCategory !== null || this.selectedPriority !== null;
   }
 
   onCategoryChange(): void {
@@ -188,39 +206,25 @@ export class SavingFilterComponent implements OnInit {
 
   applyFilters(): void {
     this.filterChange.emit({
-      category: this.selectedCategory,
-      priority: this.selectedPriority,
+      category: this.selectedCategory(),
+      priority: this.selectedPriority(),
     });
   }
 
   resetFilters(): void {
-    this.selectedCategory = null;
-    this.selectedPriority = null;
+    this.selectedCategory.set('ALL');
+    this.selectedPriority.set('ALL');
     this.applyFilters();
   }
 
   clearCategory(): void {
-    this.selectedCategory = null;
+    this.selectedCategory.set('ALL');
     this.applyFilters();
   }
 
   clearPriority(): void {
-    this.selectedPriority = null;
+    this.selectedPriority.set('ALL');
     this.applyFilters();
-  }
-
-  onAdd(): void {
-    this.addGoal.emit();
-  }
-
-  getCategoryLabel(value: SavingGoalCategory): string {
-    const category = this.categories.find(c => c.value === value);
-    return category?.label || '';
-  }
-
-  getPriorityLabel(value: PriorityLevel): string {
-    const priority = this.priorities.find(p => p.value === value);
-    return priority?.label || '';
   }
 
   trackByCategory(index: number, item: { value: string; label: string }): string {

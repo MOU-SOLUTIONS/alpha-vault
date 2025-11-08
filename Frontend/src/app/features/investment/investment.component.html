@@ -1,20 +1,11 @@
-<div class="selector-wrapper">
-  <!-- ───────────── Tab Buttons ───────────── -->
-  <div class="tab-buttons">
-    <button
-      class="tab-btn active"
-      (click)="selectTab('crypto')"
-      (click)="navigateToCrypto()"
-    >
-      Crypto
-    </button>
+<!--
+  Alpha Vault Financial System
+  
+  @author Mohamed Dhaoui
+  @component InvestmentComponent
+  @description Main investment dashboard component template for managing investment dashboard
+-->
 
-    <!-- Sliding underline -->
-    <div class="underline to-crypto"></div>
-  </div>
-
-  <!-- ───────────── Content Area (fade in/out) ───────────── -->
-  <div class="content-area">
-    <router-outlet></router-outlet>
-  </div>
+<div class="investment-wrapper">
+  <app-crypto></app-crypto>
 </div>

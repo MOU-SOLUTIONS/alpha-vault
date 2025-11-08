@@ -1,13 +1,15 @@
-// ====================================================================
-//             Coded by Mohamed Dhaoui for Alpha Vault
-// ====================================================================
+/*
+  Alpha Vault Financial System
+  
+  @author Mohamed Dhaoui
+  @component ExpenseFormComponent
+  @description Form component for adding and editing expense records
+*/
 
-import { Component, Input, Output, EventEmitter, ChangeDetectionStrategy, OnInit } from '@angular/core';
+import { CommonModule, isPlatformBrowser } from '@angular/common';
+import { ChangeDetectionStrategy, Component, computed, EventEmitter, inject, Input, OnInit, Output, PLATFORM_ID } from '@angular/core';
 import { FormGroup, ReactiveFormsModule } from '@angular/forms';
-import { CommonModule } from '@angular/common';
-import { Title, Meta } from '@angular/platform-browser';
-import { PAYMENT_METHOD_OPTIONS } from '../../../enums/payment-method';
-import { EXPENSE_CATEGORY_OPTIONS } from '../../../enums/expense-category';
+import { Meta } from '@angular/platform-browser';
 
 @Component({
   standalone: true,
@@ -33,29 +35,28 @@ import { EXPENSE_CATEGORY_OPTIONS } from '../../../enums/expense-category';
           <div class="col-12 col-md-6">
             <div class="form-group">
               <label for="expenseCategory-{{ mode }}" class="required-field">Category</label>
-              <div class="input-wrapper select-wrapper">
+              <div class="input-wrapper">
                 <select
                   id="expenseCategory-{{ mode }}"
                   formControlName="category"
-                  class="form-control"
                   aria-required="true"
+                  (keydown.enter)="onFieldKeydown($event, 'category')"
+                  (keydown.escape)="onEscapeKey()"
                 >
-                  <option [value]="null" disabled hidden>Select a category</option>
-                  <option *ngFor="let cat of expenseCategories; trackBy: trackByCategory" [value]="cat.value">
-                    {{ cat.label }}
+                  <option value="" disabled>Select a category...</option>
+                  <option *ngFor="let category of expenseCategories" [value]="category.value">
+                    {{ category.label }}
                   </option>
                 </select>
-                <div class="select-arrow">
-                  <i class="fa fa-chevron-down"></i>
-                </div>
-                <div class="input-icon" *ngIf="formGroup.get('category')?.valid">
-                  <i class="fa fa-check-circle"></i>
+                <div class="input-icon" *ngIf="categoryValid()">
+                  <i class="fa fa-check-circle" aria-hidden="true"></i>
                 </div>
               </div>
               <div
                 class="error"
-                *ngIf="formGroup.get('category')?.touched && formGroup.get('category')?.invalid"
+                *ngIf="categoryError()"
                 role="alert"
+                aria-live="polite"
               >
                 Please select a category.
               </div>
@@ -65,24 +66,27 @@ import { EXPENSE_CATEGORY_OPTIONS } from '../../../enums/expense-category';
             <div class="form-group">
               <label for="expenseAmount-{{ mode }}" class="required-field">Amount</label>
               <div class="input-wrapper amount-wrapper">
-                <span class="currency-symbol">$</span>
+                <span class="currency-symbol" aria-hidden="true">$</span>
                 <input
                   id="expenseAmount-{{ mode }}"
                   type="number"
                   formControlName="amount"
-                  placeholder="100"
+                  placeholder="1000"
                   aria-required="true"
                   step="0.01"
                   min="0"
+                  (keydown.enter)="onFieldKeydown($event, 'amount')"
+                  (keydown.escape)="onEscapeKey()"
                 />
-                <div class="input-icon" *ngIf="formGroup.get('amount')?.valid">
-                  <i class="fa fa-check-circle"></i>
+                <div class="input-icon" *ngIf="amountValid()">
+                  <i class="fa fa-check-circle" aria-hidden="true"></i>
                 </div>
               </div>
               <div
                 class="error"
-                *ngIf="formGroup.get('amount')?.touched && formGroup.get('amount')?.invalid"
+                *ngIf="amountError()"
                 role="alert"
+                aria-live="polite"
               >
                 Please enter a valid amount.
               </div>
@@ -101,23 +105,26 @@ import { EXPENSE_CATEGORY_OPTIONS } from '../../../enums/expense-category';
                   formControlName="paymentMethod"
                   class="form-control"
                   aria-required="true"
+                  (keydown.enter)="onFieldKeydown($event, 'paymentMethod')"
+                  (keydown.escape)="onEscapeKey()"
                 >
                   <option [value]="null" disabled hidden>Select a method</option>
                   <option *ngFor="let method of paymentMethods; trackBy: trackByMethod" [value]="method.value">
                     {{ method.label }}
                   </option>
                 </select>
-                <div class="select-arrow">
+                <div class="select-arrow" aria-hidden="true">
                   <i class="fa fa-chevron-down"></i>
                 </div>
-                <div class="input-icon" *ngIf="formGroup.get('paymentMethod')?.valid">
-                  <i class="fa fa-check-circle"></i>
+                <div class="input-icon" *ngIf="paymentMethodValid()">
+                  <i class="fa fa-check-circle" aria-hidden="true"></i>
                 </div>
               </div>
               <div
                 class="error"
-                *ngIf="formGroup.get('paymentMethod')?.touched && formGroup.get('paymentMethod')?.invalid"
+                *ngIf="paymentMethodError()"
                 role="alert"
+                aria-live="polite"
               >
                 Please select a method.
               </div>
@@ -132,15 +139,18 @@ import { EXPENSE_CATEGORY_OPTIONS } from '../../../enums/expense-category';
                   type="date"
                   formControlName="date"
                   aria-required="true"
+                  (keydown.enter)="onFieldKeydown($event, 'date')"
+                  (keydown.escape)="onEscapeKey()"
                 />
-                <div class="input-icon" *ngIf="formGroup.get('date')?.valid">
-                  <i class="fa fa-check-circle"></i>
+                <div class="input-icon" *ngIf="dateValid()">
+                  <i class="fa fa-check-circle" aria-hidden="true"></i>
                 </div>
               </div>
               <div
                 class="error"
-                *ngIf="formGroup.get('date')?.touched && formGroup.get('date')?.invalid"
+                *ngIf="dateError()"
                 role="alert"
+                aria-live="polite"
               >
                 Please select a date.
               </div>
@@ -159,9 +169,11 @@ import { EXPENSE_CATEGORY_OPTIONS } from '../../../enums/expense-category';
                   rows="3"
                   formControlName="description"
                   placeholder="Optional note about this expense..."
+                  (keydown.enter)="onFieldKeydown($event, 'description')"
+                  (keydown.escape)="onEscapeKey()"
                 ></textarea>
-                <div class="input-icon" *ngIf="formGroup.get('description')?.value">
-                  <i class="fa fa-check-circle"></i>
+                <div class="input-icon" *ngIf="descriptionHasValue()">
+                  <i class="fa fa-check-circle" aria-hidden="true"></i>
                 </div>
               </div>
             </div>
@@ -170,16 +182,24 @@ import { EXPENSE_CATEGORY_OPTIONS } from '../../../enums/expense-category';
 
         <!-- Section: Action Buttons -->
         <div class="d-flex justify-content-end gap-3 mt-4">
-          <button class="btn btn-secondary" type="button" (click)="cancel.emit()">
-            <i class="fa fa-times me-2"></i>Cancel
+          <button 
+            class="btn btn-secondary" 
+            type="button" 
+            (click)="cancel.emit()"
+            (keydown.enter)="cancel.emit()"
+            (keydown.space)="cancel.emit()"
+            aria-label="Cancel form submission"
+          >
+            <i class="fa fa-times me-2" aria-hidden="true"></i>Cancel
           </button>
           <button
             class="btn"
             [ngClass]="mode === 'add' ? 'btn-add' : 'btn-modify'"
             type="submit"
             [disabled]="formGroup.invalid"
+            [attr.aria-label]="mode === 'add' ? 'Add expense record' : 'Modify expense record'"
           >
-            <i class="fa" [ngClass]="mode === 'add' ? 'fa-plus' : 'fa-save'"></i>
+            <i class="fa" [ngClass]="mode === 'add' ? 'fa-plus' : 'fa-save'" aria-hidden="true"></i>
             <span class="ms-2">{{ mode === 'add' ? 'Add' : 'Modify' }}</span>
           </button>
         </div>
@@ -192,15 +212,35 @@ import { EXPENSE_CATEGORY_OPTIONS } from '../../../enums/expense-category';
 })
 export class ExpenseFormComponent implements OnInit {
   @Input() formGroup!: FormGroup;
-  @Input() mode: 'add' | 'modify' = 'add';
+  @Input() mode: 'add' | 'edit' = 'add';
+  @Input() paymentMethods: { label: string; value: string }[] = [];
+  @Input() expenseCategories: { label: string; value: string }[] = [];
   @Output() formSubmit = new EventEmitter<void>();
   @Output() cancel = new EventEmitter<void>();
 
-  expenseCategories = EXPENSE_CATEGORY_OPTIONS;
-  paymentMethods = PAYMENT_METHOD_OPTIONS;
+  // SSR guard for browser-only APIs
+  private readonly isBrowser = isPlatformBrowser(inject(PLATFORM_ID));
 
-  constructor(private title: Title, private meta: Meta) {
-    this.title.setTitle('Expense Form | Alpha Vault');
+  // Computed validation states
+  readonly categoryValid = computed(() => this.formGroup.get('category')?.valid ?? false);
+  readonly categoryError = computed(() => 
+    this.formGroup.get('category')?.touched && this.formGroup.get('category')?.invalid
+  );
+  readonly amountValid = computed(() => this.formGroup.get('amount')?.valid ?? false);
+  readonly amountError = computed(() => 
+    this.formGroup.get('amount')?.touched && this.formGroup.get('amount')?.invalid
+  );
+  readonly paymentMethodValid = computed(() => this.formGroup.get('paymentMethod')?.valid ?? false);
+  readonly paymentMethodError = computed(() => 
+    this.formGroup.get('paymentMethod')?.touched && this.formGroup.get('paymentMethod')?.invalid
+  );
+  readonly dateValid = computed(() => this.formGroup.get('date')?.valid ?? false);
+  readonly dateError = computed(() => 
+    this.formGroup.get('date')?.touched && this.formGroup.get('date')?.invalid
+  );
+  readonly descriptionHasValue = computed(() => !!this.formGroup.get('description')?.value);
+
+  constructor(private meta: Meta) {
     this.meta.addTags([
       { name: 'description', content: 'Add or modify an expense record in Alpha Vault. Secure, accessible, and efficient.' },
       { name: 'robots', content: 'index,follow' },
@@ -223,11 +263,36 @@ export class ExpenseFormComponent implements OnInit {
     }
   }
 
-  trackByCategory(index: number, item: { label: string; value: string }) {
-    return item.value;
+  onFieldKeydown(event: Event, fieldName: string): void {
+    if (event instanceof KeyboardEvent && event.key === 'Enter') {
+      event.preventDefault();
+      this.focusNextField(fieldName);
+    }
   }
 
-  trackByMethod(index: number, item: { label: string; value: string }) {
-    return item.value;
+  onEscapeKey(): void {
+    this.cancel.emit();
   }
+
+  /**
+   * Focuses the next form field for keyboard navigation
+   * Uses document.getElementById for form focus management (acceptable with SSR guard)
+   */
+  private focusNextField(currentField: string): void {
+    if (!this.isBrowser) return; // SSR guard
+    
+    const fieldOrder = ['category', 'amount', 'paymentMethod', 'date', 'description'];
+    const currentIndex = fieldOrder.indexOf(currentField);
+    const nextField = fieldOrder[currentIndex + 1];
+    
+    if (nextField) {
+      const nextElement = document.getElementById(`expense${nextField.charAt(0).toUpperCase() + nextField.slice(1)}-${this.mode}`);
+      nextElement?.focus();
+    } else {
+      const submitButton = document.querySelector('button[type="submit"]') as HTMLButtonElement;
+      submitButton?.focus();
+    }
+  }
+
+  trackByMethod = (index: number, item: { label: string; value: string }) => item.value;
 }

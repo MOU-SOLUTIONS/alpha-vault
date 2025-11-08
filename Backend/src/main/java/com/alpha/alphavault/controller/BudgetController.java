@@ -1,132 +1,153 @@
+/**
+ * ================================================================
+ *  Coded by Mohamed Dhaoui for Alpha Vault - Financial System
+ *  Controller: BudgetController — CRUD, categories & analytics
+ * ================================================================
+ */
 package com.alpha.alphavault.controller;
 
-import com.alpha.alphavault.dto.BudgetRequestDTO;
-import com.alpha.alphavault.dto.BudgetResponseDTO;
+import com.alpha.alphavault.dto.budget.BudgetRequestDTO;
+import com.alpha.alphavault.dto.budget.BudgetResponseDTO;
+import com.alpha.alphavault.dto.common.ApiResponse;
 import com.alpha.alphavault.enums.ExpenseCategory;
-import com.alpha.alphavault.exception.BudgetNotFoundException;
-import com.alpha.alphavault.mapper.BudgetMapper;
-import com.alpha.alphavault.model.Budget;
 import com.alpha.alphavault.service.BudgetService;
-
-import org.springframework.http.HttpStatus;
+import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
+@RequiredArgsConstructor
 @RestController
-@RequestMapping("/api/budget")
+@RequestMapping("/api/budgets")
 public class BudgetController {
 
-    private final BudgetService budgetService;
-    private final BudgetMapper budgetMapper;
+    private final BudgetService service;
 
-    public BudgetController(BudgetService budgetService, BudgetMapper budgetMapper) {
-        this.budgetService = budgetService;
-        this.budgetMapper = budgetMapper;
-    }
+    // ========================== CRUD ==========================
 
-    /** CREATE or UPDATE a budget */
     @PostMapping
-    public ResponseEntity<BudgetResponseDTO> saveBudget(@RequestBody BudgetRequestDTO dto) {
-        Budget saved = budgetService.saveBudget(budgetMapper.toEntity(dto));
-        return ResponseEntity.ok(budgetMapper.fromEntity(saved));
+    public ResponseEntity<ApiResponse<BudgetResponseDTO>> create(@Valid @RequestBody BudgetRequestDTO dto) {
+        var data = service.create(dto);
+        return ResponseEntity.status(201).body(ApiResponse.created("Budget created", data, "/api/budgets"));
     }
 
-    /** UPDATE an existing budget by ID */
-@PutMapping("/{id}")
-public ResponseEntity<BudgetResponseDTO> updateBudget(@PathVariable Long id,
-                                                      @RequestBody BudgetRequestDTO dto) {
-    Budget existing = budgetService.getBudgetById(id); // fetch to validate existence
-    Budget updated = budgetMapper.toEntity(dto);
-    updated.setId(id); // ensure ID is preserved
-    Budget saved = budgetService.saveBudget(updated);
-    return ResponseEntity.ok(budgetMapper.fromEntity(saved));
-}
+    @PutMapping("/{id}")
+    public ResponseEntity<ApiResponse<BudgetResponseDTO>> update(@PathVariable Long id, @Valid @RequestBody BudgetRequestDTO dto) {
+        var data = service.update(id, dto);
+        return ResponseEntity.ok(ApiResponse.ok("Budget updated", data, "/api/budgets/" + id));
+    }
 
-
-    /** DELETE a budget */
     @DeleteMapping("/{id}")
-    public ResponseEntity<String> deleteBudget(@PathVariable Long id) {
-        budgetService.deleteBudget(id);
-        return ResponseEntity.ok("Budget deleted successfully.");
+    public ResponseEntity<ApiResponse<Void>> delete(@PathVariable Long id,
+                                                    @RequestParam(name = "deletedBy", required = false) String deletedBy) {
+        if (deletedBy == null || deletedBy.isBlank()) service.delete(id); else service.delete(id, deletedBy);
+        return ResponseEntity.ok(ApiResponse.ok("Budget deleted", null, "/api/budgets/" + id));
     }
 
-    /** GET by ID */
+    @PostMapping("/{id}/restore")
+    public ResponseEntity<ApiResponse<Void>> restore(@PathVariable Long id) {
+        service.restore(id);
+        return ResponseEntity.ok(ApiResponse.ok("Budget restored", null, "/api/budgets/" + id + "/restore"));
+    }
+
     @GetMapping("/{id}")
-    public ResponseEntity<BudgetResponseDTO> getBudgetById(@PathVariable Long id) {
-        return ResponseEntity.ok(budgetMapper.fromEntity(budgetService.getBudgetById(id)));
+    public ResponseEntity<ApiResponse<BudgetResponseDTO>> get(@PathVariable Long id) {
+        var data = service.get(id);
+        return ResponseEntity.ok(ApiResponse.ok("Budget fetched", data, "/api/budgets/" + id));
     }
 
-    /** GET all budgets for user */
+    @GetMapping("/user/{userId}/{year}/{month}")
+    public ResponseEntity<ApiResponse<BudgetResponseDTO>> getByUserMonth(@PathVariable Long userId,
+                                                                         @PathVariable int year,
+                                                                         @PathVariable int month) {
+        var data = service.getByUserMonth(userId, year, month);
+        return ResponseEntity.ok(ApiResponse.ok("Budget fetched", data,
+                "/api/budgets/user/" + userId + "/" + year + "/" + month));
+    }
+
     @GetMapping("/user/{userId}")
-    public ResponseEntity<List<BudgetResponseDTO>> getBudgetsByUser(@PathVariable Long userId) {
-        List<Budget> budgets = budgetService.getBudgetsByUserId(userId);
-        return ResponseEntity.ok(
-                budgets.stream().map(budgetMapper::fromEntity).collect(Collectors.toList()));
+    public ResponseEntity<ApiResponse<Page<BudgetResponseDTO>>> listByUser(@PathVariable Long userId,
+                                                                           @PageableDefault(size = 20, sort = {"year","month"}) Pageable pageable) {
+        var page = service.listByUser(userId, pageable);
+        return ResponseEntity.ok(ApiResponse.ok("Budgets fetched", page, "/api/budgets/user/" + userId));
     }
 
-    /** GET current month summary */
-    @GetMapping("/summary/current/{userId}")
-    public ResponseEntity<Map<String, Object>> getCurrentMonthSummary(@PathVariable Long userId) {
-        return ResponseEntity.ok(budgetService.getCurrentMonthBudgetSummary(userId));
+    @PostMapping("/{id}/sync")
+    public ResponseEntity<ApiResponse<Void>> sync(@PathVariable Long id) {
+        service.syncTotals(id);
+        return ResponseEntity.ok(ApiResponse.ok("Budget totals synced", null, "/api/budgets/" + id + "/sync"));
     }
 
-    /** GET previous month summary */
-    @GetMapping("/summary/previous/{userId}")
-    public ResponseEntity<Map<String, Object>> getPreviousMonthSummary(@PathVariable Long userId) {
-        return ResponseEntity.ok(budgetService.getPreviousMonthBudgetSummary(userId));
+    // ========================== Category (compat) ==========================
+
+    @PostMapping("/user/{userId}/{year}/{month}/category")
+    public ResponseEntity<ApiResponse<BudgetResponseDTO>> addCategory(@PathVariable Long userId,
+                                                                       @PathVariable int year,
+                                                                       @PathVariable int month,
+                                                                       @RequestParam ExpenseCategory category,
+                                                                       @RequestParam BigDecimal allocated) {
+        var data = service.addCategory(userId, month, year, category, allocated);
+        return ResponseEntity.ok(ApiResponse.ok("Category added", data,
+                "/api/budgets/user/" + userId + "/" + year + "/" + month + "/category"));
     }
 
-    /** GET available months/years for budgets */
-    @GetMapping("/periods/{userId}")
-    public ResponseEntity<List<Map<String, Integer>>> getAvailableBudgetPeriods(@PathVariable Long userId) {
-        return ResponseEntity.ok(budgetService.getAvailableBudgetPeriods(userId));
+    @PutMapping("/user/{userId}/{year}/{month}/category")
+    public ResponseEntity<ApiResponse<BudgetResponseDTO>> updateCategory(@PathVariable Long userId,
+                                                                        @PathVariable int year,
+                                                                        @PathVariable int month,
+                                                                        @RequestParam ExpenseCategory category,
+                                                                        @RequestParam BigDecimal allocated) {
+        var data = service.updateCategory(userId, month, year, category, allocated);
+        return ResponseEntity.ok(ApiResponse.ok("Category updated", data,
+                "/api/budgets/user/" + userId + "/" + year + "/" + month + "/category"));
     }
 
-    /** GET total annual budget */
-    @GetMapping("/total/year/{userId}")
-    public ResponseEntity<BigDecimal> getAnnualBudget(@PathVariable Long userId,
-                                                      @RequestParam int year) {
-        return ResponseEntity.ok(budgetService.getAnnualBudget(userId, year));
+    @DeleteMapping("/user/{userId}/{year}/{month}/category")
+    public ResponseEntity<ApiResponse<BudgetResponseDTO>> deleteCategory(@PathVariable Long userId,
+                                                                        @PathVariable int year,
+                                                                        @PathVariable int month,
+                                                                        @RequestParam("category") ExpenseCategory category) {
+        var data = service.deleteCategory(userId, month, year, category);
+        return ResponseEntity.ok(ApiResponse.ok("Category deleted", data,
+                "/api/budgets/user/" + userId + "/" + year + "/" + month + "/category"));
     }
 
-    /** GET monthly aggregate (map of month -> totalBudget) */
-    @GetMapping("/aggregate/monthly/{userId}")
-    public ResponseEntity<Map<Integer, BigDecimal>> getMonthlyAggregate(@PathVariable Long userId,
-                                                                        @RequestParam int year) {
-        return ResponseEntity.ok(budgetService.getMonthlyBudgetAggregate(userId, year));
+    // ========================== Summaries / Aggregates (compat) ==========================
+
+    @GetMapping("/user/{userId}/summary/current")
+    public ResponseEntity<ApiResponse<Map<String, Object>>> currentSummary(@PathVariable Long userId) {
+        var data = service.getCurrentMonthBudgetSummary(userId);
+        return ResponseEntity.ok(ApiResponse.ok("Current month summary", data, "/api/budgets/user/" + userId + "/summary/current"));
     }
 
-@GetMapping("/month/{userId}")
-public ResponseEntity<?> getMonthlyBudget(@PathVariable Long userId,
-                                          @RequestParam int month,
-                                          @RequestParam int year) {
-    try {
-        Budget budget = budgetService.getBudgetForMonth(userId, month, year);
-        return ResponseEntity.ok(budgetMapper.fromEntity(budget));
-    } catch (BudgetNotFoundException ex) {
-        return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                             .body("No budget found for specified month/year.");
+    @GetMapping("/user/{userId}/summary/previous")
+    public ResponseEntity<ApiResponse<Map<String, Object>>> previousSummary(@PathVariable Long userId) {
+        var data = service.getPreviousMonthBudgetSummary(userId);
+        return ResponseEntity.ok(ApiResponse.ok("Previous month summary", data, "/api/budgets/user/" + userId + "/summary/previous"));
     }
-}
 
-@PostMapping("/category")
-public ResponseEntity<BudgetResponseDTO> addOrUpdateCategory(@RequestBody Map<String, Object> payload) {
-    Long userId = Long.valueOf(payload.get("userId").toString());
-    int month = (int) payload.get("month");
-    int year = (int) payload.get("year");
-    ExpenseCategory category = ExpenseCategory.valueOf(payload.get("category").toString());
-    BigDecimal allocated = new BigDecimal(payload.get("allocated").toString());
+    @GetMapping("/user/{userId}/periods")
+    public ResponseEntity<ApiResponse<List<Map<String, Integer>>>> periods(@PathVariable Long userId) {
+        var data = service.getAvailableBudgetPeriods(userId);
+        return ResponseEntity.ok(ApiResponse.ok("Available budget periods", data, "/api/budgets/user/" + userId + "/periods"));
+    }
 
-    Budget updated = budgetService.addOrUpdateCategory(userId, month, year, category, allocated);
-    return ResponseEntity.ok(budgetMapper.fromEntity(updated));
-}
+    @GetMapping("/user/{userId}/annual/{year}")
+    public ResponseEntity<ApiResponse<BigDecimal>> annual(@PathVariable Long userId, @PathVariable int year) {
+        var data = service.getAnnualBudget(userId, year);
+        return ResponseEntity.ok(ApiResponse.ok("Annual budget", data, "/api/budgets/user/" + userId + "/annual/" + year));
+    }
 
-
-
-
+    @GetMapping("/user/{userId}/aggregate/{year}")
+    public ResponseEntity<ApiResponse<Map<Integer, BigDecimal>>> aggregate(@PathVariable Long userId, @PathVariable int year) {
+        var data = service.getMonthlyBudgetAggregate(userId, year);
+        return ResponseEntity.ok(ApiResponse.ok("Monthly budget aggregate", data, "/api/budgets/user/" + userId + "/aggregate/" + year));
+    }
 }

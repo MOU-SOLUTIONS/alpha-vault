@@ -1,15 +1,29 @@
-// ====================================================================
-//             Coded by Mohamed Dhaoui for Alpha Vault
-// ====================================================================
+/*
+  Alpha Vault Financial System
+  
+  @author Mohamed Dhaoui
+  @component SavingFormComponent
+  @description Saving form component for adding and modifying saving goals
+*/
 
-import { Component, Input, Output, EventEmitter, ChangeDetectionStrategy, OnInit } from '@angular/core';
-import { FormGroup, ReactiveFormsModule } from '@angular/forms';
+
 import { CommonModule } from '@angular/common';
-import { Meta } from '@angular/platform-browser';
+import { ChangeDetectionStrategy, Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
+import { FormGroup, ReactiveFormsModule } from '@angular/forms';
+
+import { META_FRAGMENT } from '../../../core/seo/page-meta.model';
 
 @Component({
   standalone: true,
   selector: 'app-saving-goal-form',
+  providers: [
+    {
+      provide: META_FRAGMENT,
+      useValue: {
+        description: 'Create or modify saving goals with comprehensive form fields. Add goal name, category, target amount, current amount, deadline, and priority level. Secure, accessible, and efficient saving goal management form in Alpha Vault.'
+      }
+    }
+  ],
   template: `
     <!-- Section: Saving Goal Form -->
     <section>
@@ -19,14 +33,15 @@ import { Meta } from '@angular/platform-browser';
         class="saving-form"
         role="form"
         aria-labelledby="savingFormTitle"
-      >
-        <p class="form-text">
-          {{ mode === 'add'
-            ? 'Please add the details of the new saving goal.'
-            : 'Please update the details of the saving goal below.' }}
-        </p>
-
-        <!-- Section: Goal Name & Category -->
+        aria-describedby="formDescription"
+       >
+         <p class="form-text" id="formDescription">
+           {{ mode === 'add'
+             ? 'Please add the details of the new saving goal.'
+             : 'Please update the details of the saving goal below.' }}
+         </p>
+ 
+         <!-- Section: Goal Name & Category -->
         <div class="row">
           <div class="col-12 col-md-6">
             <div class="form-group">
@@ -39,13 +54,13 @@ import { Meta } from '@angular/platform-browser';
                   placeholder="Emergency Fund, Vacation..."
                   aria-required="true"
                 />
-                <div class="input-icon" *ngIf="formGroup.get('name')?.valid">
+                <div class="input-icon" *ngIf="nameControl?.valid">
                   <i class="fa fa-check-circle"></i>
                 </div>
               </div>
               <div
                 class="error"
-                *ngIf="formGroup.get('name')?.touched && formGroup.get('name')?.invalid"
+                *ngIf="nameControl?.touched && nameControl?.invalid"
                 role="alert"
               >
                 Please enter a goal name.
@@ -70,13 +85,13 @@ import { Meta } from '@angular/platform-browser';
                 <div class="select-arrow">
                   <i class="fa fa-chevron-down"></i>
                 </div>
-                <div class="input-icon" *ngIf="formGroup.get('category')?.valid">
+                <div class="input-icon" *ngIf="categoryControl?.valid">
                   <i class="fa fa-check-circle"></i>
                 </div>
               </div>
               <div
                 class="error"
-                *ngIf="formGroup.get('category')?.touched && formGroup.get('category')?.invalid"
+                *ngIf="categoryControl?.touched && categoryControl?.invalid"
                 role="alert"
               >
                 Please select a category.
@@ -101,13 +116,13 @@ import { Meta } from '@angular/platform-browser';
                   step="0.01"
                   min="1"
                 />
-                <div class="input-icon" *ngIf="formGroup.get('targetAmount')?.valid">
+                <div class="input-icon" *ngIf="targetAmountControl?.valid">
                   <i class="fa fa-check-circle"></i>
                 </div>
               </div>
               <div
                 class="error"
-                *ngIf="formGroup.get('targetAmount')?.touched && formGroup.get('targetAmount')?.invalid"
+                *ngIf="targetAmountControl?.touched && targetAmountControl?.invalid"
                 role="alert"
               >
                 Please enter a valid target amount.
@@ -128,13 +143,13 @@ import { Meta } from '@angular/platform-browser';
                   step="0.01"
                   min="0"
                 />
-                <div class="input-icon" *ngIf="formGroup.get('currentAmount')?.valid">
+                <div class="input-icon" *ngIf="currentAmountControl?.valid">
                   <i class="fa fa-check-circle"></i>
                 </div>
               </div>
               <div
                 class="error"
-                *ngIf="formGroup.get('currentAmount')?.touched && formGroup.get('currentAmount')?.invalid"
+                *ngIf="currentAmountControl?.touched && currentAmountControl?.invalid"
                 role="alert"
               >
                 Please enter a valid current amount.
@@ -155,13 +170,13 @@ import { Meta } from '@angular/platform-browser';
                   formControlName="deadline"
                   aria-required="true"
                 />
-                <div class="input-icon" *ngIf="formGroup.get('deadline')?.valid">
+                <div class="input-icon" *ngIf="deadlineControl?.valid">
                   <i class="fa fa-check-circle"></i>
                 </div>
               </div>
               <div
                 class="error"
-                *ngIf="formGroup.get('deadline')?.touched && formGroup.get('deadline')?.invalid"
+                *ngIf="deadlineControl?.touched && deadlineControl?.invalid"
                 role="alert"
               >
                 Please select a deadline.
@@ -186,13 +201,13 @@ import { Meta } from '@angular/platform-browser';
                 <div class="select-arrow">
                   <i class="fa fa-chevron-down"></i>
                 </div>
-                <div class="input-icon" *ngIf="formGroup.get('priority')?.valid">
+                <div class="input-icon" *ngIf="priorityControl?.valid">
                   <i class="fa fa-check-circle"></i>
                 </div>
               </div>
               <div
                 class="error"
-                *ngIf="formGroup.get('priority')?.touched && formGroup.get('priority')?.invalid"
+                *ngIf="priorityControl?.touched && priorityControl?.invalid"
                 role="alert"
               >
                 Please select a priority.
@@ -201,11 +216,11 @@ import { Meta } from '@angular/platform-browser';
           </div>
         </div>
 
-        <!-- Section: Action Buttons -->
-        <div class="d-flex justify-content-end gap-3 mt-4">
-          <button class="btn btn-secondary" type="button" (click)="cancel.emit()">
-            <i class="fa fa-times me-2"></i>Cancel
-          </button>
+         <!-- Section: Action Buttons -->
+         <div class="d-flex justify-content-end gap-3 mt-4">
+           <button class="btn btn-secondary" type="button" (click)="cancel.emit()" aria-label="Cancel form submission">
+             <i class="fa fa-times me-2"></i>Cancel
+           </button>
           <button
             class="btn"
             [ngClass]="mode === 'add' ? 'btn-add' : 'btn-modify'"
@@ -228,16 +243,20 @@ export class SavingFormComponent implements OnInit {
   @Input() mode: 'add' | 'edit' = 'add';
   @Input() categories: { label: string; value: string }[] = [];
   @Input() priorities: { label: string; value: string }[] = [];
-  @Output() formSubmit = new EventEmitter<void>();
-  @Output() cancel = new EventEmitter<void>();
+  @Output() readonly formSubmit = new EventEmitter<void>();
+  @Output() readonly cancel = new EventEmitter<void>();
 
-  constructor(private meta: Meta) {
-    this.meta.addTags([
-      { name: 'description', content: 'Add or modify a saving goal in Alpha Vault. Secure, accessible, and efficient.' },
-      { name: 'robots', content: 'index,follow' },
-      { name: 'viewport', content: 'width=device-width, initial-scale=1' },
-    ]);
+  constructor() {
+    // SEO fragment provided via META_FRAGMENT token
+    // Parent component aggregates all fragments via SeoService
   }
+
+  get nameControl() { return this.formGroup.get('name'); }
+  get categoryControl() { return this.formGroup.get('category'); }
+  get targetAmountControl() { return this.formGroup.get('targetAmount'); }
+  get currentAmountControl() { return this.formGroup.get('currentAmount'); }
+  get deadlineControl() { return this.formGroup.get('deadline'); }
+  get priorityControl() { return this.formGroup.get('priority'); }
 
   ngOnInit(): void {
     if (this.mode === 'add' && !this.formGroup.get('deadline')?.value) {

@@ -1,0 +1,12 @@
+﻿  /* ===== EVENT HANDLERS ===== */
+  public onAdd(): void {
+    this.onAdd();
+  }
+
+  public onModify(income: Income): void {
+    this.onModify(income);
+  }
+
+  public onDelete(id: number): void {
+    this.onDelete(id);
+  }

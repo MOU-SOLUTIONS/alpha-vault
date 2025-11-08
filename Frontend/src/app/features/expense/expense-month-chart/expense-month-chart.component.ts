@@ -1,19 +1,20 @@
-// ====================================================================
-//             Coded by Mohamed Dhaoui for Alpha Vault
-// ====================================================================
+/*
+  Alpha Vault Financial System
+  
+  @author Mohamed Dhaoui  
+  @component ExpenseMonthChartComponent
+  @description Expense month chart component for displaying expense data
+*/    
 
-import {
-  Component,
-  Input,
-  OnInit,
-  OnChanges,
-  SimpleChanges,
-  ChangeDetectionStrategy,
-} from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { NgChartsModule } from 'ng2-charts';
-import { ChartData, ChartOptions, ChartType } from 'chart.js';
+import { ChangeDetectionStrategy, Component, computed, DestroyRef, inject, Input, OnChanges, OnDestroy, OnInit, signal, SimpleChanges } from '@angular/core';
 import { Meta } from '@angular/platform-browser';
+import { ChartOptions } from 'chart.js';
+import { NgChartsModule } from 'ng2-charts';
+import { Subject, takeUntil } from 'rxjs';
+
+import { AuthService } from '../../../core/services/auth.service';
+import { ExpenseService } from '../../../core/services/expense.service';
 
 @Component({
   selector: 'app-expense-month-chart',
@@ -23,24 +24,72 @@ import { Meta } from '@angular/platform-browser';
   styleUrls: ['./expense-month-chart.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class ExpenseMonthChartComponent implements OnInit, OnChanges {
+export class ExpenseMonthChartComponent implements OnChanges, OnInit, OnDestroy {
   @Input() monthlyData: number[] = [];
-  @Input() isLoading: boolean = false;
+  @Input() lazyLoad = false; // Add lazy loading option
 
-  isLineChart: boolean = true;
-  chartType: ChartType = 'line';
+  private readonly isLineChartSignal = signal<boolean>(true);
+  private readonly monthlyDataSignal = signal<number[]>([]);
 
-  monthLabels: string[] = [
-    'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-    'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
-  ];
-  monthlyTotal: number = 0;
-  monthlyAverage: number = 0;
+  readonly isLineChart = this.isLineChartSignal.asReadonly();
+  readonly chartType = computed(() => this.isLineChart() ? 'line' : 'bar');
 
-  chartData!: ChartData;
-  chartOptions: ChartOptions = {
+  readonly monthLabels = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+
+  readonly monthlyTotal = computed(() => {
+    const data = this.monthlyDataSignal();
+    const values = data.length < 12 ? [...data, ...Array(12 - data.length).fill(0)] : data.slice(0, 12);
+    return values.reduce((sum, val) => sum + val, 0);
+  });
+
+  readonly monthlyAverage = computed(() => {
+    const data = this.monthlyDataSignal();
+    const values = data.length < 12 ? [...data, ...Array(12 - data.length).fill(0)] : data.slice(0, 12);
+    const total = this.monthlyTotal();
+    const positiveValues = values.filter(v => v > 0);
+    return positiveValues.length > 0 ? total / positiveValues.length : 0;
+  });
+
+  readonly chartData = computed(() => {
+    const data = this.monthlyDataSignal();
+    const values = data.length < 12 ? [...data, ...Array(12 - data.length).fill(0)] : data.slice(0, 12);
+    const max = Math.max(...values, 1);
+    const backgroundColors = values.map(value => `rgba(63, 81, 181, ${Math.min(0.2 + (value / max) * 0.3, 0.5)}`);
+
+    return this.isLineChart()
+      ? {
+          labels: this.monthLabels,
+          datasets: [{
+            label: 'Monthly Expenses',
+            data: values,
+            fill: true,
+            backgroundColor: 'rgba(63, 81, 181, 0.2)',
+            borderColor: 'rgba(63, 81, 181, 1)',
+            pointBackgroundColor: 'rgba(63, 81, 181, 1)',
+            borderWidth: 2,
+            pointRadius: 4,
+            tension: 0.4,
+          }],
+        }
+      : {
+          labels: this.monthLabels,
+          datasets: [{
+            label: 'Monthly Expenses',
+            data: values,
+            backgroundColor: backgroundColors,
+            borderColor: 'rgba(63, 81, 181, 1)',
+            borderWidth: 2,
+            borderRadius: 4,
+            hoverBackgroundColor: 'rgba(63, 81, 181, 0.6)',
+            barThickness: 'flex',
+            maxBarThickness: 35,
+          }],
+        };
+  });
+  readonly chartOptions: ChartOptions = {
     responsive: true,
     maintainAspectRatio: false,
+    resizeDelay: 0,
     plugins: {
       legend: { display: false },
       tooltip: {
@@ -72,78 +121,92 @@ export class ExpenseMonthChartComponent implements OnInit, OnChanges {
     },
   };
 
-  constructor(private meta: Meta) {}
+  private readonly destroy$ = new Subject<void>();
+  private readonly meta = inject(Meta);
+  private readonly expenseService = inject(ExpenseService);
+  private readonly authService = inject(AuthService);
+  private readonly destroyRef = inject(DestroyRef);
+
+  constructor() {
+    this.meta.addTags([
+      { name: 'description', content: 'Chart representing monthly expense distribution on Alpha Vault.' },
+      { name: 'robots', content: 'index,follow' },
+      { name: 'viewport', content: 'width=device-width, initial-scale=1' }
+    ]);
+  }
 
   ngOnInit(): void {
-    this.meta.updateTag({
-      name: 'description',
-      content: 'Chart representing monthly expense breakdown on Alpha Vault.',
-    });
-    this.meta.updateTag({
-      name: 'keywords',
-      content: 'monthly expense, Alpha Vault, finance stats, charts',
+    if (this.lazyLoad) {
+      // Use Intersection Observer for lazy loading
+      this.setupLazyLoading();
+    } else {
+      this.loadData();
+    }
+  }
+
+  private setupLazyLoading(): void {
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          this.loadData();
+          observer.unobserve(entry.target);
+        }
+      });
     });
 
-    this.updateChartData(this.monthlyData?.length ? this.monthlyData : new Array(12).fill(0));
+    // Observe the chart container
+    setTimeout(() => {
+      const chartElement = document.querySelector('app-expense-month-chart');
+      if (chartElement) {
+        observer.observe(chartElement);
+      }
+    }, 100);
+  }
+
+  private loadData(): void {
+    this.authService.userId$.pipe(
+      takeUntil(this.destroy$)
+    ).subscribe(userId => {
+      if (userId && userId > 0) {
+        this.loadMonthlyData(userId);
+      } else {
+        this.monthlyDataSignal.set([]);
+      }
+    });
+  }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['monthlyData'] && !changes['monthlyData'].firstChange) {
-      this.updateChartData(this.monthlyData);
+      this.monthlyDataSignal.set(this.monthlyData);
     }
   }
 
-  updateChartData(values: number[]): void {
-    const data = values.length < 12 ? [...values, ...Array(12 - values.length).fill(0)] : values.slice(0, 12);
-    this.monthlyTotal = data.reduce((sum, val) => sum + val, 0);
-    this.monthlyAverage = this.monthlyTotal / (data.filter(v => v > 0).length || 1);
-
-    const max = Math.max(...data, 1);
-    const backgroundColors = data.map(value => `rgba(63, 81, 181, ${Math.min(0.2 + (value / max) * 0.3, 0.5)}`);
-
-    this.chartData = this.isLineChart
-      ? {
-          labels: this.monthLabels,
-          datasets: [{
-            label: 'Monthly Expenses',
-            data,
-            fill: true,
-            backgroundColor: 'rgba(63, 81, 181, 0.2)',
-            borderColor: 'rgba(63, 81, 181, 1)',
-            pointBackgroundColor: 'rgba(63, 81, 181, 1)',
-            borderWidth: 2,
-            pointRadius: 4,
-            tension: 0.4,
-          }],
-        }
-      : {
-          labels: this.monthLabels,
-          datasets: [{
-            label: 'Monthly Expenses',
-            data,
-            backgroundColor: backgroundColors,
-            borderColor: 'rgba(63, 81, 181, 1)',
-            borderWidth: 2,
-            borderRadius: 4,
-            hoverBackgroundColor: 'rgba(63, 81, 181, 0.6)',
-            barThickness: 'flex',
-            maxBarThickness: 35,
-          }],
-        };
+  private loadMonthlyData(userId: number): void {
+    this.expenseService.getExpenseForMonthsOfCurrentYear().pipe(
+      takeUntil(this.destroy$)
+    ).subscribe({
+      next: (data: number[]) => {
+        this.monthlyDataSignal.set(data || []);
+      },
+      error: () => {
+        this.monthlyDataSignal.set([]);
+      }
+    });
   }
 
   toggleChartType(): void {
-    this.isLineChart = !this.isLineChart;
-    this.chartType = this.isLineChart ? 'line' : 'bar';
-    this.updateChartData(this.monthlyData);
+    this.isLineChartSignal.set(!this.isLineChart());
   }
 
-  refreshData(): void {
-    this.isLoading = true;
-    setTimeout(() => {
-      const newData = this.monthlyData.map(v => Math.max(v * (0.8 + Math.random() * 0.4), 0));
-      this.updateChartData(newData);
-      this.isLoading = false;
-    }, 800);
+  onToggleKeydown(event: KeyboardEvent): void {
+    if (event.key === 'Enter' || event.key === ' ') {
+      event.preventDefault();
+      this.toggleChartType();
+    }
   }
 }

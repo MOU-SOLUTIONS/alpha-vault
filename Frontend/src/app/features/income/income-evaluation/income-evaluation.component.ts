@@ -1,14 +1,21 @@
-// ====================================================================
-//             Coded by Mohamed Dhaoui for Alpha Vault
-// ====================================================================
+/*
+  Alpha Vault Financial System
+  
+  @author Mohamed Dhaoui
+  @component IncomeEvaluationComponent
+  @description Income evaluation component for displaying income data
+*/  
 
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnChanges, OnDestroy, OnInit, SimpleChanges } from '@angular/core';
-import { CommonModule, CurrencyPipe, DecimalPipe } from '@angular/common';
+import { CommonModule } from '@angular/common';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, computed, DestroyRef, EventEmitter, inject, Input, OnChanges, OnInit, Output, signal, SimpleChanges } from '@angular/core';
 import { Meta } from '@angular/platform-browser';
-import { Subject } from 'rxjs';
 
-import { Income } from '../../../models/income.model';
 import { IncomeService } from '../../../core/services/income.service';
+import { Income } from '../../../models/income.model';
+import { IncomeEvaluationHeaderComponent } from './components/income-evaluation-header/income-evaluation-header.component';
+import { IncomeEvaluationInsightsComponent, Insight } from './components/income-evaluation-insights/income-evaluation-insights.component';
+import { IncomeEvaluationMetricsComponent } from './components/income-evaluation-metrics/income-evaluation-metrics.component';
+import { IncomeEvaluationTrendsComponent } from './components/income-evaluation-trends/income-evaluation-trends.component';
 
 interface EvolutionMetrics {
   totalIncome: number;
@@ -33,22 +40,22 @@ interface PerformanceMetrics {
   stabilityIndex: number;
 }
 
-interface Insight {
-  id: number;
-  icon: string;
-  title: string;
-  description: string;
-}
-
 @Component({
   standalone: true,
   selector: 'app-income-evaluation',
   templateUrl: './income-evaluation.component.html',
   styleUrls: ['./income-evaluation.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, CurrencyPipe, DecimalPipe],
+  imports: [
+    CommonModule,
+    IncomeEvaluationHeaderComponent,
+    IncomeEvaluationTrendsComponent,
+    IncomeEvaluationMetricsComponent,
+    IncomeEvaluationInsightsComponent
+  ],
 })
-export class IncomeEvaluationComponent implements OnInit, OnDestroy, OnChanges {
+export class IncomeEvaluationComponent implements OnInit, OnChanges {
+  /* ===== INPUTS ===== */
   @Input() weekEvolution = 0;
   @Input() monthEvolution = 0;
   @Input() yearEvolution = 0;
@@ -61,89 +68,135 @@ export class IncomeEvaluationComponent implements OnInit, OnDestroy, OnChanges {
   @Input() paymentMethodData: Record<string, number> = {};
   @Input() weeklyIncomeData: number[] = [];
   @Input() monthlyIncomeData: number[] = [];
-  @Input() topIncomes: Array<{ category: string; amount: number }> = [];
+  @Input() topIncomes: { category: string; amount: number }[] = [];
 
-  loading = true;
-  hasData = false;
+  /* ===== OUTPUTS ===== */
+  @Output() addIncome = new EventEmitter<void>();
+
+  /* ===== SIGNALS ===== */
+  private readonly incomesSignal = signal<Income[]>([]);
+  private readonly weekEvolutionSignal = signal<number>(0);
+  private readonly monthEvolutionSignal = signal<number>(0);
+  private readonly yearEvolutionSignal = signal<number>(0);
+  private readonly dayIncomeSignal = signal<number>(0);
+  private readonly weekIncomeSignal = signal<number>(0);
+  private readonly monthIncomeSignal = signal<number>(0);
+  private readonly yearIncomeSignal = signal<number>(0);
+  private readonly incomeSourceDataSignal = signal<Record<string, number>>({});
+  private readonly currentPeriodSignal = signal<string>('month');
+
+  /* ===== COMPUTED PROPERTIES ===== */
+  readonly evolutionMetrics = computed(() => this.calculateEvolutionMetrics());
+  readonly performanceMetrics = computed(() => this.calculatePerformanceMetrics());
+  readonly insights = computed(() => this.generateInsights());
+  readonly hasData = computed(() => this.checkHasData());
+  
+  // Convert getters to computed signals for better performance
+  readonly totalIncome = computed(() => this.evolutionMetrics().totalIncome);
+  readonly growthRate = computed(() => this.evolutionMetrics().growthRate);
+  readonly achievementRate = computed(() => this.evolutionMetrics().achievementRate);
+  readonly trend = computed(() => this.evolutionMetrics().trend);
+  readonly monthlyGrowth = computed(() => this.evolutionMetrics().monthlyGrowth);
+  readonly weeklyGrowth = computed(() => this.evolutionMetrics().weeklyGrowth);
+  readonly yearlyGrowth = computed(() => this.evolutionMetrics().yearlyGrowth);
+  readonly consistencyScore = computed(() => this.evolutionMetrics().consistencyScore);
+  readonly diversificationScore = computed(() => this.evolutionMetrics().diversificationScore);
+  readonly todayIncome = computed(() => this.evolutionMetrics().todayIncome);
+  readonly efficiency = computed(() => this.performanceMetrics().efficiency);
+  readonly growthPotential = computed(() => this.performanceMetrics().growthPotential);
+  readonly goalAlignment = computed(() => this.performanceMetrics().goalAlignment);
+  readonly stabilityIndex = computed(() => this.performanceMetrics().stabilityIndex);
+  readonly insightsList = computed(() => this.insights());
+
+  /* ===== COMPONENT STATE ===== */
   currentPeriod = 'month';
-  evolutionMetrics: EvolutionMetrics = {
-    totalIncome: 0,
-    growthRate: 0,
-    achievementRate: 0,
-    trend: 0,
-    monthlyGrowth: 0,
-    weeklyGrowth: 0,
-    yearlyGrowth: 0,
-    consistencyScore: 0,
-    diversificationScore: 0,
-    todayIncome: 0,
-    weekIncome: 0,
-    monthIncome: 0,
-    yearIncome: 0,
-  };
-  distributionData: Record<string, number> = {};
-  performanceMetrics: PerformanceMetrics = {
-    efficiency: 0,
-    growthPotential: 0,
-    goalAlignment: 0,
-    stabilityIndex: 0,
-  };
-  insights: Insight[] = [];
 
-  private readonly destroy$ = new Subject<void>();
+  /* ===== DEPENDENCIES ===== */
+  private readonly destroyRef = inject(DestroyRef);
+  private readonly incomeService = inject(IncomeService);
+  private readonly meta = inject(Meta);
+  private readonly cdr = inject(ChangeDetectorRef);
 
-  constructor(
-    private readonly incomeService: IncomeService,
-    private readonly meta: Meta,
-    private readonly cdr: ChangeDetectorRef,
-  ) {
+  constructor() {
     this.meta.addTags([
-      { name: 'description', content: 'Comprehensive income evaluation dashboard with trends, distribution analysis, and performance metrics for Alpha Vault financial management.' },
+      { name: 'description', content: 'Comprehensive income evaluation dashboard with trends and performance metrics for Alpha Vault financial management.' },
       { name: 'robots', content: 'index,follow' },
       { name: 'viewport', content: 'width=device-width, initial-scale=1' },
     ]);
   }
 
+  /* ===== LIFECYCLE ===== */
   ngOnInit(): void {
-    this.processData();
+    this.updateSignals();
   }
 
   ngOnChanges(changes: SimpleChanges): void {
-    if (changes['incomes'] || changes['monthIncome'] || changes['monthEvolution'] || 
-        changes['incomeSourceData'] || changes['dayIncome'] || changes['weekIncome'] || 
-        changes['yearIncome'] || changes['weekEvolution'] || changes['yearEvolution']) {
-      this.processData();
+    this.updateSignalsFromChanges(changes);
+    this.cdr.markForCheck();
+  }
+
+  /* ===== PRIVATE METHODS ===== */
+  private updateSignals(): void {
+    this.incomesSignal.set(this.incomes || []);
+    this.weekEvolutionSignal.set(this.weekEvolution || 0);
+    this.monthEvolutionSignal.set(this.monthEvolution || 0);
+    this.yearEvolutionSignal.set(this.yearEvolution || 0);
+    this.dayIncomeSignal.set(this.dayIncome || 0);
+    this.weekIncomeSignal.set(this.weekIncome || 0);
+    this.monthIncomeSignal.set(this.monthIncome || 0);
+    this.yearIncomeSignal.set(this.yearIncome || 0);
+    this.incomeSourceDataSignal.set(this.incomeSourceData || {});
+  }
+
+  private updateSignalsFromChanges(changes: SimpleChanges): void {
+    if (changes['incomes']) {
+      this.incomesSignal.set(changes['incomes'].currentValue || []);
+    }
+    if (changes['weekEvolution']) {
+      this.weekEvolutionSignal.set(changes['weekEvolution'].currentValue || 0);
+    }
+    if (changes['monthEvolution']) {
+      this.monthEvolutionSignal.set(changes['monthEvolution'].currentValue || 0);
+    }
+    if (changes['yearEvolution']) {
+      this.yearEvolutionSignal.set(changes['yearEvolution'].currentValue || 0);
+    }
+    if (changes['dayIncome']) {
+      this.dayIncomeSignal.set(changes['dayIncome'].currentValue || 0);
+    }
+    if (changes['weekIncome']) {
+      this.weekIncomeSignal.set(changes['weekIncome'].currentValue || 0);
+    }
+    if (changes['monthIncome']) {
+      this.monthIncomeSignal.set(changes['monthIncome'].currentValue || 0);
+    }
+    if (changes['yearIncome']) {
+      this.yearIncomeSignal.set(changes['yearIncome'].currentValue || 0);
+    }
+    if (changes['incomeSourceData']) {
+      this.incomeSourceDataSignal.set(changes['incomeSourceData'].currentValue || {});
     }
   }
 
-  ngOnDestroy(): void {
-    this.destroy$.next();
-    this.destroy$.complete();
+  /* ===== PUBLIC METHODS ===== */
+  onAddIncome(): void {
+    this.addIncome.emit();
   }
 
-  onPeriodChange(period: string): void {
-    this.currentPeriod = period;
-    this.loadDistributionData();
-  }
-
-  processData(): void {
-    this.loading = true;
-    this.cdr.markForCheck();
-
-    this.evolutionMetrics = this.calculateEvolutionMetrics();
-    this.loadDistributionData();
-    this.performanceMetrics = this.calculatePerformanceMetrics();
-    this.insights = this.generateInsights();
-
-    this.hasData = this.checkHasData();
-    this.loading = false;
-    this.cdr.markForCheck();
-  }
 
   private calculateEvolutionMetrics(): EvolutionMetrics {
-    const calculatedTotalIncome = this.incomes?.length > 0 
-      ? this.incomes.reduce((sum, income) => sum + income.amount, 0)
-      : this.monthIncome || 0;
+    const incomes = this.incomesSignal();
+    const monthIncome = this.monthIncomeSignal();
+    const weekEvolution = this.weekEvolutionSignal();
+    const monthEvolution = this.monthEvolutionSignal();
+    const yearEvolution = this.yearEvolutionSignal();
+    const dayIncome = this.dayIncomeSignal();
+    const weekIncome = this.weekIncomeSignal();
+    const yearIncome = this.yearIncomeSignal();
+
+    const calculatedTotalIncome = incomes?.length > 0 
+      ? incomes.reduce((sum, income) => sum + income.amount, 0)
+      : monthIncome || 0;
 
     const realGrowthRate = this.calculateRealGrowthRate();
 
@@ -152,21 +205,24 @@ export class IncomeEvaluationComponent implements OnInit, OnDestroy, OnChanges {
       growthRate: realGrowthRate,
       achievementRate: this.calculateAchievementRate(),
       trend: realGrowthRate,
-      monthlyGrowth: this.monthEvolution || 0,
-      weeklyGrowth: this.weekEvolution || 0,
-      yearlyGrowth: this.yearEvolution || 0,
+      monthlyGrowth: monthEvolution || 0,
+      weeklyGrowth: weekEvolution || 0,
+      yearlyGrowth: yearEvolution || 0,
       consistencyScore: this.calculateConsistencyScore(),
       diversificationScore: this.calculateDiversificationScore(),
-      todayIncome: this.dayIncome || 0,
-      weekIncome: this.weekIncome || 0,
-      monthIncome: this.monthIncome || 0,
-      yearIncome: this.yearIncome || 0,
+      todayIncome: dayIncome || 0,
+      weekIncome: weekIncome || 0,
+      monthIncome: monthIncome || 0,
+      yearIncome: yearIncome || 0,
     };
   }
 
   private calculateRealGrowthRate(): number {
-    if (!this.incomes?.length) {
-      return this.monthEvolution || 0;
+    const incomes = this.incomesSignal();
+    const monthEvolution = this.monthEvolutionSignal();
+
+    if (!incomes?.length) {
+      return monthEvolution || 0;
     }
 
     const currentMonth = new Date().getMonth();
@@ -174,12 +230,12 @@ export class IncomeEvaluationComponent implements OnInit, OnDestroy, OnChanges {
     const previousMonth = currentMonth === 0 ? 11 : currentMonth - 1;
     const previousYear = currentMonth === 0 ? currentYear - 1 : currentYear;
 
-    const currentMonthIncomes = this.incomes.filter(income => {
+    const currentMonthIncomes = incomes.filter(income => {
       const incomeDate = new Date(income.date);
       return incomeDate.getMonth() === currentMonth && incomeDate.getFullYear() === currentYear;
     });
 
-    const previousMonthIncomes = this.incomes.filter(income => {
+    const previousMonthIncomes = incomes.filter(income => {
       const incomeDate = new Date(income.date);
       return incomeDate.getMonth() === previousMonth && incomeDate.getFullYear() === previousYear;
     });
@@ -208,68 +264,10 @@ export class IncomeEvaluationComponent implements OnInit, OnDestroy, OnChanges {
     };
   }
 
-  private loadDistributionData(): void {
-    if (!this.incomes?.length) {
-      this.distributionData = {};
-      this.cdr.markForCheck();
-      return;
-    }
-
-    const now = new Date();
-    let filteredIncomes: Income[] = [];
-
-    switch (this.currentPeriod) {
-      case 'week':
-        const startOfWeek = new Date(now);
-        startOfWeek.setDate(now.getDate() - now.getDay());
-        startOfWeek.setHours(0, 0, 0, 0);
-        const endOfWeek = new Date(startOfWeek);
-        endOfWeek.setDate(startOfWeek.getDate() + 6);
-        endOfWeek.setHours(23, 59, 59, 999);
-        
-        filteredIncomes = this.incomes.filter(income => {
-          const incomeDate = new Date(income.date);
-          return incomeDate >= startOfWeek && incomeDate <= endOfWeek;
-        });
-        break;
-
-      case 'month':
-        const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
-        const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0);
-        endOfMonth.setHours(23, 59, 59, 999);
-        
-        filteredIncomes = this.incomes.filter(income => {
-          const incomeDate = new Date(income.date);
-          return incomeDate >= startOfMonth && incomeDate <= endOfMonth;
-        });
-        break;
-
-      case 'year':
-        const startOfYear = new Date(now.getFullYear(), 0, 1);
-        const endOfYear = new Date(now.getFullYear(), 11, 31);
-        endOfYear.setHours(23, 59, 59, 999);
-        
-        filteredIncomes = this.incomes.filter(income => {
-          const incomeDate = new Date(income.date);
-          return incomeDate >= startOfYear && incomeDate <= endOfYear;
-        });
-        break;
-
-      default:
-        filteredIncomes = this.incomes;
-    }
-
-    // Group filtered incomes by source
-    this.distributionData = filteredIncomes.reduce((acc, income) => {
-      acc[income.source] = (acc[income.source] || 0) + income.amount;
-      return acc;
-    }, {} as Record<string, number>);
-
-    this.cdr.markForCheck();
-  }
 
   private calculateConsistencyScore(): number {
-    if (!this.incomes?.length) return 0;
+    const incomes = this.incomesSignal();
+    if (!incomes?.length) return 0;
     
     const monthlyIncomes = this.groupIncomesByMonth();
     const months = Object.keys(monthlyIncomes);
@@ -288,37 +286,26 @@ export class IncomeEvaluationComponent implements OnInit, OnDestroy, OnChanges {
   }
 
   private calculateDiversificationScore(): number {
-    if (!this.incomes?.length) return 0;
+    const incomes = this.incomesSignal();
+    if (!incomes?.length) return 0;
     
-    const sourceCount = new Set(this.incomes.map(income => income.source)).size;
-    const totalAmount = this.incomes.reduce((sum, income) => sum + income.amount, 0);
+    const sourceCount = new Set(incomes.map(income => income.source)).size;
+    const totalAmount = incomes.reduce((sum, income) => sum + income.amount, 0);
     
     if (totalAmount === 0) return 0;
     
     const sourceScore = Math.min(100, sourceCount * 25);
-    const distributionScore = this.calculateDistributionEvenness();
     
-    return Math.round((sourceScore + distributionScore) / 2);
+    return sourceScore;
   }
 
-  private calculateDistributionEvenness(): number {
-    if (!this.incomeSourceData || !Object.keys(this.incomeSourceData).length) return 0;
-    
-    const total = Object.values(this.incomeSourceData).reduce((sum, amount) => sum + amount, 0);
-    if (total === 0) return 0;
-
-    const proportions = Object.values(this.incomeSourceData).map(amount => amount / total);
-    const entropy = -proportions.reduce((sum, p) => sum + (p * Math.log(p)), 0);
-    const maxEntropy = Math.log(Object.keys(this.incomeSourceData).length);
-    
-    return maxEntropy > 0 ? (entropy / maxEntropy) * 100 : 0;
-  }
 
   private calculateEfficiencyScore(): number {
-    if (!this.incomes?.length) return 0;
+    const incomes = this.incomesSignal();
+    if (!incomes?.length) return 0;
     
-    const receivedIncomes = this.incomes.filter(income => income.isReceived);
-    const totalIncomes = this.incomes.length;
+    const receivedIncomes = incomes.filter(income => income.isReceived);
+    const totalIncomes = incomes.length;
     
     return Math.round((receivedIncomes.length / totalIncomes) * 100);
   }
@@ -362,9 +349,10 @@ export class IncomeEvaluationComponent implements OnInit, OnDestroy, OnChanges {
   }
 
   private groupIncomesByMonth(): Record<string, number> {
-    if (!this.incomes) return {};
+    const incomes = this.incomesSignal();
+    if (!incomes) return {};
     
-    return this.incomes.reduce((acc, income) => {
+    return incomes.reduce((acc, income) => {
       const date = new Date(income.date);
       const monthKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
       acc[monthKey] = (acc[monthKey] || 0) + income.amount;
@@ -375,7 +363,16 @@ export class IncomeEvaluationComponent implements OnInit, OnDestroy, OnChanges {
   private generateInsights(): Insight[] {
     const insights: Insight[] = [];
     
-    const monthlyGrowth = this.monthEvolution || 0;
+    // Only generate insights if there's actual data
+    const incomes = this.incomesSignal();
+    const hasIncomes = incomes && incomes.length > 0;
+    const hasIncomeData = this.dayIncomeSignal() > 0 || this.weekIncomeSignal() > 0 || this.monthIncomeSignal() > 0 || this.yearIncomeSignal() > 0;
+    
+    if (!hasIncomes && !hasIncomeData) {
+      return insights; // Return empty array if no data
+    }
+    
+    const monthlyGrowth = this.monthEvolutionSignal();
     if (monthlyGrowth > 0) {
       insights.push({
         id: 1,
@@ -430,51 +427,32 @@ export class IncomeEvaluationComponent implements OnInit, OnDestroy, OnChanges {
   }
 
   private checkHasData(): boolean {
-    return (this.incomes && this.incomes.length > 0) ||
-           !!(this.evolutionMetrics && Object.keys(this.evolutionMetrics).length > 0) ||
-           !!(this.distributionData && Object.keys(this.distributionData).length > 0) ||
-           !!(this.performanceMetrics && Object.keys(this.performanceMetrics).length > 0) ||
-           !!(this.insights && this.insights.length > 0);
+    const incomes = this.incomesSignal();
+    const hasIncomes = incomes && incomes.length > 0;
+    const hasIncomeData = this.dayIncomeSignal() > 0 || this.weekIncomeSignal() > 0 || this.monthIncomeSignal() > 0 || this.yearIncomeSignal() > 0;
+
+    return hasIncomes || hasIncomeData;
   }
 
-  getDistributionKeys(): string[] {
-    return this.distributionData ? Object.keys(this.distributionData) : [];
-  }
-
-  hasDistributionData(): boolean {
-    return this.distributionData && Object.keys(this.distributionData).length > 0;
-  }
-
-  getTotalDistribution(): number {
-    if (!this.distributionData) return 0;
-    return Object.values(this.distributionData).reduce((sum: number, value: number) => sum + (Number(value) || 0), 0);
-  }
-
-  getDistributionValue(key: string): number {
-    return Number(this.distributionData?.[key] || 0);
-  }
 
   calculateMetricScore(metric: number, maxValue: number): number {
     return Math.min((metric / maxValue) * 100, 100);
   }
 
-  calculateDistributionPercentage(value: number, total: number): number {
-    return total > 0 ? (value / total) * 100 : 0;
+
+  trackByInsight(index: number, insight: Insight): number {
+    return insight.id;
   }
 
-  getTrendIcon(trend: number): string {
-    return trend > 0 ? 'trending_up' : trend < 0 ? 'trending_down' : 'trending_flat';
+  getTrendClass(value: number): string {
+    if (value > 0) return 'positive';
+    if (value < 0) return 'negative';
+    return 'neutral';
   }
 
-  getTrendClass(trend: number): string {
-    return trend > 0 ? 'positive' : trend < 0 ? 'negative' : 'neutral';
-  }
-
-  trackByInsight(index: number, insight: Insight): string {
-    return insight.id.toString();
-  }
-
-  trackByDistribution(index: number, item: string): string {
-    return item;
+  getTrendIcon(value: number): string {
+    if (value > 0) return '↗';
+    if (value < 0) return '↘';
+    return '→';
   }
 }

@@ -1,176 +1,435 @@
-/* ========== LAYOUT WRAPPER ========== */
+/*
+  Alpha Vault Financial System
+  
+  @author Mohamed Dhaoui
+  @component MainComponent
+  @description Styles for main application area component
+*/
 
 .body {
-  top: 0;
+  animation: fadeIn 0.5s ease-in-out;
+
+  background-color: #f1f1f1;
+
+  box-sizing: border-box;
+
   display: flex;
   height: 100vh;
-  width: 100vw;
+
   margin: 0;
-  padding: 0;
-  background-color: #f1f1f1;
-  position: absolute;
+
   overflow: hidden;
-  animation: fadeIn 0.5s ease-in-out;
+  padding: 0;
+
+  position: absolute;
+  top: 0;
+  width: 100vw;
 
   &.sidebar-open {
     overflow: hidden;
   }
+
+  &.initializing {
+    opacity: 0.8;
+
+    pointer-events: none;
+  }
 }
 
-/* ========== ANIMATIONS ========== */
+.loading-overlay {
+  align-items: center;
+
+  animation: fadeIn 0.3s ease-out;
+  backdrop-filter: blur(10px);
+
+  background: rgb(255 255 255 / 95%);
+
+  display: flex;
+  flex-direction: column;
+  inset: 0;
+  justify-content: center;
+
+  position: fixed;
+
+  z-index: 1000;
+}
+
+.loading-spinner {
+  animation: spin 1s linear infinite;
+
+  border: 4px solid #f3f3f3;
+  border-radius: 50%;
+  border-top: 4px solid #667eea;
+  height: 60px;
+
+  margin-bottom: 1rem;
+  width: 60px;
+}
+
+.loading-text {
+  animation: fadeIn 0.5s ease-out 0.3s both;
+  color: #333;
+
+  font-size: 1.1rem;
+  font-weight: 500;
+
+  margin: 0;
+}
 
 @keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
+  from { 
+    opacity: 0; 
+  }
+
+  to { 
+    opacity: 1; 
+  }
 }
 
 @keyframes slideInFromLeft {
-  from { transform: translateX(-100%); opacity: 0; }
-  to { transform: translateX(0); opacity: 1; }
+  from { 
+    opacity: 0; 
+
+    transform: translateX(-100%); 
+  }
+
+  to { 
+    opacity: 1; 
+
+    transform: translateX(0); 
+  }
 }
 
 @keyframes slideInFromTop {
-  from { transform: translateY(-100%); opacity: 0; }
-  to { transform: translateY(0); opacity: 1; }
+  from { 
+    opacity: 0; 
+
+    transform: translateY(-100%); 
+  }
+
+  to { 
+    opacity: 1; 
+
+    transform: translateY(0); 
+  }
 }
 
 @keyframes scaleIn {
-  from { transform: scale(0.95); opacity: 0; }
-  to { transform: scale(1); opacity: 1; }
+  from { 
+    opacity: 0; 
+
+    transform: scale(0.95); 
+  }
+
+  to { 
+    opacity: 1; 
+
+    transform: scale(1); 
+  }
 }
 
-/* ========== NAVBAR (desktop) ========== */
+@keyframes spin {
+  0% { 
+    transform: rotate(0deg); 
+  }
 
-app-navbar {
-  position: fixed;
-  top: 0;
-  left: 80px;
-  width: calc(100% - 80px);
-  height: 90px;
-  z-index: 100;
+  100% { 
+    transform: rotate(360deg); 
+  }
+}
+
+:root {
+  --sidebar-width: 70px;
+  --navbar-height: 80px;
+}
+
+@media (width <= 768px) {
+  :root {
+    --sidebar-width: 50px;
+    --navbar-height: 80px;
+  }
+}
+
+:host {
+  --sidebar-width: 70px;
+  --navbar-height: 80px;
+  
+  @media (width <= 768px) {
+    --sidebar-width: 50px;
+    --navbar-height: 80px;
+  }
+}
+
+.navbar-container {
   animation: slideInFromTop 0.6s ease-out;
   animation-fill-mode: both;
+
+  box-sizing: border-box;
+  height: var(--navbar-height, 80px);
+  left: calc(var(--sidebar-width, 70px) + 10px);
+
+  position: fixed;
+  top: 10px;
+
+  width: calc(100% - var(--sidebar-width, 70px) - 20px);
+
+  z-index: 100;
+
+  &.loaded {
+    animation: slideInFromTop 0.6s ease-out;
+  }
 }
 
-/* ========== SIDEBAR (desktop) ========== */
-
-app-sidbar {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 80px;
-  height: 100vh;
-  z-index: 90;
-  transition: transform 0.3s ease;
+.sidebar-container {
   animation: slideInFromLeft 0.5s ease-out;
   animation-fill-mode: both;
-}
-
-/* ========== CONTENT ========== */
-
-app-body {
-  position: fixed;
-  top: 80px;
-  left: 80px;
-  width: calc(100% - 80px);
-  height: calc(100vh - 90px);
-  padding: 10px;
-  overflow-y: auto;
-  box-sizing: border-box;
-  animation: scaleIn 0.7s ease-out;
-  animation-fill-mode: both;
-  animation-delay: 0.2s;
-}
-
-/* ========== MOBILE MENU TOGGLE BUTTON ========== */
-
-.menu-toggle {
-  position: fixed;
-  top: 15px;
-  left: 15px;
-  z-index: 150;
-  background: transparent;
-  border: none;
-  font-size: 1.5rem;
-  color: #333;
-  cursor: pointer;
-  padding: 8px;
-  border-radius: 4px;
-  transition: background-color 0.2s ease;
-  animation: fadeIn 0.8s ease-out;
-}
-
-.menu-toggle:hover {
-  background-color: rgba(0, 0, 0, 0.05);
-}
-
-/* ========== OVERLAY (mobile) ========== */
-
-.overlay {
+  height: 100vh;
+  left: 0;
   position: fixed;
   top: 0;
-  left: 0;
-  width: 100vw;
-  height: 100vh;
-  background: rgba(0, 0, 0, 0.5);
-  z-index: 85;
-  backdrop-filter: blur(2px);
-  animation: fadeIn 0.3s ease-out;
+
+  transition: transform 0.3s ease;
+
+  width: var(--sidebar-width, 70px);
+
+  z-index: 90;
+
+  &.loaded {
+    animation: slideInFromLeft 0.5s ease-out;
+  }
 }
 
-/* ========== MOBILE BREAKPOINT ========== */
+.content-container {
+  animation: scaleIn 0.7s ease-out;
+  animation-delay: 0.2s;
+  animation-fill-mode: both;
 
-@media (max-width: 1024px) {
-  /* Sidebar off-screen by default */
-  app-sidbar {
-    transform: translateX(-100%);
-    will-change: transform;
-    transition: transform 0.3s ease-in-out;
+  box-sizing: border-box;
+  height: calc(100vh - var(--navbar-height, 80px));
+  left: calc(var(--sidebar-width, 70px) + 10px);
+  overflow: hidden auto;
+
+  position: fixed;
+  top: calc(var(--navbar-height, 80px));
+  width: calc(100% - var(--sidebar-width, 70px) - 20px);
+
+  &.loaded {
+    animation: scaleIn 0.7s ease-out 0.2s both;
+  }
+
+  & > * {
+    height: auto;
+  }
+}
+
+.menu-toggle {
+  align-items: center;
+
+  animation: fadeIn 0.8s ease-out;
+
+  background: transparent;
+  border: none;
+  border-radius: 4px;
+  color: #333;
+
+  cursor: pointer;
+
+  display: flex;
+
+  font-size: 1.5rem;
+  justify-content: center;
+  left: 20px;
+
+  padding: 8px;
+
+  position: fixed;
+  top: 20px;
+  transition: transform 0.4s ease-out, background-color 0.2s ease;
+  will-change: transform;
+  backface-visibility: hidden;
+
+  z-index: 150;
+
+  &:hover {
+    background-color: rgb(0 0 0 / 5%);
+
+    transform: scale(1.05);
+  }
+
+  &:focus {
+    box-shadow: 0 0 0 3px rgb(102 126 234 / 30%);
+
+    outline: none;
+  }
+
+  .sidebar-open & {
+    transform: translate3d(calc(var(--sidebar-width, 70px) + 6px), 0, 0);
+  }
+}
+
+.overlay {
+  backdrop-filter: blur(2px);
+
+  background: rgb(0 0 0 / 0%);
+
+  cursor: pointer;
+  height: 100vh;
+  left: 0;
+
+  position: fixed;
+  top: 0;
+
+  width: 100vw;
+
+  transition: background-color 0.4s ease-out;
+  will-change: background-color;
+
+  z-index: 85;
+
+  &:hover {
+    background: rgb(0 0 0 / 60%);
+  }
+}
+
+.body.sidebar-open .overlay {
+  background: rgb(0 0 0 / 50%);
+}
+
+.sr-only {
+  border: 0;
+  clip: rect(0, 0, 0, 0);
+  height: 1px;
+  margin: -1px;
+
+  overflow: hidden;
+
+  padding: 0;
+
+  position: absolute;
+  white-space: nowrap;
+
+  width: 1px;
+}
+
+@media (width <= 1024px) {
+  .sidebar-container {
+    animation: none;
+    height: 100vh;
+    left: 0;
+
     position: fixed;
     top: 0;
-    left: 0;
-    width: 80px;
-    height: 100vh;
+
+    transform: translate3d(-100%, 0, 0);
+    transition: transform 0.4s ease-out;
+
+    width: var(--sidebar-width, 70px);
+
+    will-change: transform;
+    backface-visibility: hidden;
+
     z-index: 90;
-    animation: none;
   }
 
-  /* Navbar spans full width initially */
-  app-navbar {
-    width: 100%;
-    left: 0;
-    height: 90px;
+  .navbar-container {
+    box-sizing: border-box;
+    height: var(--navbar-height, 80px);
+    left: 10px;
+    right: 10px;
+
+    transition: width 0.4s ease-out, left 0.4s ease-out;
+    will-change: width, left;
+    backface-visibility: hidden;
+
+    width: calc(100% - 20px);
   }
 
-  /* Content fills width */
-  app-body {
-    left: 0;
-    width: 100%;
-    padding: 12px;
+  .content-container {
+    left: 10px;
+    right: 10px;
+
+    padding: 0;
+
+    transition: width 0.4s ease-out, left 0.4s ease-out;
+    will-change: width, left;
+    backface-visibility: hidden;
+
+    width: calc(100% - 20px);
   }
 
-  /* When sidebar is open, slide everything over */
   .body.sidebar-open {
-    app-sidbar {
-      transform: translateX(0);
-      box-shadow: 0 0 20px rgba(0, 0, 0, 0.2);
-      animation: slideInFromLeft 0.3s ease-out;
+    .sidebar-container {
+      box-shadow: 0 0 20px rgb(0 0 0 / 20%);
+
+      transform: translate3d(0, 0, 0);
     }
 
-    app-navbar {
-      left: 80px;
-      transform: translateX(80px);
-      width: calc(100% - 80px);
-      transition: transform 0.3s ease, width 0.3s ease;
+    .navbar-container {
+      left: calc(var(--sidebar-width, 70px) + 10px);
+      right: 10px;
+
+      width: auto;
     }
 
-    app-body {
-      transition: transform 0.3s ease, width 0.3s ease;
-    }
+    .content-container {
+      left: calc(var(--sidebar-width, 70px) + 10px);
+      right: 10px;
 
-    .menu-toggle {
-      transform: translateX(86px);
-      transition: transform 0.3s ease;
+      width: auto;
     }
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .body,
+  .navbar-container,
+  .sidebar-container,
+  .content-container,
+  .menu-toggle,
+  .overlay {
+    animation: none;
+    transition: none;
+  }
+}
+
+@media (prefers-contrast: high) {
+  .overlay {
+    background: rgb(0 0 0 / 80%);
+  }
+
+  .menu-toggle {
+    background: #fff;
+
+    border: 2px solid #000;
+  }
+}
+
+@media print {
+  .body {
+    height: auto;
+
+    overflow: visible;
+
+    position: static;
+    width: auto;
+  }
+
+  .menu-toggle,
+  .overlay {
+    display: none;
+  }
+
+  .navbar-container,
+  .sidebar-container,
+  .content-container {
+    height: auto;
+
+    overflow: visible;
+
+    padding: 0;
+
+    position: static;
+
+    width: auto;
   }
 }

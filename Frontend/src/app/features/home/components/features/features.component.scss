@@ -83,6 +83,18 @@
   }
 }
 
+/* ================= ACCESSIBILITY ENHANCEMENTS ================= */
+
+@media (prefers-reduced-motion: reduce) {
+  .feature-card {
+    transition: none;
+    
+    &:hover {
+      transform: none;
+    }
+  }
+}
+
 /* ================= FEATURE ICON ================= */
 
 .feature-icon {

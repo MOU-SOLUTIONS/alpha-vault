@@ -1,12 +1,16 @@
-// ====================================================================
-//             Coded by Mohamed Dhaoui for Alpha Vault
-// ====================================================================
+/*
+  Alpha Vault Financial System
+  
+  @author Mohamed Dhaoui
+  @component ExpenseCategoryChartComponent
+  @description Expense category chart component for displaying expense data
+*/    
 
-import { Component, Input, ChangeDetectionStrategy, OnChanges, SimpleChanges } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { NgChartsModule } from 'ng2-charts';
-import { ChartData, ChartOptions } from 'chart.js';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, inject, Input, OnChanges, OnInit, SimpleChanges } from '@angular/core';
 import { Meta } from '@angular/platform-browser';
+import { ChartData, ChartOptions } from 'chart.js';
+import { NgChartsModule } from 'ng2-charts';
 
 @Component({
   selector: 'app-expense-category-chart',
@@ -16,15 +20,14 @@ import { Meta } from '@angular/platform-browser';
   styleUrls: ['./expense-category-chart.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class ExpenseCategoryChartComponent implements OnChanges {
-  @Input() categoryData: { [key: string]: number } = {};
+export class ExpenseCategoryChartComponent implements OnInit, OnChanges {
+  @Input() categoryData: Record<string, number> = {};
 
-  rawData: { [key: string]: number } = {};
-  isLoading = true;
+  rawData: Record<string, number> = {};
   hasData = false;
 
   pieChartLabels: string[] = [];
-  colorPalette = ['#3f51b5','#5c6bc0','#7986cb', '#9fa8da','#c5cae9','#e8eaf6', '#536dfe'];
+  colorPalette = ['#3f51b5', '#8b5cf6', '#a78bfa', '#c4b5fd', '#818cf8', '#93c5fd', '#bfdbfe'];
 
   pieChartData: ChartData<'pie'> = {
     labels: [],
@@ -34,6 +37,7 @@ export class ExpenseCategoryChartComponent implements OnChanges {
   pieChartOptions: ChartOptions<'pie'> = {
     responsive: true,
     maintainAspectRatio: false,
+    aspectRatio: 1,
     plugins: {
       legend: { display: false },
       tooltip: {
@@ -60,22 +64,29 @@ export class ExpenseCategoryChartComponent implements OnChanges {
     },
   };
 
-  constructor( private meta: Meta) {
+  private meta = inject(Meta);
+  private cdr = inject(ChangeDetectorRef);
+
+  constructor() {
     this.meta.addTags([
-      { name: 'description', content: 'Visual breakdown of this month’s expenses categorized by type in Alpha Vault.' },
+      { name: 'description', content: 'Visual breakdown of current month expenses categorized by category in Alpha Vault.' },
       { name: 'robots', content: 'index,follow' },
       { name: 'viewport', content: 'width=device-width, initial-scale=1' }
     ]);
+  }
+
+  ngOnInit(): void {
+    this.updateChart();
   }
 
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['categoryData']) {
       this.updateChart();
     }
+    this.cdr.markForCheck();
   }
 
   updateChart(): void {
-    this.isLoading = true;
     this.rawData = this.categoryData || {};
 
     const labels = Object.keys(this.rawData);
@@ -112,7 +123,7 @@ export class ExpenseCategoryChartComponent implements OnChanges {
       };
     }
 
-    this.isLoading = false;
+    this.cdr.markForCheck();
   }
 
   getBackgroundColor(i: number): string {

@@ -1,12 +1,27 @@
+/**
+ * ================================================================
+ *  Coded by Mohamed Dhaoui for Alpha Vault - Financial System
+ *  Entity: DebtHistory (payment ledger; BigDecimal-safe)
+ * ================================================================
+ */
 package com.alpha.alphavault.model;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
+import com.alpha.alphavault.enums.PaymentMethod;
 import jakarta.persistence.*;
 import lombok.*;
-import java.util.Date;
+
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "debt_history")
+@Table(
+    name = "debt_history",
+    indexes = {
+        @Index(name = "idx_debt_history_debt", columnList = "debt_id"),
+        @Index(name = "idx_debt_history_date", columnList = "payment_date")
+    }
+)
 @Getter
 @Setter
 @NoArgsConstructor
@@ -18,36 +33,38 @@ public class DebtHistory {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne
+    /** Optional for concurrency if you plan edits on payments. */
+    @Version
+    private Long version;
+
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "debt_id", nullable = false)
     private Debt debt;
 
-    @Column(nullable = false)
-    @JsonFormat(pattern = "MM/dd/yyyy")
-    private Date paymentDate;
+    @Column(name = "payment_date", nullable = false)
+    private LocalDate paymentDate;
 
-    @Column(nullable = false)
-    private double paymentAmount;
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 16)
+    private PaymentMethod paymentMethod;
 
+    @Column(nullable = false, precision = 19, scale = 4)
+    private BigDecimal paymentAmount;
+
+    /** Remaining balance after this payment is applied. */
+    @Column(nullable = false, precision = 19, scale = 4)
+    private BigDecimal remainingAfterPayment;
+
+    @Column(length = 500)
     private String note;
 
-    @Column(nullable = false)
-    private double remainingAfterPayment;
-
-    public DebtHistory(Double paymentAmount, String note) {
-    }
+    // Audit
+    @Column(nullable = false, updatable = false)
+    private LocalDateTime createdAt;
 
     @PrePersist
     protected void onCreate() {
-        // Record the date of payment and remaining balance when a new payment is made
-    }
-
-    @PreUpdate
-    protected void onUpdate() {
-        // Optionally, update timestamp on modification (if any).
-    }
-
-    public Object getRemainingAmount() {
-        return remainingAfterPayment;  // Returns the remaining amount stored after a payment
+        createdAt = LocalDateTime.now();
+        if (paymentDate == null) paymentDate = LocalDate.now();
     }
 }

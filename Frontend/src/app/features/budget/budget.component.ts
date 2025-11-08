@@ -1,124 +1,33 @@
-// ====================================================================
-//             Coded by Mohamed Dhaoui for Alpha Vault
-// ====================================================================
+/*
+  Alpha Vault Financial System
+  
+  @author Mohamed Dhaoui
+  @component BudgetComponent
+  @description Main budget dashboard component for managing budget allocations
+*/
 
-import { Component, OnInit, ChangeDetectionStrategy, ChangeDetectorRef, OnDestroy } from '@angular/core';
-import { ReactiveFormsModule } from '@angular/forms';
-import { CommonModule } from '@angular/common';
-import { Title, Meta } from '@angular/platform-browser';
-import { Subject, takeUntil } from 'rxjs';
+import { CommonModule, isPlatformBrowser } from '@angular/common';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, DestroyRef, inject, OnInit, PLATFORM_ID } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 
-import { Budget, BudgetCategory } from '../../models/budget.model';
-import { BudgetService } from '../../core/services/budget.service';
+import { SeoService } from '../../core/seo/seo.service';
 import { AuthService } from '../../core/services/auth.service';
-
-import { BudgetPeriodFilterComponent } from './budget-period-filter/budget-period-filter.component';
-import { BudgetProgressComponent } from './budget-progress/budget-progress.component';
-import { BudgetPieChartComponent } from './budget-pie-chart/budget-pie-chart.component';
+import { BudgetService } from '../../core/services/budget.service';
+import { LoggingService } from '../../core/services/logging.service';
+import { EXPENSE_CATEGORY_OPTIONS } from '../../enums/expense-category';
+import { Budget, BudgetCategory, ExpenseCategory } from '../../models/budget.model';
 import { BudgetBarChartComponent } from './budget-bar-chart/budget-bar-chart.component';
-import { BudgetTableComponent } from './budget-table/budget-table.component';
 import { BudgetFormComponent } from './budget-form/budget-form.component';
-import { OverlayContainerComponent } from '../../shared/components/overlay-container/overlay-container/overlay-container.component';
+import { BudgetPeriodFilterComponent } from './budget-period-filter/budget-period-filter.component';
+import { BudgetPieChartComponent } from './budget-pie-chart/budget-pie-chart.component';
+import { BudgetProgressComponent } from './budget-progress/budget-progress.component';
+import { BudgetTableComponent } from './budget-table/budget-table.component';
 
 @Component({
   standalone: true,
   selector: 'app-budget',
-  template: `
-    <!-- Section: Budget Dashboard -->
-    <main class="parent-container" role="main">
-      <h1 class="sr-only">Budget Dashboard</h1>
-      
-      <!-- Section: Period Filter -->
-      <section class="first-row" aria-labelledby="budgetFilter">
-        <h2 id="budgetFilter" class="sr-only">Budget Period Filter</h2>
-        <app-budget-period-filter
-          (dateChanged)="onDateChanged($event)"
-          (prev)="prevMonth()"
-          (next)="nextMonth()"
-        ></app-budget-period-filter>
-      </section>
-
-      <!-- Section: Progress Overview -->
-      <section class="second-row" aria-labelledby="budgetProgress">
-        <h2 id="budgetProgress" class="sr-only">Budget Progress</h2>
-        <app-budget-progress
-          [totalBudget]="budget?.totalBudget || 0"
-          [totalRemaining]="budget?.totalRemaining || 0"
-        ></app-budget-progress>
-      </section>
-
-      <!-- Section: Charts -->
-      <section class="third-row" aria-labelledby="budgetCharts">
-        <h2 id="budgetCharts" class="sr-only">Budget Charts</h2>
-        <div class="charts-container">
-          <div class="chart-item pie-chart">
-            <app-budget-pie-chart [chartData]="pieChartData"></app-budget-pie-chart>
-          </div>
-          <div class="chart-item bar-chart">
-            <app-budget-bar-chart [chartData]="barChartData"></app-budget-bar-chart>
-          </div>
-        </div>
-      </section>
-
-      <!-- Section: Budget Table -->
-      <section class="fourth-row" aria-labelledby="budgetTable">
-        <h2 id="budgetTable" class="sr-only">Budget Categories</h2>
-        <app-budget-table
-          [categories]="budget?.categories || []"
-          [onAdd]="onAddExpense.bind(this)"
-          [onModify]="onModifyExpense.bind(this)"
-          [onDelete]="onDeleteExpense.bind(this)"
-        ></app-budget-table>
-      </section>
-    </main>
-
-    <!-- Section: Add Overlay -->
-    <app-overlay-container
-      *ngIf="isAddOverlayVisible"
-      [title]="'Add Budget'"
-      [theme]="'add'"
-      (cancel)="closeOverlay()"
-    >
-      <app-budget-form
-        [mode]="'add'"
-        [alreadyUsedCategories]="usedCategories"
-        (formSubmit)="handleAddCategory($event)"
-        (cancel)="closeOverlay()"
-      />
-    </app-overlay-container>
-
-    <!-- Section: Modify Overlay -->
-    <app-overlay-container
-      *ngIf="isModifyOverlayVisible"
-      [title]="'Modify Budget'"
-      [theme]="'modify'"
-      (cancel)="closeOverlay()"
-    >
-      <app-budget-form
-        [mode]="'modify'"
-        [initialData]="selectedCategoryToModify"
-        [alreadyUsedCategories]="[]"
-        (formSubmit)="modifyBudget($event)"
-        (cancel)="closeOverlay()"
-      />
-    </app-overlay-container>
-
-    <!-- Section: Delete Confirmation Overlay -->
-    <app-overlay-container
-      *ngIf="isDeleteOverlayVisible"
-      [title]="'Confirm Deletion'"
-      [theme]="'delete'"
-      (cancel)="closeOverlay()"
-    >
-      <p class="delete-text">
-        Are you sure you want to delete this budget record?
-      </p>
-      <div class="delete-button-group d-flex justify-content-end gap-2">
-        <button class="btn btn-secondary" (click)="closeOverlay()">Cancel</button>
-        <button class="btn btn-danger" (click)="deleteBudget()">Delete</button>
-      </div>
-    </app-overlay-container>
-  `,
+  templateUrl: './budget.component.html',
   styleUrls: ['./budget.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
@@ -130,23 +39,30 @@ import { OverlayContainerComponent } from '../../shared/components/overlay-conta
     BudgetBarChartComponent,
     BudgetTableComponent,
     BudgetFormComponent,
-    OverlayContainerComponent,
   ],
 })
-export class BudgetComponent implements OnInit, OnDestroy {
-  private destroy$ = new Subject<void>();
+export class BudgetComponent implements OnInit {
+  private readonly destroyRef = inject(DestroyRef);
+  private readonly isBrowser = isPlatformBrowser(inject(PLATFORM_ID));
+  private readonly seo = inject(SeoService);
+  private readonly loggingService = inject(LoggingService);
 
   userId: number | null = null;
   budget: Budget | null = null;
   selectedCategoryToModify: BudgetCategory | null = null;
-  selectedCategoryToDelete: string | null = null;
 
-  isAddOverlayVisible = false;
-  isModifyOverlayVisible = false;
+  showAddForm = false;
+  isModifyMode = false;
+  budgetForm!: FormGroup;
+  
   isDeleteOverlayVisible = false;
+  selectedCategoryToDelete: ExpenseCategory | null = null;
+  budgetCategoryId = 0;
 
   selectedMonth: number = new Date().getMonth() + 1;
   selectedYear: number = new Date().getFullYear();
+  
+  expenseCategories = EXPENSE_CATEGORY_OPTIONS;
 
   barChartData: { category: string; allocated: number; remaining: number }[] = [];
   pieChartData: Record<string, number> = {};
@@ -155,99 +71,166 @@ export class BudgetComponent implements OnInit, OnDestroy {
     private budgetService: BudgetService,
     private authService: AuthService,
     private cdr: ChangeDetectorRef,
-    private title: Title,
-    private meta: Meta,
-  ) {
-    this.title.setTitle('Budget Dashboard | Alpha Vault');
-    this.meta.addTags([
-      { name: 'description', content: 'Manage and track your budget allocations with detailed analytics, charts, and comprehensive reporting tools.' },
-      { name: 'robots', content: 'index,follow' },
-      { name: 'viewport', content: 'width=device-width, initial-scale=1' },
-    ]);
-  }
+    private fb: FormBuilder
+  ) {}
 
   ngOnInit(): void {
-    this.authService.userId$.pipe(takeUntil(this.destroy$)).subscribe((id) => {
+    this.initializeForm();
+    this.setupSEO();
+    this.authService.userId$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((id) => {
       this.userId = id;
       this.loadBudget();
     });
   }
 
-  ngOnDestroy(): void {
-    this.destroy$.next();
-    this.destroy$.complete();
+  private setupSEO(): void {
+    const title = 'Budget Dashboard';
+    const description = 'Manage and track your budget allocations with detailed analytics, charts, and comprehensive reporting tools. Plan, monitor, and optimize your financial budget across all categories.';
+    
+    const monthNames = ['january', 'february', 'march', 'april', 'may', 'june', 
+                       'july', 'august', 'september', 'october', 'november', 'december'];
+    const monthName = monthNames[this.selectedMonth - 1];
+    const year = this.selectedYear;
+    const canonicalPath = `/budget/${monthName}-${year}`;
+    
+    let canonical = 'https://alphavault.app/budget';
+    if (this.isBrowser && typeof window !== 'undefined' && window.location) {
+      canonical = `${window.location.origin}${canonicalPath}`;
+    } else {
+      canonical = `https://alphavault.app${canonicalPath}`;
+    }
+
+    this.seo.set({
+      title,
+      description,
+      canonicalUrl: canonical,
+      keywords: ['budget', 'financial planning', 'expense tracking', 'budget management', 'analytics', 'Alpha Vault'],
+      og: {
+        title: 'Budget Dashboard - Manage Your Finances',
+        description,
+        image: '/assets/og/default.png',
+        type: 'website'
+      },
+      twitter: {
+        card: 'summary_large_image',
+        title: 'Budget Dashboard',
+        description
+      },
+      structuredData: {
+        '@context': 'https://schema.org',
+        '@type': 'WebPage',
+        name: title,
+        description,
+        url: canonical
+      }
+    });
   }
+
+  private initializeForm(): void {
+    this.budgetForm = this.fb.group({
+      category: [null, [Validators.required]],
+      allocated: [null, [Validators.required, Validators.min(0.01)]],
+    });
+  }
+
 
   get usedCategories(): string[] {
     return this.budget?.categories.map((c) => c.category) || [];
   }
 
   onAddExpense(): void {
-    this.isAddOverlayVisible = true;
+    this.isModifyMode = false;
+    this.selectedCategoryToModify = null;
+    this.showAddForm = true;
     this.cdr.markForCheck();
   }
 
-  onModifyExpense(category: BudgetCategory): void {
-    this.selectedCategoryToModify = { ...category };
-    this.isModifyOverlayVisible = true;
-    this.cdr.markForCheck();
+  onModifyExpense(budgetTableItem: any): void {
+    this.selectedCategoryToModify = {
+      id: 0,
+      budgetId: this.budget?.id || 0,
+      category: budgetTableItem.category,
+      allocated: budgetTableItem.allocated,
+      spentAmount: budgetTableItem.spent,
+      createdAt: '',
+      updatedAt: '',
+      remaining: budgetTableItem.remaining
+    };
+    
+    this.isModifyMode = true;
+    this.showAddForm = true;
+    
+    const mappedCategory = this.mapCategoryValue(budgetTableItem.category);
+      
+      this.budgetForm.reset();
+      this.budgetForm.patchValue({
+        category: mappedCategory,
+        allocated: budgetTableItem.allocated,
+      });
+      
+      this.cdr.markForCheck();
   }
 
-  onDeleteExpense(categoryName: string): void {
-    this.selectedCategoryToDelete = categoryName;
+  showDeleteConfirmation(categoryName: string): void {
+    this.selectedCategoryToDelete = categoryName as ExpenseCategory;
+    this.budgetCategoryId = 1;
     this.isDeleteOverlayVisible = true;
     this.cdr.markForCheck();
   }
 
-  handleAddCategory(newCategory: Partial<BudgetCategory>): void {
-    if (!this.userId || !newCategory.category || newCategory.allocated === undefined) return;
+  handleAddCategory(): void {
+    if (!this.userId || this.budgetForm.invalid) return;
+
+    const formData = this.budgetForm.value;
 
     this.budgetService
       .addOrUpdateCategory(
         this.userId,
         this.selectedMonth,
         this.selectedYear,
-        newCategory.category,
-        newCategory.allocated
+        formData.category,
+        formData.allocated,
+        false
       )
-      .pipe(takeUntil(this.destroy$))
+      .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
         next: () => {
           this.loadBudget();
-          this.closeOverlay();
+          this.closeAddForm();
         },
-        error: (err) => console.error('Add failed:', err),
+        error: (err: any) => {
+          // Error handling - notification service will show user-friendly message
+          // Detailed error logged via browser console in development only
+        },
       });
   }
 
-  modifyBudget(updated: Partial<BudgetCategory>): void {
-    if (!this.budget || !this.selectedCategoryToModify) return;
+  modifyBudget(): void {
+    if (!this.budget || !this.selectedCategoryToModify || this.budgetForm.invalid) return;
 
-    const index = this.budget.categories.findIndex(
-      (c) => c.category === this.selectedCategoryToModify?.category
-    );
+    const formData = this.budgetForm.value;
 
-    if (index !== -1) {
-      const current = this.budget.categories[index];
-      this.budget.categories[index] = {
-        ...current,
-        allocated: updated.allocated!,
-      };
-    }
-    this.updateBudgetBackend();
-    this.closeOverlay();
+    this.budgetService
+      .addOrUpdateCategory(
+        this.userId!,
+        this.selectedMonth,
+        this.selectedYear,
+        formData.category,
+        formData.allocated,
+        true
+      )
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: () => {
+          this.loadBudget();
+          this.closeAddForm();
+        },
+        error: (err: any) => {
+          this.loggingService.error('Modify failed:', err);
+        },
+      });
   }
 
-  deleteBudget(): void {
-    if (!this.budget || !this.selectedCategoryToDelete) return;
-
-    this.budget.categories = this.budget.categories.filter(
-      (c) => c.category !== this.selectedCategoryToDelete
-    );
-
-    this.updateBudgetBackend();
-    this.closeOverlay();
-  }
 
   nextMonth(): void {
     if (this.selectedMonth === 12) {
@@ -275,34 +258,95 @@ export class BudgetComponent implements OnInit, OnDestroy {
     this.loadBudget();
   }
 
-  closeOverlay(): void {
-    this.isAddOverlayVisible = false;
-    this.isModifyOverlayVisible = false;
-    this.isDeleteOverlayVisible = false;
-    this.selectedCategoryToModify = null;
-    this.selectedCategoryToDelete = null;
+  toggleAddForm(): void {
+    this.showAddForm = !this.showAddForm;
+    if (!this.showAddForm) {
+      this.isModifyMode = false;
+      this.selectedCategoryToModify = null;
+    }
     this.cdr.markForCheck();
   }
+
+  deleteBudget(): void {
+    if (!this.selectedCategoryToDelete || !this.userId) return;
+
+    const categoryToDelete = this.selectedCategoryToDelete.toUpperCase() as ExpenseCategory;
+
+    this.budgetService
+      .deleteCategory(this.userId, this.selectedYear, this.selectedMonth, categoryToDelete)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: () => {
+          this.loadBudget();
+          this.budgetForm.reset();
+          this.isDeleteOverlayVisible = false;
+          this.cdr.markForCheck();
+        },
+        error: (err: any) => {
+          this.loggingService.error('Error deleting budget category:', err);
+          this.isDeleteOverlayVisible = false;
+          this.cdr.markForCheck();
+        }
+      });
+  }
+
+  closeAddForm(): void {
+    this.showAddForm = false;
+    this.isModifyMode = false;
+    this.selectedCategoryToModify = null;
+    this.budgetForm.reset();
+    this.cdr.markForCheck();
+  }
+
+  closeOverlay(): void {
+    this.isDeleteOverlayVisible = false;
+    this.cdr.markForCheck();
+  }
+
+  private mapCategoryValue(category: string | null | undefined): string | null {
+    if (!category) return null;
+    
+    const categoryStr = String(category).toUpperCase();
+    
+    if (!this.expenseCategories || !Array.isArray(this.expenseCategories)) {
+      return String(category);
+    }
+    
+    const validCategories = this.expenseCategories.map(ec => ec.value);
+    const foundCategory = validCategories.find(validCategory => 
+      validCategory.toUpperCase() === categoryStr || 
+      validCategory === category
+    );
+    
+    return foundCategory || String(category);
+  }
+
 
   private loadBudget(): void {
     if (this.userId === null) return;
 
     this.budgetService
-      .getBudgetForMonth(this.selectedMonth, this.selectedYear)
-      .pipe(takeUntil(this.destroy$))
+      .getBudgetForMonth(this.selectedMonth, this.selectedYear, this.userId)
+      .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
-        next: (budget) => {
-          this.budget = budget;
-          this.updateChartData();
-          this.cdr.markForCheck();
-        },
-        error: (err) => {
-          if (err.status === 404) {
+        next: (budget: any) => {
+          // Handle null response (404) - budget doesn't exist yet for this month
+          if (budget === null) {
             this.resetChartData();
             this.budget = null;
           } else {
-            console.error('Unexpected error:', err);
+            this.budget = budget;
+            this.updateChartData();
           }
+          this.cdr.markForCheck();
+        },
+        error: (err: any) => {
+          // Only log unexpected errors (non-404)
+          if (err.status !== 404) {
+            this.loggingService.error('Unexpected error:', err);
+          }
+          this.resetChartData();
+          this.budget = null;
           this.cdr.markForCheck();
         },
       });
@@ -312,13 +356,13 @@ export class BudgetComponent implements OnInit, OnDestroy {
     if (!this.budget) return;
 
     this.budgetService.updateBudget(this.budget.id, this.budget)
-      .pipe(takeUntil(this.destroy$))
+      .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
         next: () => {
           this.loadBudget();
         },
         error: (err) => {
-          console.error('Failed to update budget', err);
+          this.loggingService.error('Failed to update budget', err);
         },
       });
   }
@@ -329,7 +373,7 @@ export class BudgetComponent implements OnInit, OnDestroy {
     this.barChartData = this.budget.categories.map((c) => ({
       category: c.category,
       allocated: c.allocated,
-      remaining: c.remaining,
+      remaining: c.remaining ?? 0,
     }));
 
     this.pieChartData = {};

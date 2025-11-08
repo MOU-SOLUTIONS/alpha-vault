@@ -1,10 +1,14 @@
-// ====================================================================
-//             Coded by Mohamed Dhaoui for Alpha Vault
-// ====================================================================
+/*
+  Alpha Vault Financial System
+  
+  @author Mohamed Dhaoui
+  @component IncomeFormComponent
+  @description Form component for adding and editing income records
+*/
 
-import { Component, Input, Output, EventEmitter, ChangeDetectionStrategy, OnInit } from '@angular/core';
+import { CommonModule, isPlatformBrowser } from '@angular/common';
+import { ChangeDetectionStrategy, Component, computed, EventEmitter, inject, Input, OnInit, Output, PLATFORM_ID } from '@angular/core';
 import { FormGroup, ReactiveFormsModule } from '@angular/forms';
-import { CommonModule } from '@angular/common';
 import { Meta } from '@angular/platform-browser';
 
 @Component({
@@ -38,15 +42,18 @@ import { Meta } from '@angular/platform-browser';
                   formControlName="source"
                   placeholder="Freelance, Salary..."
                   aria-required="true"
+                  (keydown.enter)="onFieldKeydown($event, 'source')"
+                  (keydown.escape)="onEscapeKey()"
                 />
-                <div class="input-icon" *ngIf="formGroup.get('source')?.valid">
-                  <i class="fa fa-check-circle"></i>
+                <div class="input-icon" *ngIf="sourceValid()">
+                  <i class="fa fa-check-circle" aria-hidden="true"></i>
                 </div>
               </div>
               <div
                 class="error"
-                *ngIf="formGroup.get('source')?.touched && formGroup.get('source')?.invalid"
+                *ngIf="sourceError()"
                 role="alert"
+                aria-live="polite"
               >
                 Please enter a source.
               </div>
@@ -56,7 +63,7 @@ import { Meta } from '@angular/platform-browser';
             <div class="form-group">
               <label for="incomeAmount-{{ mode }}" class="required-field">Amount</label>
               <div class="input-wrapper amount-wrapper">
-                <span class="currency-symbol">$</span>
+                <span class="currency-symbol" aria-hidden="true">$</span>
                 <input
                   id="incomeAmount-{{ mode }}"
                   type="number"
@@ -65,15 +72,18 @@ import { Meta } from '@angular/platform-browser';
                   aria-required="true"
                   step="0.01"
                   min="0"
+                  (keydown.enter)="onFieldKeydown($event, 'amount')"
+                  (keydown.escape)="onEscapeKey()"
                 />
-                <div class="input-icon" *ngIf="formGroup.get('amount')?.valid">
-                  <i class="fa fa-check-circle"></i>
+                <div class="input-icon" *ngIf="amountValid()">
+                  <i class="fa fa-check-circle" aria-hidden="true"></i>
                 </div>
               </div>
               <div
                 class="error"
-                *ngIf="formGroup.get('amount')?.touched && formGroup.get('amount')?.invalid"
+                *ngIf="amountError()"
                 role="alert"
+                aria-live="polite"
               >
                 Please enter a valid amount.
               </div>
@@ -92,23 +102,26 @@ import { Meta } from '@angular/platform-browser';
                   formControlName="paymentMethod"
                   class="form-control"
                   aria-required="true"
+                  (keydown.enter)="onFieldKeydown($event, 'paymentMethod')"
+                  (keydown.escape)="onEscapeKey()"
                 >
                   <option [value]="null" disabled hidden>Select a method</option>
                   <option *ngFor="let method of paymentMethods; trackBy: trackByMethod" [value]="method.value">
                     {{ method.label }}
                   </option>
                 </select>
-                <div class="select-arrow">
+                <div class="select-arrow" aria-hidden="true">
                   <i class="fa fa-chevron-down"></i>
                 </div>
-                <div class="input-icon" *ngIf="formGroup.get('paymentMethod')?.valid">
-                  <i class="fa fa-check-circle"></i>
+                <div class="input-icon" *ngIf="paymentMethodValid()">
+                  <i class="fa fa-check-circle" aria-hidden="true"></i>
                 </div>
               </div>
               <div
                 class="error"
-                *ngIf="formGroup.get('paymentMethod')?.touched && formGroup.get('paymentMethod')?.invalid"
+                *ngIf="paymentMethodError()"
                 role="alert"
+                aria-live="polite"
               >
                 Please select a method.
               </div>
@@ -123,15 +136,18 @@ import { Meta } from '@angular/platform-browser';
                   type="date"
                   formControlName="date"
                   aria-required="true"
+                  (keydown.enter)="onFieldKeydown($event, 'date')"
+                  (keydown.escape)="onEscapeKey()"
                 />
-                <div class="input-icon" *ngIf="formGroup.get('date')?.valid">
-                  <i class="fa fa-check-circle"></i>
+                <div class="input-icon" *ngIf="dateValid()">
+                  <i class="fa fa-check-circle" aria-hidden="true"></i>
                 </div>
               </div>
               <div
                 class="error"
-                *ngIf="formGroup.get('date')?.touched && formGroup.get('date')?.invalid"
+                *ngIf="dateError()"
                 role="alert"
+                aria-live="polite"
               >
                 Please select a date.
               </div>
@@ -150,9 +166,11 @@ import { Meta } from '@angular/platform-browser';
                   rows="3"
                   formControlName="description"
                   placeholder="Optional note about this income..."
+                  (keydown.enter)="onFieldKeydown($event, 'description')"
+                  (keydown.escape)="onEscapeKey()"
                 ></textarea>
-                <div class="input-icon" *ngIf="formGroup.get('description')?.value">
-                  <i class="fa fa-check-circle"></i>
+                <div class="input-icon" *ngIf="descriptionHasValue()">
+                  <i class="fa fa-check-circle" aria-hidden="true"></i>
                 </div>
               </div>
             </div>
@@ -167,8 +185,10 @@ import { Meta } from '@angular/platform-browser';
               id="isReceived-{{ mode }}"
               class="form-check-input"
               formControlName="isReceived"
+              (keydown.enter)="onFieldKeydown($event, 'isReceived')"
+              (keydown.space)="onFieldKeydown($event, 'isReceived')"
             />
-            <span class="checkmark"></span>
+            <span class="checkmark" aria-hidden="true"></span>
           </div>
           <label for="isReceived-{{ mode }}" class="form-check-label">
             Income Received
@@ -177,16 +197,24 @@ import { Meta } from '@angular/platform-browser';
 
         <!-- Section: Action Buttons -->
         <div class="d-flex justify-content-end gap-3 mt-4">
-          <button class="btn btn-secondary" type="button" (click)="cancel.emit()">
-            <i class="fa fa-times me-2"></i>Cancel
+          <button 
+            class="btn btn-secondary" 
+            type="button" 
+            (click)="cancel.emit()"
+            (keydown.enter)="cancel.emit()"
+            (keydown.space)="cancel.emit()"
+            aria-label="Cancel form submission"
+          >
+            <i class="fa fa-times me-2" aria-hidden="true"></i>Cancel
           </button>
           <button
             class="btn"
             [ngClass]="mode === 'add' ? 'btn-add' : 'btn-modify'"
             type="submit"
             [disabled]="formGroup.invalid"
+            [attr.aria-label]="mode === 'add' ? 'Add income record' : 'Modify income record'"
           >
-            <i class="fa" [ngClass]="mode === 'add' ? 'fa-plus' : 'fa-save'"></i>
+            <i class="fa" [ngClass]="mode === 'add' ? 'fa-plus' : 'fa-save'" aria-hidden="true"></i>
             <span class="ms-2">{{ mode === 'add' ? 'Add' : 'Modify' }}</span>
           </button>
         </div>
@@ -203,6 +231,28 @@ export class IncomeFormComponent implements OnInit {
   @Input() paymentMethods: { label: string; value: string }[] = [];
   @Output() formSubmit = new EventEmitter<void>();
   @Output() cancel = new EventEmitter<void>();
+
+  // SSR guard for browser-only APIs
+  private readonly isBrowser = isPlatformBrowser(inject(PLATFORM_ID));
+
+  // Computed validation states
+  readonly sourceValid = computed(() => this.formGroup.get('source')?.valid ?? false);
+  readonly sourceError = computed(() => 
+    this.formGroup.get('source')?.touched && this.formGroup.get('source')?.invalid
+  );
+  readonly amountValid = computed(() => this.formGroup.get('amount')?.valid ?? false);
+  readonly amountError = computed(() => 
+    this.formGroup.get('amount')?.touched && this.formGroup.get('amount')?.invalid
+  );
+  readonly paymentMethodValid = computed(() => this.formGroup.get('paymentMethod')?.valid ?? false);
+  readonly paymentMethodError = computed(() => 
+    this.formGroup.get('paymentMethod')?.touched && this.formGroup.get('paymentMethod')?.invalid
+  );
+  readonly dateValid = computed(() => this.formGroup.get('date')?.valid ?? false);
+  readonly dateError = computed(() => 
+    this.formGroup.get('date')?.touched && this.formGroup.get('date')?.invalid
+  );
+  readonly descriptionHasValue = computed(() => !!this.formGroup.get('description')?.value);
 
   constructor(private meta: Meta) {
     this.meta.addTags([
@@ -230,7 +280,38 @@ export class IncomeFormComponent implements OnInit {
     }
   }
 
-  trackByMethod(index: number, item: { label: string; value: string }) {
-    return item.value;
+  onFieldKeydown(event: Event, fieldName: string): void {
+    if (event instanceof KeyboardEvent && event.key === 'Enter') {
+      event.preventDefault();
+      // Move to next field or submit
+      this.focusNextField(fieldName);
+    }
   }
+
+  onEscapeKey(): void {
+    this.cancel.emit();
+  }
+
+  /**
+   * Focuses the next form field for keyboard navigation
+   * Uses document.getElementById for form focus management (acceptable with SSR guard)
+   */
+  private focusNextField(currentField: string): void {
+    if (!this.isBrowser) return; // SSR guard
+    
+    const fieldOrder = ['source', 'amount', 'paymentMethod', 'date', 'description', 'isReceived'];
+    const currentIndex = fieldOrder.indexOf(currentField);
+    const nextField = fieldOrder[currentIndex + 1];
+    
+    if (nextField) {
+      const nextElement = document.getElementById(`income${nextField.charAt(0).toUpperCase() + nextField.slice(1)}-${this.mode}`);
+      nextElement?.focus();
+    } else {
+      // Focus submit button
+      const submitButton = document.querySelector('button[type="submit"]') as HTMLButtonElement;
+      submitButton?.focus();
+    }
+  }
+
+  trackByMethod = (index: number, item: { label: string; value: string }) => item.value;
 }

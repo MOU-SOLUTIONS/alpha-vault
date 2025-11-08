@@ -1,46 +1,71 @@
+/**
+ * ================================================================
+ *  Coded by Mohamed Dhaoui for Alpha Vault - Financial System
+ *  Mapper: Expense <-> DTOs
+ * ================================================================
+ */
 package com.alpha.alphavault.mapper;
 
-import com.alpha.alphavault.dto.ExpenseRequestDTO;
-import com.alpha.alphavault.dto.ExpenseResponseDTO;
+import com.alpha.alphavault.dto.expense.ExpenseRequestDTO;
+import com.alpha.alphavault.dto.expense.ExpenseResponseDTO;
 import com.alpha.alphavault.model.Expense;
 import com.alpha.alphavault.model.User;
-import com.alpha.alphavault.service.UserService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 @Component
 public class ExpenseMapper {
 
-    private final UserService userService;
+    // ========== DTO -> Entity (Create) ==========
+    public Expense toEntity(ExpenseRequestDTO dto) {
+        if (dto == null) return null;
 
-    @Autowired
-    public ExpenseMapper(UserService userService) {
-        this.userService = userService;
+        Expense expense = new Expense();
+        expense.setUser(new User(dto.userId()));
+        expense.setCategory(dto.category());
+        expense.setAmount(dto.amount());
+        expense.setCurrency(upper(dto.currency()));
+        expense.setExpenseDate(dto.date());
+        expense.setPaymentMethod(dto.paymentMethod());
+        expense.setDescription(trim(dto.description()));
+        return expense;
     }
 
-    // Convert ExpenseRequestDTO to Expense (Entity)
-    public Expense toEntity(ExpenseRequestDTO expenseRequestDTO) {
-        User user = userService.getUserById(expenseRequestDTO.getUserId());
-        return Expense.builder()
-                .user(user)
-                .category(expenseRequestDTO.getCategory())
-                .amount(expenseRequestDTO.getAmount())
-                .date(expenseRequestDTO.getDate())
-                .paymentMethod(expenseRequestDTO.getPaymentMethod())
-                .description(expenseRequestDTO.getDescription())
-                .build();
+    // ========== DTO -> Entity (Update mutable fields) ==========
+    public void updateEntity(Expense target, ExpenseRequestDTO dto) {
+        if (target == null || dto == null) return;
+
+        if (dto.category() != null)        target.setCategory(dto.category());
+        if (dto.amount() != null)          target.setAmount(dto.amount());
+        if (dto.currency() != null)        target.setCurrency(upper(dto.currency()));
+        if (dto.date() != null)            target.setExpenseDate(dto.date());
+        if (dto.paymentMethod() != null)   target.setPaymentMethod(dto.paymentMethod());
+        if (dto.description() != null)     target.setDescription(trim(dto.description()));
+        // userId is not updatable here; change ownership via dedicated service if needed
     }
 
-    // Convert Expense (Entity) to ExpenseResponseDTO
-    public ExpenseResponseDTO fromEntity(Expense expense) {
-        return ExpenseResponseDTO.builder()
-                .id(expense.getId())
-                .userId(expense.getUser().getId())
-                .category(expense.getCategory())
-                .amount(expense.getAmount())
-                .date(expense.getDate())
-                .paymentMethod(expense.getPaymentMethod())
-                .description(expense.getDescription())
-                .build();
+    // ========== Entity -> DTO ==========
+    public ExpenseResponseDTO toResponse(Expense expense) {
+        if (expense == null) return null;
+
+        return new ExpenseResponseDTO(
+            expense.getId(),
+            expense.getUser() != null ? expense.getUser().getId() : null,
+            expense.getCategory(),
+            expense.getAmount(),
+            expense.getCurrency(),
+            expense.getExpenseDate(),
+            expense.getPaymentMethod(),
+            expense.getDescription(),
+            expense.getCreatedAt(),
+            expense.getUpdatedAt()
+        );
     }
+
+    // ========== helpers ==========
+    private String trim(String s) {
+        if (s == null) return null;
+        String t = s.trim();
+        return t.isEmpty() ? null : t;
+    }
+    private String upper(String s) { return s == null ? null : s.trim().toUpperCase(); }
 }

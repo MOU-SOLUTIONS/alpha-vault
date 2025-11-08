@@ -1,16 +1,21 @@
-/* ===================================================================
-   Coded by Mohamed Dhaoui for Alpha Vault
-================================================================== */
+/*
+  Alpha Vault Financial System
+  
+  @author Mohamed Dhaoui
+  @component DebtEvaluationComponent
+  @description Main debt dashboard component styles for managing debt health score and recommendations
+*/
 
 :host {
   --primary-color: #EC4899;
-  --primary-light: #F472B6;
-  --primary-dark: #DB2777;
-  --accent-color: #F59E0B;
+  --primary-light: rgba(236, 72, 153, 0.1);
+  --primary-dark: #BE185D;
+  --accent-color: #8B5CF6;
   --success-color: #10B981;
-  --danger-color: #EF4444;
   --warning-color: #F59E0B;
+  --danger-color: #EF4444;
   --info-color: #3B82F6;
+  
   --white: #FFFFFF;
   --gray-50: #F9FAFB;
   --gray-100: #F3F4F6;
@@ -23,40 +28,60 @@
   --gray-800: #1F2937;
   --gray-900: #111827;
   
-  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-  --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  --text-color: var(--gray-700);
+  --text-color-dark: var(--gray-900);
+  --text-light: var(--gray-600);
+  --text-lighter: var(--gray-500);
+  --background-color: var(--white);
+  --background-alt: var(--gray-50);
+  --border-color: var(--gray-200);
+  --border-color-light: var(--gray-100);
+  
+  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.08);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.12);
+  --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.16);
+  --shadow-xl: 0 12px 32px rgba(0, 0, 0, 0.2);
   --shadow-2xl: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
   
-  --border-radius-sm: 0.375rem;
-  --border-radius-md: 0.5rem;
-  --border-radius-lg: 0.75rem;
+  --border-radius: 12px;
+  --border-radius-sm: 8px;
+  --border-radius-md: 10px;
+  --border-radius-lg: 16px;
   --border-radius-xl: 1rem;
   --border-radius-2xl: 1.5rem;
   
-  --transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
-  --transition-normal: 250ms cubic-bezier(0.4, 0, 0.2, 1);
-  --transition-slow: 350ms cubic-bezier(0.4, 0, 0.2, 1);
-  --transition-bounce: 400ms cubic-bezier(0.68, -0.55, 0.265, 1.55);
+  --transition-fast: 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-normal: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-slow: 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-bounce: 600ms cubic-bezier(0.68, -0.55, 0.265, 1.55);
+  --transition-elastic: 800ms cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  
+  --spacing-xs: 4px;
+  --spacing-sm: 8px;
+  --spacing-md: 16px;
+  --spacing-lg: 24px;
+  --spacing-xl: 32px;
+  
+  font-family: 'Inter', 'Segoe UI', 'Roboto', -apple-system, BlinkMacSystemFont, sans-serif;
 }
 
 .debt-evaluation-container {
-  background: linear-gradient(135deg, var(--white) 0%, var(--gray-50) 100%);
-  border-radius: var(--border-radius-2xl);
-  padding: 1.5rem;
-  box-shadow: var(--shadow-lg);
+  background: var(--background-color);
+  border-radius: var(--border-radius);
+  padding: var(--spacing-md);
+  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--border-color);
   height: 100%;
-  border: 1px solid var(--gray-200);
-  transition: all var(--transition-normal);
+  transition: all var(--transition-fast);
   overflow: hidden;
   position: relative;
   display: flex;
   flex-direction: column;
 
   &:hover {
-    box-shadow: var(--shadow-xl);
-    transform: translateY(-2px);
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-md);
+    border-color: rgba(236, 72, 153, 0.3);
   }
 
   &::before {
@@ -65,114 +90,115 @@
     top: 0;
     left: 0;
     right: 0;
-    height: 4px;
-    background: linear-gradient(90deg, var(--primary-color), var(--accent-color), var(--success-color));
-    border-radius: var(--border-radius-2xl) var(--border-radius-2xl) 0 0;
+    height: 2px;
+    background: linear-gradient(90deg, var(--primary-color), var(--accent-color));
+    border-radius: var(--border-radius) var(--border-radius) 0 0;
+    opacity: 0.8;
   }
 
   .evaluation-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 1.5rem;
-    padding-bottom: 1rem;
-    border-bottom: 1px solid var(--gray-200);
+    margin-bottom: var(--spacing-md);
+    padding-bottom: var(--spacing-sm);
+    border-bottom: 1px solid var(--border-color);
     flex-shrink: 0;
 
     .header-content {
       display: flex;
       align-items: center;
-      gap: 1rem;
+      gap: var(--spacing-sm);
 
       .header-icon {
-        width: 48px;
-        height: 48px;
-        border-radius: var(--border-radius-lg);
-        background: linear-gradient(135deg, var(--primary-color), var(--primary-light));
+        width: 40px;
+        height: 40px;
+        border-radius: var(--border-radius-sm);
+        background: rgba(236, 72, 153, 0.06);
+        border: 1px solid rgba(236, 72, 153, 0.18);
         display: flex;
         align-items: center;
         justify-content: center;
-        color: var(--white);
-        box-shadow: 0 4px 12px rgba(236, 72, 153, 0.3);
-        transition: all var(--transition-bounce);
+        color: var(--primary-color);
+        transition: all var(--transition-fast);
+        flex-shrink: 0;
 
         &:hover {
-          transform: scale(1.1) rotate(5deg);
+          background: rgba(236, 72, 153, 0.1);
+          border-color: rgba(236, 72, 153, 0.3);
+          transform: scale(1.05);
         }
 
         svg {
-          width: 24px;
-          height: 24px;
-          filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.1));
+          width: 20px;
+          height: 20px;
         }
       }
 
       .header-text {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        
         .evaluation-title {
-          margin: 0 0 0.25rem 0;
-          color: var(--gray-900);
-          font-size: 1.5rem;
+          margin: 0 0 2px 0;
+          font-size: 1rem;
           font-weight: 700;
+          color: var(--text-color-dark);
           line-height: 1.2;
-          letter-spacing: -0.025em;
-        }
-
-        .evaluation-subtitle {
-          margin: 0;
-          color: var(--gray-600);
-          font-size: 0.875rem;
-          font-weight: 500;
+          letter-spacing: -0.01em;
         }
       }
     }
 
     .health-score {
       display: flex;
-      flex-direction: column;
+      flex-direction: row;
       align-items: center;
-      padding: 1rem;
-      border-radius: var(--border-radius-lg);
-      min-width: 80px;
-      transition: all var(--transition-normal);
+      gap: var(--spacing-sm);
+      padding: var(--spacing-sm) var(--spacing-md);
+      border-radius: var(--border-radius-sm);
+      min-width: auto;
+      transition: all var(--transition-fast);
 
       &.excellent {
-        background: linear-gradient(135deg, var(--success-color), #34D399);
-        color: var(--white);
-        box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+        background: rgba(16, 185, 129, 0.1);
+        border: 1px solid rgba(16, 185, 129, 0.3);
+        color: var(--success-color);
       }
 
       &.good {
-        background: linear-gradient(135deg, var(--info-color), #60A5FA);
-        color: var(--white);
-        box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+        background: rgba(59, 130, 246, 0.1);
+        border: 1px solid rgba(59, 130, 246, 0.3);
+        color: var(--info-color);
       }
 
       &.fair {
-        background: linear-gradient(135deg, var(--warning-color), #FBBF24);
-        color: var(--white);
-        box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3);
+        background: rgba(245, 158, 11, 0.1);
+        border: 1px solid rgba(245, 158, 11, 0.3);
+        color: var(--warning-color);
       }
 
       &.poor {
-        background: linear-gradient(135deg, var(--danger-color), #F87171);
-        color: var(--white);
-        box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+        background: rgba(239, 68, 68, 0.1);
+        border: 1px solid rgba(239, 68, 68, 0.3);
+        color: var(--danger-color);
       }
 
       .score-circle {
-        width: 48px;
-        height: 48px;
+        width: 36px;
+        height: 36px;
         border-radius: 50%;
-        background: rgba(255, 255, 255, 0.2);
+        background: var(--white);
         display: flex;
         align-items: center;
         justify-content: center;
-        margin-bottom: 0.5rem;
-        backdrop-filter: blur(10px);
-        border: 2px solid rgba(255, 255, 255, 0.3);
+        margin: 0;
+        border: 1px solid currentColor;
+        flex-shrink: 0;
 
         .score {
-          font-size: 1.25rem;
+          font-size: 0.875rem;
           font-weight: 700;
           line-height: 1;
         }
@@ -180,10 +206,10 @@
 
       .label {
         font-size: 0.75rem;
-        font-weight: 600;
+        font-weight: 500;
         text-transform: uppercase;
         letter-spacing: 0.05em;
-        text-align: center;
+        white-space: nowrap;
       }
     }
   }
@@ -191,20 +217,21 @@
   .evaluation-grid {
     display: grid;
     grid-template-columns: 1fr;
-    gap: 1.25rem;
+    gap: var(--spacing-lg);
     flex: 1;
     width: 100%;
 
     @media (min-width: 768px) {
-      grid-template-columns: repeat(3, 1fr);
+      grid-template-columns: repeat(2, 1fr);
+      gap: var(--spacing-xl);
     }
 
     .evaluation-card {
-      background: var(--white);
-      border-radius: var(--border-radius-lg);
-      padding: 1.25rem;
-      border: 1px solid var(--gray-200);
-      transition: all var(--transition-normal);
+      background: var(--background-alt);
+      border-radius: var(--border-radius-sm);
+      padding: var(--spacing-md);
+      border: 1px solid var(--border-color);
+      transition: all var(--transition-fast);
       box-shadow: var(--shadow-sm);
       position: relative;
       overflow: hidden;
@@ -213,9 +240,10 @@
       box-sizing: border-box;
 
       &:hover {
+        background: var(--white);
         transform: translateY(-2px);
         box-shadow: var(--shadow-md);
-        border-color: var(--primary-color);
+        border-color: rgba(236, 72, 153, 0.3);
       }
 
       &::before {
@@ -224,63 +252,46 @@
         top: 0;
         left: 0;
         right: 0;
-        height: 3px;
+        height: 2px;
         background: linear-gradient(90deg, var(--primary-color), var(--accent-color));
-        transform: scaleX(0);
-        transition: transform var(--transition-normal);
-        transform-origin: left;
+        opacity: 0;
+        transition: opacity var(--transition-fast);
       }
 
       &:hover::before {
-        transform: scaleX(1);
+        opacity: 1;
       }
 
       &.recommendations {
         grid-column: 1 / -1;
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
-        color: var(--white);
-        box-shadow: var(--shadow-xl);
+        background: rgba(236, 72, 153, 0.06);
+        border: 1px solid rgba(236, 72, 153, 0.18);
+        color: var(--text-color-dark);
         position: relative;
         overflow: hidden;
         width: 100%;
         box-sizing: border-box;
-
-        &::before {
-          content: '';
-          position: absolute;
-          top: -50%;
-          right: -50%;
-          width: 200%;
-          height: 200%;
-          background: radial-gradient(circle, rgba(255, 255, 255, 0.1) 0%, transparent 70%);
-          animation: pulse 4s ease-in-out infinite;
+        margin-top: var(--spacing-md);
+        padding: var(--spacing-lg);
+        
+        @media (min-width: 768px) {
+          grid-column: 1 / -1;
+          margin-top: var(--spacing-lg);
         }
 
-        &::after {
-          content: '';
-          position: absolute;
-          top: 0;
-          left: 0;
-          right: 0;
-          bottom: 0;
-          background: linear-gradient(135deg, transparent 0%, rgba(255, 255, 255, 0.05) 100%);
-          opacity: 0;
-          transition: opacity var(--transition-normal);
-        }
-
-        &:hover::after {
-          opacity: 1;
+        &:hover {
+          background: rgba(236, 72, 153, 0.1);
+          border-color: rgba(236, 72, 153, 0.3);
         }
 
         .card-header .card-title,
         .card-header svg {
-          color: var(--white);
+          color: var(--text-color-dark);
         }
 
         .card-header .card-icon {
-          background: rgba(255, 255, 255, 0.2);
-          backdrop-filter: blur(10px);
-          border: 1px solid rgba(255, 255, 255, 0.3);
+          background: rgba(236, 72, 153, 0.1);
+          border: 1px solid rgba(236, 72, 153, 0.2);
         }
 
         .recommendations-list {
@@ -288,74 +299,65 @@
           padding: 0;
           margin: 0;
           position: relative;
-          z-index: 1;
           width: 100%;
+          gap: var(--spacing-md);
+          display: flex;
+          flex-direction: column;
 
           li {
-            padding: 1rem;
-            margin-bottom: 0.75rem;
-            border-radius: var(--border-radius-lg);
-            background: rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            transition: all var(--transition-normal);
+            padding: var(--spacing-md);
+            border-radius: var(--border-radius-sm);
+            background: var(--white);
+            border: 1px solid var(--border-color);
+            transition: all var(--transition-fast);
             position: relative;
             overflow: hidden;
             width: 100%;
             box-sizing: border-box;
-
-            &:last-child {
-              margin-bottom: 0;
-            }
 
             &::before {
               content: '';
               position: absolute;
               top: 0;
               left: 0;
-              width: 4px;
+              width: 3px;
               height: 100%;
               background: linear-gradient(180deg, var(--primary-color), var(--accent-color));
-              transform: scaleY(0);
-              transition: transform var(--transition-normal);
-              transform-origin: bottom;
+              opacity: 0;
+              transition: opacity var(--transition-fast);
             }
 
             &:hover {
-              background: rgba(255, 255, 255, 0.15);
-              border-color: rgba(255, 255, 255, 0.4);
-              transform: translateX(8px);
-              box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+              background: var(--gray-50);
+              border-color: rgba(236, 72, 153, 0.3);
+              transform: translateX(2px);
 
               &::before {
-                transform: scaleY(1);
+                opacity: 1;
               }
             }
 
             &.high {
-              border-left: 4px solid var(--danger-color);
-              background: linear-gradient(135deg, rgba(239, 68, 68, 0.1) 0%, rgba(255, 255, 255, 0.1) 100%);
+              border-left-color: var(--danger-color);
 
-              &:hover {
-                background: linear-gradient(135deg, rgba(239, 68, 68, 0.15) 0%, rgba(255, 255, 255, 0.15) 100%);
+              &::before {
+                background: linear-gradient(180deg, var(--danger-color), #F87171);
               }
             }
 
             &.medium {
-              border-left: 4px solid var(--warning-color);
-              background: linear-gradient(135deg, rgba(245, 158, 11, 0.1) 0%, rgba(255, 255, 255, 0.1) 100%);
+              border-left-color: var(--warning-color);
 
-              &:hover {
-                background: linear-gradient(135deg, rgba(245, 158, 11, 0.15) 0%, rgba(255, 255, 255, 0.15) 100%);
+              &::before {
+                background: linear-gradient(180deg, var(--warning-color), #FBBF24);
               }
             }
 
             &.low {
-              border-left: 4px solid var(--success-color);
-              background: linear-gradient(135deg, rgba(16, 185, 129, 0.1) 0%, rgba(255, 255, 255, 0.1) 100%);
+              border-left-color: var(--success-color);
 
-              &:hover {
-                background: linear-gradient(135deg, rgba(16, 185, 129, 0.15) 0%, rgba(255, 255, 255, 0.15) 100%);
+              &::before {
+                background: linear-gradient(180deg, var(--success-color), #34D399);
               }
             }
 
@@ -363,68 +365,45 @@
               display: flex;
               justify-content: space-between;
               align-items: center;
-              gap: 1rem;
+              gap: var(--spacing-sm);
               width: 100%;
 
               .recommendation-text {
                 flex: 1;
-                font-size: 0.875rem;
-                line-height: 1.5;
+                font-size: 0.8125rem;
+                line-height: 1.4;
                 font-weight: 500;
-                text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+                color: var(--text-color);
                 min-width: 0;
               }
 
               .priority-badge {
-                padding: 0.5rem 1rem;
-                border-radius: 1.5rem;
-                font-size: 0.75rem;
-                font-weight: 700;
+                padding: var(--spacing-xs) var(--spacing-sm);
+                border-radius: var(--border-radius-sm);
+                font-size: 0.6875rem;
+                font-weight: 600;
                 text-transform: uppercase;
                 letter-spacing: 0.05em;
                 white-space: nowrap;
-                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-                transition: all var(--transition-bounce);
-                position: relative;
-                overflow: hidden;
+                transition: all var(--transition-fast);
                 flex-shrink: 0;
 
-                &::before {
-                  content: '';
-                  position: absolute;
-                  top: 0;
-                  left: -100%;
-                  width: 100%;
-                  height: 100%;
-                  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
-                  transition: left var(--transition-slow);
-                }
-
-                &:hover {
-                  transform: translateY(-2px);
-                  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25);
-
-                  &::before {
-                    left: 100%;
-                  }
-                }
-
                 &.high {
-                  background: linear-gradient(135deg, var(--danger-color), #F87171);
-                  color: var(--white);
-                  border: 1px solid rgba(255, 255, 255, 0.2);
+                  background: rgba(239, 68, 68, 0.1);
+                  color: var(--danger-color);
+                  border: 1px solid rgba(239, 68, 68, 0.2);
                 }
 
                 &.medium {
-                  background: linear-gradient(135deg, var(--warning-color), #FBBF24);
-                  color: var(--white);
-                  border: 1px solid rgba(255, 255, 255, 0.2);
+                  background: rgba(245, 158, 11, 0.1);
+                  color: var(--warning-color);
+                  border: 1px solid rgba(245, 158, 11, 0.2);
                 }
 
                 &.low {
-                  background: linear-gradient(135deg, var(--success-color), #34D399);
-                  color: var(--white);
-                  border: 1px solid rgba(255, 255, 255, 0.2);
+                  background: rgba(16, 185, 129, 0.1);
+                  color: var(--success-color);
+                  border: 1px solid rgba(16, 185, 129, 0.2);
                 }
               }
             }
@@ -435,37 +414,40 @@
       .card-header {
         display: flex;
         align-items: center;
-        gap: 0.75rem;
-        margin-bottom: 1rem;
+        gap: var(--spacing-sm);
+        margin-bottom: var(--spacing-md);
 
         .card-icon {
           width: 40px;
           height: 40px;
-          background: var(--gray-100);
-          border-radius: var(--border-radius-md);
+          background: rgba(236, 72, 153, 0.06);
+          border: 1px solid rgba(236, 72, 153, 0.18);
+          border-radius: var(--border-radius-sm);
           display: flex;
           align-items: center;
           justify-content: center;
           color: var(--primary-color);
-          transition: all var(--transition-bounce);
+          transition: all var(--transition-fast);
 
           &:hover {
-            transform: scale(1.1) rotate(5deg);
+            background: rgba(236, 72, 153, 0.1);
+            border-color: rgba(236, 72, 153, 0.3);
+            transform: scale(1.05);
           }
 
           svg {
             width: 20px;
             height: 20px;
-            transition: color var(--transition-normal);
           }
         }
 
         .card-title {
           margin: 0;
-          color: var(--gray-900);
-          font-size: 1.125rem;
-          font-weight: 600;
+          color: var(--text-color-dark);
+          font-size: 0.9375rem;
+          font-weight: 700;
           line-height: 1.2;
+          letter-spacing: -0.01em;
         }
       }
 
@@ -474,34 +456,24 @@
           display: flex;
           justify-content: space-between;
           align-items: center;
-          padding: 0.75rem 0;
-          border-bottom: 1px solid var(--gray-200);
-          transition: all var(--transition-normal);
+          padding: var(--spacing-sm) 0;
+          border-bottom: 1px solid var(--border-color);
+          transition: all var(--transition-fast);
 
           &:last-child {
             border-bottom: none;
           }
 
-          &:hover {
-            background: var(--gray-50);
-            border-radius: var(--border-radius-md);
-            padding-left: 0.5rem;
-            padding-right: 0.5rem;
-            margin-left: -0.5rem;
-            margin-right: -0.5rem;
-          }
-
           .label {
-            color: var(--gray-600);
-            font-size: 0.875rem;
+            color: var(--text-light);
+            font-size: 0.6875rem;
             font-weight: 500;
-            transition: color var(--transition-normal);
           }
 
           .value {
-            font-weight: 600;
+            font-weight: 700;
             font-size: 1rem;
-            transition: all var(--transition-normal);
+            letter-spacing: -0.01em;
 
             &.paid {
               color: var(--success-color);
@@ -524,9 +496,9 @@
             }
 
             &.risk-level {
-              padding: 0.25rem 0.75rem;
-              border-radius: 1rem;
-              font-size: 0.75rem;
+              padding: var(--spacing-xs) var(--spacing-sm);
+              border-radius: var(--border-radius-sm);
+              font-size: 0.6875rem;
               text-transform: uppercase;
               letter-spacing: 0.05em;
               font-weight: 600;
@@ -556,77 +528,111 @@
   }
 }
 
-@media (max-width: 1200px) {
-  .debt-evaluation-container {
-    padding: 1.25rem;
-    
-    .evaluation-grid {
-      gap: 1rem;
-      width: 100%;
-      grid-template-columns: 1fr;
-      
-      .evaluation-card {
-        width: 100%;
-        min-width: 0;
-        box-sizing: border-box;
-      }
-    }
-  }
-}
-
 @media (max-width: 768px) {
   .debt-evaluation-container {
-    padding: 1.25rem;
-    width: 100%;
+    padding: var(--spacing-lg);
     
     .evaluation-header {
-      flex-direction: column;
-      gap: 1rem;
-      align-items: stretch;
-      text-align: center;
-      width: 100%;
+      margin-bottom: var(--spacing-md);
+      padding-bottom: var(--spacing-sm);
+      flex-direction: row;
+      gap: var(--spacing-sm);
+      align-items: center;
+      justify-content: space-between;
 
       .header-content {
-        flex-direction: column;
-        gap: 1rem;
+        flex-direction: row;
+        gap: var(--spacing-sm);
         align-items: center;
-        width: 100%;
+        flex: 1;
+        
+        .header-icon {
+          width: 36px;
+          height: 36px;
+          flex-shrink: 0;
+          
+          svg {
+            width: 18px;
+            height: 18px;
+          }
+        }
+        
+        .header-text {
+          flex: 1;
+          min-width: 0;
+          
+          .evaluation-title {
+            font-size: 0.875rem;
+          }
+          
+          .evaluation-subtitle {
+            font-size: 0.625rem;
+          }
+        }
       }
 
       .health-score {
-        align-self: center;
+        flex-shrink: 0;
+        padding: var(--spacing-xs) var(--spacing-md);
+        gap: var(--spacing-xs);
+        
+        .score-circle {
+          width: 32px;
+          height: 32px;
+          
+          .score {
+            font-size: 0.8125rem;
+          }
+        }
+        
+        .label {
+          font-size: 0.625rem;
+          margin: 0;
+        }
       }
     }
 
     .evaluation-grid {
       grid-template-columns: 1fr;
-      gap: 1rem;
-      width: 100%;
+      gap: var(--spacing-lg);
 
       .evaluation-card {
-        padding: 1rem;
-        width: 100%;
-        min-width: 0;
-        box-sizing: border-box;
+        padding: var(--spacing-md);
 
         .card-header {
-          flex-direction: column;
-          gap: 0.75rem;
-          align-items: flex-start;
-          text-align: center;
-          width: 100%;
+          margin-bottom: var(--spacing-md);
+          gap: var(--spacing-sm);
+          
+          .card-icon {
+            width: 32px;
+            height: 32px;
+            
+            svg {
+              width: 16px;
+              height: 16px;
+            }
+          }
+          
+          .card-title {
+            font-size: 0.875rem;
+          }
         }
         
-        &.recommendations {
-          width: 100%;
-          box-sizing: border-box;
-          
-          .recommendations-list {
-            width: 100%;
+        .card-content {
+          .metric {
+            padding: var(--spacing-sm) 0;
             
-            li {
-              width: 100%;
-              box-sizing: border-box;
+            .label {
+              font-size: 0.6875rem;
+            }
+            
+            .value {
+              font-size: 0.875rem;
+              
+              &.risk-level {
+                font-size: 0.625rem;
+                padding: 4px 6px;
+              }
             }
           }
         }
@@ -637,22 +643,117 @@
 
 @media (max-width: 480px) {
   .debt-evaluation-container {
-    padding: 1rem;
-    width: 100%;
+    padding: var(--spacing-md);
     
-    .evaluation-header .header-text .evaluation-title {
-      font-size: 1.25rem;
+    .evaluation-header {
+      margin-bottom: var(--spacing-sm);
+      padding-bottom: var(--spacing-xs);
+      gap: var(--spacing-xs);
+      align-items: center;
+      
+      .header-content {
+        gap: var(--spacing-xs);
+        flex: 1;
+        min-width: 0;
+        
+        .header-icon {
+          width: 32px;
+          height: 32px;
+          flex-shrink: 0;
+          
+          svg {
+            width: 16px;
+            height: 16px;
+          }
+        }
+        
+        .header-text {
+          flex: 1;
+          min-width: 0;
+          
+          .evaluation-title {
+            font-size: 0.8125rem;
+            line-height: 1.2;
+          }
+          
+          .evaluation-subtitle {
+            font-size: 0.5625rem;
+          }
+        }
+      }
+      
+      .health-score {
+        flex-shrink: 0;
+        padding: var(--spacing-xs) var(--spacing-sm);
+        gap: 6px;
+        
+        .score-circle {
+          width: 28px;
+          height: 28px;
+          
+          .score {
+            font-size: 0.75rem;
+          }
+        }
+        
+        .label {
+          font-size: 0.5625rem;
+          margin: 0;
+        }
+      }
     }
     
     .evaluation-grid {
-      width: 100%;
-      grid-template-columns: 1fr;
+      gap: var(--spacing-md);
       
       .evaluation-card {
-        padding: 0.875rem;
-        width: 100%;
-        min-width: 0;
-        box-sizing: border-box;
+        padding: var(--spacing-sm) var(--spacing-md);
+        
+        .card-header {
+          margin-bottom: var(--spacing-sm);
+          gap: var(--spacing-xs);
+          
+          .card-icon {
+            width: 28px;
+            height: 28px;
+            
+            svg {
+              width: 14px;
+              height: 14px;
+            }
+          }
+          
+          .card-title {
+            font-size: 0.8125rem;
+          }
+        }
+        
+        .card-content {
+          .metric {
+            padding: var(--spacing-xs) 0;
+            
+            .label {
+              font-size: 0.625rem;
+            }
+            
+            .value {
+              font-size: 0.8125rem;
+            }
+          }
+        }
+        
+        &.recommendations {
+          margin-top: var(--spacing-md);
+          padding: var(--spacing-md);
+          
+          .recommendations-list {
+            gap: var(--spacing-sm);
+            
+            li {
+              padding: var(--spacing-sm) var(--spacing-md);
+            }
+          }
+        }
       }
     }
   }
@@ -666,5 +767,24 @@
   50% {
     opacity: 0.3;
     transform: scale(1.1);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .debt-evaluation-container {
+    &,
+    .evaluation-card,
+    .health-score,
+    .card-icon,
+    .header-icon,
+    .recommendations-list li {
+      animation: none;
+      transition: none;
+    }
+    
+    &:hover,
+    .evaluation-card:hover {
+      transform: none;
+    }
   }
 }

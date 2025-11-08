@@ -13,13 +13,15 @@
       
       <!-- Call to Action Buttons -->
       <div class="hero-buttons">
-        <button class="btn-primary large" routerLink="/auth" aria-label="Start your journey with Alpha Vault">
+        <button 
+          type="button"
+          class="btn-primary large" 
+          routerLink="/auth"
+          (keydown.enter)="navigateToAuth()"
+          (keydown.space)="navigateToAuth(); $event.preventDefault()"
+          aria-label="Start your journey with Alpha Vault">
           <i class="fas fa-rocket" aria-hidden="true"></i>
           Start Your Journey
-        </button>
-        <button class="btn-secondary large" (click)="playDemo()" aria-label="Watch demo video">
-          <i class="fas fa-play" aria-hidden="true"></i>
-          Watch Demo
         </button>
       </div>
       

@@ -1,59 +1,135 @@
-# Frontend
+# Alpha Vault - Financial System
 
-This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 19.2.6.
+## Overview
+Alpha Vault is a comprehensive financial management system built with Angular, providing secure user authentication, budget tracking, expense management, investment monitoring, and debt management capabilities.
 
-## Development server
+## Project Structure
+```
+Frontend/
+├── src/
+│   ├── app/
+│   │   ├── core/           # Core services, interceptors, guards
+│   │   ├── features/       # Feature modules
+│   │   │   ├── auth/       # Authentication system
+│   │   │   ├── budget/     # Budget management
+│   │   │   ├── expense/    # Expense tracking
+│   │   │   ├── income/     # Income management
+│   │   │   ├── investment/ # Investment tracking
+│   │   │   └── debt/       # Debt management
+│   │   ├── models/         # Data models and interfaces
+│   │   └── shared/         # Shared components and utilities
+│   └── assets/             # Images, icons, and static files
+```
 
-To start a local development server, run:
+## Authentication System
 
+### Login Component (`src/app/features/auth/login/`)
+The login component is the core authentication interface providing secure user access to the Alpha Vault system.
+
+#### Key Features
+- **Security**: Open-redirect protection, rate limiting, token validation
+- **Accessibility**: ARIA support, screen reader compatibility, keyboard navigation
+- **Performance**: OnPush change detection, memory management, optimized validation
+- **Mobile UX**: Responsive design, touch-friendly, mobile keyboard optimization
+
+#### Security Implementation
+- **Open-Redirect Protection**: Validates return URLs against malicious redirects
+- **Rate Limiting**: Handles 429 responses with visual countdown and form disable
+- **Input Sanitization**: Safe email normalization without destructive changes
+- **Token Validation**: Ensures backend provides proper authentication data
+- **XSS Prevention**: Safe URL parsing and validation
+- **CSRF Protection**: replaceUrl navigation prevents credential exposure
+
+#### Technical Details
+- **Change Detection**: OnPush strategy for optimal performance
+- **Form Validation**: Submit-only validation reduces mobile thrash
+- **Memory Management**: Proper cleanup and subscription handling
+- **Error Handling**: Comprehensive error states and user feedback
+- **Accessibility**: Full ARIA support and focus management
+
+#### File Structure
+```
+login/
+├── login.component.ts       # Component logic and business rules
+├── login.component.html     # Template with semantic HTML
+└── login.component.scss     # Responsive styling and animations
+```
+
+## Getting Started
+
+### Prerequisites
+- Node.js (v16 or higher)
+- Angular CLI (v15 or higher)
+- Modern web browser
+
+### Installation
 ```bash
+# Install dependencies
+npm install
+
+# Start development server
 ng serve
+
+# Build for production
+ng build --configuration production
 ```
 
-Once the server is running, open your browser and navigate to `http://localhost:4200/`. The application will automatically reload whenever you modify any of the source files.
-
-## Code scaffolding
-
-Angular CLI includes powerful code scaffolding tools. To generate a new component, run:
-
+### Development
 ```bash
-ng generate component component-name
-```
-
-For a complete list of available schematics (such as `components`, `directives`, or `pipes`), run:
-
-```bash
-ng generate --help
-```
-
-## Building
-
-To build the project run:
-
-```bash
-ng build
-```
-
-This will compile your project and store the build artifacts in the `dist/` directory. By default, the production build optimizes your application for performance and speed.
-
-## Running unit tests
-
-To execute unit tests with the [Karma](https://karma-runner.github.io) test runner, use the following command:
-
-```bash
+# Run tests
 ng test
+
+# Lint code
+ng lint
+
+# Generate component
+ng generate component features/feature-name
 ```
 
-## Running end-to-end tests
+## Technology Stack
+- **Frontend Framework**: Angular 15+
+- **Styling**: SCSS with CSS Grid and Flexbox
+- **State Management**: RxJS with BehaviorSubject
+- **Build Tool**: Angular CLI with Webpack
+- **Testing**: Jasmine and Karma
+- **Linting**: ESLint with Angular rules
 
-For end-to-end (e2e) testing, run:
+## Security Considerations
+- All authentication requests use HTTPS
+- Input validation and sanitization on both client and server
+- Rate limiting to prevent brute force attacks
+- CSRF protection with proper token handling
+- XSS prevention through safe DOM manipulation
 
-```bash
-ng e2e
-```
+## Performance Features
+- Lazy loading for feature modules
+- OnPush change detection strategy
+- Optimized bundle sizes
+- Efficient memory management
+- Responsive image loading
 
-Angular CLI does not come with an end-to-end testing framework by default. You can choose one that suits your needs.
+## Browser Support
+- Chrome 90+
+- Firefox 88+
+- Safari 14+
+- Edge 90+
 
-## Additional Resources
+## Contributing
+1. Follow Angular style guide
+2. Write meaningful commit messages
+3. Include tests for new features
+4. Update documentation as needed
+5. Ensure accessibility compliance
 
-For more information on using the Angular CLI, including detailed command references, visit the [Angular CLI Overview and Command Reference](https://angular.dev/tools/cli) page.
+## License
+Proprietary - Alpha Vault Financial System
+
+## Author
+**Mohamed Dhaoui** - Lead Developer
+- Email: [Your Email]
+- GitHub: [Your GitHub]
+- LinkedIn: [Your LinkedIn]
+
+---
+
+*Alpha Vault - Secure Financial Management for the Modern World*

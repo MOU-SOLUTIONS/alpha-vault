@@ -1,10 +1,14 @@
-// ====================================================================
-//             Coded by Mohamed Dhaoui for Alpha Vault
-// ====================================================================
+/*
+  Alpha Vault Financial System
+  
+  @author Mohamed Dhaoui
+  @component DebtEvaluationComponent
+  @description Main debt dashboard component for managing debt health score and recommendations
+*/
 
-import { ChangeDetectionStrategy, Component, Input, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Meta } from '@angular/platform-browser';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnChanges, OnInit, SimpleChanges } from '@angular/core';
+import { META_FRAGMENT } from '../../../core/seo/page-meta.model';
 
 import { Debt } from '../../../models/debt.model';
 
@@ -15,95 +19,115 @@ import { Debt } from '../../../models/debt.model';
   styleUrls: ['./debt-evaluation.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [CommonModule],
+  providers: [
+    {
+      provide: META_FRAGMENT,
+      useValue: {
+        description: 'Comprehensive debt evaluation and financial health assessment with actionable recommendations for debt management in Alpha Vault.'
+      }
+    }
+  ],
 })
-export class DebtEvaluationComponent implements OnInit {
-  @Input() totalDebt: number = 0;
-  @Input() totalPaid: number = 0;
+export class DebtEvaluationComponent implements OnInit, OnChanges {
+
+  @Input() totalDebt = 0;
+  
+  @Input() totalPaid = 0;
+  
   @Input() overdueDebts: Debt[] = [];
+ 
   @Input() creditorSummary: Record<string, number> = {};
-  @Input() top5LargestDebts: Array<{ creditor: string; remainingAmount: number; dueDate: string }> = [];
+  
+  @Input() top5LargestDebts: { creditor: string; remainingAmount: number; dueDate: string }[] = [];
+
   @Input() debts: Debt[] = [];
 
-  // Internal properties (used when no inputs provided)
   private _debts: Debt[] = [];
-  private _totalDebt: number = 0;
-  private _totalPaid: number = 0;
+  private _totalDebt = 0;
+  private _totalPaid = 0;
   private _overdueDebts: Debt[] = [];
   private _creditorSummary: Record<string, number> = {};
-  private _top5LargestDebts: Array<{ creditor: string; remainingAmount: number; dueDate: string }> = [];
+  private _top5LargestDebts: { creditor: string; remainingAmount: number; dueDate: string }[] = [];
 
-  paidAmount = 0;
   remainingAmount = 0;
   healthScore = 0;
   healthStatus = '';
 
-  constructor(
-    private meta: Meta,
-  ) {
-    this.meta.addTags([
-      { name: 'description', content: 'Comprehensive debt evaluation and financial health assessment with actionable recommendations for debt management.' },
-      { name: 'robots', content: 'index,follow' },
-      { name: 'viewport', content: 'width=device-width, initial-scale=1' },
-    ]);
+  private _cachedProgressPercentage?: number;
+  private _cachedHighInterestCount?: number;
+  private _cachedLowInterestCount?: number;
+  private _cachedRiskLevel?: string;
+  private _cachedRecommendations?: { text: string; priority: 'high' | 'medium' | 'low' }[];
+
+  get paidAmount(): number {
+    return this._totalPaid;
   }
+
+  get displayTotalDebt(): number {
+    return this.totalDebt > 0 ? this.totalDebt : this._totalDebt;
+  }
+
+  constructor(
+    private cdr: ChangeDetectorRef,
+  ) {}
 
   ngOnInit(): void {
     this.loadDebtData();
     this.calculateHealthScore();
   }
 
-  private loadDebtData(): void {
-    // Use input data if provided, otherwise use mock data
-    if (this.debts && this.debts.length > 0) {
-      this._debts = this.debts;
-      this._totalDebt = this.totalDebt || 0;
-      this._totalPaid = this.totalPaid || 0;
-      this._overdueDebts = this.overdueDebts || [];
-      this._creditorSummary = this.creditorSummary || {};
-      this._top5LargestDebts = this.top5LargestDebts || [];
-    } else {
-      // Mock data for development
-      this._debts = [
-        { id: 1, userId: 1, creditorName: 'Credit Card', totalAmount: 5000, remainingAmount: 3000, dueDate: '2024-06-15', interestRate: 18.99, minPayment: 150 },
-        { id: 2, userId: 1, creditorName: 'Student Loan', totalAmount: 25000, remainingAmount: 20000, dueDate: '2024-08-20', interestRate: 5.5, minPayment: 200 },
-        { id: 3, userId: 1, creditorName: 'Car Loan', totalAmount: 15000, remainingAmount: 8000, dueDate: '2024-07-10', interestRate: 4.25, minPayment: 300 },
-      ];
-      this._totalDebt = 45000;
-      this._totalPaid = 12000;
-      this._overdueDebts = [
-        { id: 4, userId: 1, creditorName: 'Overdue Credit Card', totalAmount: 2000, remainingAmount: 2000, dueDate: '2024-01-15', interestRate: 22.99, minPayment: 50 }
-      ];
-      this._creditorSummary = {
-        'Credit Card': 3000,
-        'Student Loan': 20000,
-        'Car Loan': 8000,
-        'Overdue Credit Card': 2000
-      };
-      this._top5LargestDebts = [
-        { creditor: 'Student Loan', remainingAmount: 20000, dueDate: '2024-08-20' },
-        { creditor: 'Car Loan', remainingAmount: 8000, dueDate: '2024-07-10' },
-        { creditor: 'Credit Card', remainingAmount: 3000, dueDate: '2024-06-15' },
-        { creditor: 'Overdue Credit Card', remainingAmount: 2000, dueDate: '2024-01-15' }
-      ];
+  ngOnChanges(changes: SimpleChanges): void {
+    if (changes['totalDebt'] || changes['totalPaid'] || changes['debts'] || 
+        changes['overdueDebts'] || changes['creditorSummary'] || changes['top5LargestDebts']) {
+      this.invalidateCache();
+      this.loadDebtData();
+      this.calculateHealthScore();
+      this.cdr.markForCheck();
     }
-
-    this.calculateTotals();
   }
 
-  private calculateTotals(): void {
-    this._totalDebt = this._debts.reduce((sum, debt) => sum + debt.totalAmount, 0);
-    this._totalPaid = this._debts.reduce((sum, debt) => sum + (debt.totalAmount - debt.remainingAmount), 0);
-    this.remainingAmount = this._debts.reduce((sum, debt) => sum + debt.remainingAmount, 0);
+  private invalidateCache(): void {
+    this._cachedProgressPercentage = undefined;
+    this._cachedHighInterestCount = undefined;
+    this._cachedLowInterestCount = undefined;
+    this._cachedRiskLevel = undefined;
+    this._cachedRecommendations = undefined;
+  }
+
+  private loadDebtData(): void {
+    this._debts = this.debts || [];
+    this._overdueDebts = this.overdueDebts || [];
+    this._creditorSummary = this.creditorSummary || {};
+    this._top5LargestDebts = this.top5LargestDebts || [];
+
+    const hasDebtsArray = this._debts && this._debts.length > 0;
     
-    // Update the public properties
-    this.totalDebt = this._totalDebt;
-    this.totalPaid = this._totalPaid;
+    if (this.totalDebt > 0 || this.totalPaid > 0) {
+      this._totalDebt = this.totalDebt;
+      this._totalPaid = this.totalPaid;
+      
+      this.remainingAmount = this._totalDebt - this._totalPaid;
+    } else if (hasDebtsArray) {
+      this._totalDebt = this._debts.reduce((sum, debt) => sum + debt.principalAmount, 0);
+      this._totalPaid = this._debts.reduce((sum, debt) => sum + (debt.principalAmount - debt.remainingAmount), 0);
+      this.remainingAmount = this._debts.reduce((sum, debt) => sum + (debt.remainingAmount || 0), 0);
+    } else {
+      this._totalDebt = 0;
+      this._totalPaid = 0;
+      this.remainingAmount = 0;
+    }
   }
 
   private calculateHealthScore(): void {
+    if (!this._debts || this._debts.length === 0 || this._totalDebt === 0) {
+      this.healthScore = 100;
+      this.healthStatus = 'excellent';
+      return;
+    }
+
     const debtToIncomeRatio = this.remainingAmount / 50000;
-    const paymentProgress = this._totalPaid / this._totalDebt;
-    const highInterestDebt = this._debts.filter(debt => debt.interestRate > 15).length;
+    const paymentProgress = this._totalDebt > 0 ? (this._totalPaid / this._totalDebt) : 0;
+    const highInterestDebt = this._debts.filter(debt => debt.interestRateApr > 15).length;
 
     let score = 100;
     score -= debtToIncomeRatio * 30;
@@ -121,28 +145,57 @@ export class DebtEvaluationComponent implements OnInit {
     return 'poor';
   }
 
-  getProgressPercentage(): number {
-    return this._totalDebt > 0 ? (this._totalPaid / this._totalDebt) * 100 : 0;
+  get progressPercentage(): number {
+    if (this._cachedProgressPercentage !== undefined) {
+      return this._cachedProgressPercentage;
+    }
+    this._cachedProgressPercentage = this._totalDebt > 0 ? (this._totalPaid / this._totalDebt) * 100 : 0;
+    return this._cachedProgressPercentage;
   }
 
-  getHighInterestDebtCount(): number {
-    return this._debts.filter(debt => debt.interestRate > 15).length;
+  get highInterestDebtCount(): number {
+    if (this._cachedHighInterestCount !== undefined) {
+      return this._cachedHighInterestCount;
+    }
+    this._cachedHighInterestCount = this._debts.filter(debt => debt.interestRateApr > 15).length;
+    return this._cachedHighInterestCount;
   }
 
-  getLowInterestDebtCount(): number {
-    return this._debts.filter(debt => debt.interestRate <= 5).length;
+  get lowInterestDebtCount(): number {
+    if (this._cachedLowInterestCount !== undefined) {
+      return this._cachedLowInterestCount;
+    }
+    this._cachedLowInterestCount = this._debts.filter(debt => debt.interestRateApr <= 5).length;
+    return this._cachedLowInterestCount;
   }
 
-  getRiskLevel(): string {
-    if (this.healthScore >= 70) return 'low-risk';
-    if (this.healthScore >= 40) return 'medium-risk';
-    return 'high-risk';
+  get riskLevel(): string {
+    if (this._cachedRiskLevel !== undefined) {
+      return this._cachedRiskLevel;
+    }
+    if (this.healthScore >= 70) {
+      this._cachedRiskLevel = 'low-risk';
+    } else if (this.healthScore >= 40) {
+      this._cachedRiskLevel = 'medium-risk';
+    } else {
+      this._cachedRiskLevel = 'high-risk';
+    }
+    return this._cachedRiskLevel;
   }
 
-  getRecommendations(): Array<{ text: string; priority: 'high' | 'medium' | 'low' }> {
-    const recommendations: Array<{ text: string; priority: 'high' | 'medium' | 'low' }> = [];
+  get recommendations(): { text: string; priority: 'high' | 'medium' | 'low' }[] {
+    if (this._cachedRecommendations !== undefined) {
+      return this._cachedRecommendations;
+    }
+    
+    const recommendations: { text: string; priority: 'high' | 'medium' | 'low' }[] = [];
 
-    if (this.getHighInterestDebtCount() > 0) {
+    if (!this._debts || this._debts.length === 0 || this._totalDebt === 0) {
+      this._cachedRecommendations = recommendations;
+      return recommendations;
+    }
+
+    if (this.highInterestDebtCount > 0) {
       recommendations.push({
         text: 'Prioritize paying off high-interest debt first to reduce overall interest costs',
         priority: 'high'
@@ -163,13 +216,14 @@ export class DebtEvaluationComponent implements OnInit {
       });
     }
 
-    if (this.getLowInterestDebtCount() > 0) {
+    if (this.lowInterestDebtCount > 0) {
       recommendations.push({
         text: 'Continue making minimum payments on low-interest debt while focusing on high-interest debt',
         priority: 'low'
       });
     }
 
+    this._cachedRecommendations = recommendations;
     return recommendations;
   }
 

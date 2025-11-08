@@ -1,5 +1,5 @@
-import { Component, EventEmitter, Input, Output, OnInit, OnDestroy, Renderer2, ViewChild, ElementRef, AfterViewInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { AfterViewInit,Component, ElementRef, EventEmitter, Input, OnDestroy, OnInit, Output, Renderer2, ViewChild } from '@angular/core';
 
 @Component({
   selector: 'app-overlay-container',
@@ -14,7 +14,7 @@ export class OverlayContainerComponent implements OnInit, OnDestroy, AfterViewIn
   /**
    * Title shown at the top of the overlay header
    */
-  @Input() title: string = 'Overlay';
+  @Input() title = 'Overlay';
 
   /**
    * Optional theme modifier: applies a top border color to match context
@@ -24,7 +24,7 @@ export class OverlayContainerComponent implements OnInit, OnDestroy, AfterViewIn
   /**
    * Optional width of the modal (default: 600px)
    */
-  @Input() width: string = '600px';
+  @Input() width = '600px';
 
   /**
    * Emits when the overlay is closed
@@ -34,12 +34,12 @@ export class OverlayContainerComponent implements OnInit, OnDestroy, AfterViewIn
   /**
    * Store the original body overflow style
    */
-  private originalBodyOverflow: string = '';
+  private originalBodyOverflow = '';
 
   /**
    * Store the scroll position
    */
-  private scrollPosition: number = 0;
+  private scrollPosition = 0;
 
   constructor(private renderer: Renderer2) {}
 
@@ -79,7 +79,6 @@ export class OverlayContainerComponent implements OnInit, OnDestroy, AfterViewIn
       this.renderer.setStyle(element, 'top', `${this.scrollPosition}px`);
       this.renderer.setStyle(element, 'height', `calc(100vh - ${this.scrollPosition}px)`);
       
-      console.log('Overlay positioned at:', this.scrollPosition, 'px');
     }
   }
 

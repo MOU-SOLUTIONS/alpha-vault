@@ -1,45 +1,487 @@
-/* ===================================================================
-   Coded by Mohamed Dhaoui for Alpha Vault
-=================================================================== */
+/*
+  Alpha Vault Financial System
+  
+  @author Mohamed Dhaoui
+  @component ExpenseComponent
+  @description Styles for main expense dashboard component
+*/
+
+// ===== MAIN CONTAINER =====
+.parent-container {
+  width: 100%;
+  height: 100%;
+  padding: 0;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  overflow: visible;
+  position: relative;
+}
+
+// ===== LAYOUT SECTIONS =====
+.first-row {
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  height: auto;
+}
 
 .second-row {
   width: 100%;
   margin: 0;
+  height: auto;
 }
 
 .third-row {
   width: 100%;
   margin: 0;
+  height: auto;
 }
 
 .fourth-row {
   width: 100%;
   margin: 0;
   padding-top: 10px;
+  height: auto;
 }
 
 .fifth-row {
   width: 100%;
   margin: 0;
   padding-top: 10px;
+  height: auto;
 }
 
-.delete-text {
-  font-size: 1rem;
-  font-weight: 500;
-  color: #495057;
-  margin-bottom: 1rem;
+// ===== CHART COMPONENTS =====
+.weekly-chart,
+.monthly-chart {
+  min-height: 350px;
+  height: auto;
 }
 
-.delete-button-group {
-  margin-top: 1rem;
+.top-5-table {
+  min-height: 300px;
+  height: auto;
 }
 
+.method-chart,
+.source-chart {
+  min-height: 300px;
+  height: auto;
+}
+
+// ===== EXPENSE FORM SECTION =====
+.expense-form-section {
+  background: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  margin-bottom: 20px;
+  overflow: hidden;
+  transition: all 0.3s ease;
+
+  .form-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 20px 24px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    border: none;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+
+    &.modify-mode {
+      background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+      
+      &:hover {
+        background: linear-gradient(135deg, #059669 0%, #047857 100%);
+        transform: translateY(-1px);
+      }
+    }
+
+    &:hover {
+      background: linear-gradient(135deg, #5a6fd8 0%, #6a4190 100%);
+      transform: translateY(-1px);
+    }
+
+    &:focus {
+      outline: 2px solid #4f46e5;
+      outline-offset: 2px;
+    }
+
+    .form-header-content {
+      flex: 1;
+
+      .form-title {
+        margin: 0 0 4px 0;
+        font-size: 1.25rem;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+
+        i {
+          font-size: 1.1rem;
+        }
+      }
+
+      .form-subtitle {
+        margin: 0;
+        font-size: 0.9rem;
+        opacity: 0.9;
+        font-weight: 400;
+      }
+    }
+
+    .form-toggle {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.2);
+      transition: all 0.3s ease;
+
+      i {
+        font-size: 1.2rem;
+        transition: transform 0.3s ease;
+
+        &.rotated {
+          transform: rotate(180deg);
+        }
+      }
+    }
+  }
+
+  .form-content {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.4s ease, padding 0.3s ease;
+    background: #f8fafc;
+
+    &.visible {
+      max-height: 800px;
+      padding: 24px;
+    }
+
+    .form-wrapper {
+      background: white;
+      border-radius: 8px;
+      padding: 24px;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    }
+  }
+
+  &.expanded {
+    .form-header {
+      border-bottom: 1px solid #e2e8f0;
+    }
+  }
+}
+
+.expense-table-section {
+  background: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+  position: relative; // For positioning the delete overlay
+}
+
+// ============================================================
+// == DELETE CONFIRMATION OVERLAY (TABLE-RELATIVE)
+// ============================================================
+
+.delete-confirmation-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  border-radius: 12px;
+  backdrop-filter: blur(4px);
+  animation: fadeIn 0.3s ease;
+
+  .delete-confirmation-modal {
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+    max-width: 400px;
+    width: 90%;
+    max-height: 90vh;
+    overflow: hidden;
+    animation: slideIn 0.3s ease;
+
+    .delete-modal-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 20px 24px 16px;
+      border-bottom: 1px solid #e2e8f0;
+      background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+      color: white;
+
+      .delete-modal-title {
+        margin: 0;
+        font-size: 1.25rem;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+
+        i {
+          font-size: 1.1rem;
+        }
+      }
+
+      .delete-modal-close {
+        background: rgba(255, 255, 255, 0.2);
+        border: none;
+        border-radius: 50%;
+        width: 32px;
+        height: 32px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        color: white;
+        transition: all 0.2s ease;
+
+        &:hover {
+          background: rgba(255, 255, 255, 0.3);
+          transform: scale(1.1);
+        }
+
+        &:focus {
+          outline: 2px solid rgba(255, 255, 255, 0.5);
+          outline-offset: 2px;
+        }
+
+        i {
+          font-size: 0.9rem;
+        }
+      }
+    }
+
+    .delete-modal-body {
+      padding: 24px;
+
+      .delete-warning-text {
+        margin: 0 0 16px 0;
+        font-size: 1rem;
+        color: #374151;
+        line-height: 1.5;
+      }
+
+      .delete-expense-details {
+        background: #f8fafc;
+        border-radius: 8px;
+        padding: 16px;
+        margin-top: 16px;
+
+        .delete-detail-item {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          padding: 8px 0;
+          border-bottom: 1px solid #e2e8f0;
+
+          &:last-child {
+            border-bottom: none;
+          }
+
+          .delete-detail-label {
+            font-weight: 500;
+            color: #6b7280;
+            font-size: 0.9rem;
+          }
+
+          .delete-detail-value {
+            font-weight: 600;
+            color: #374151;
+            font-size: 0.9rem;
+          }
+        }
+      }
+    }
+
+    .delete-modal-footer {
+      display: flex;
+      gap: 12px;
+      justify-content: flex-end;
+      padding: 16px 24px 24px;
+
+      .btn {
+        padding: 10px 20px;
+        border-radius: 8px;
+        font-weight: 500;
+        transition: all 0.2s ease;
+        border: none;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+
+        &:focus {
+          outline: 2px solid #4f46e5;
+          outline-offset: 2px;
+        }
+
+        &.btn-secondary {
+          background: #f3f4f6;
+          color: #374151;
+          border: 1px solid #d1d5db;
+
+          &:hover {
+            background: #e5e7eb;
+            border-color: #9ca3af;
+          }
+        }
+
+        &.btn-danger {
+          background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+          color: white;
+          border: 1px solid #dc2626;
+
+          &:hover {
+            background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+          }
+
+          i {
+            font-size: 0.9rem;
+          }
+        }
+      }
+    }
+  }
+}
+
+// ============================================================
+// == ANIMATIONS
+// ============================================================
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: scale(0.9) translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+// ============================================================
+// == RESPONSIVE DESIGN
+// ============================================================
+
+@media (max-width: 768px) {
+  .delete-confirmation-overlay {
+    .delete-confirmation-modal {
+      width: 95%;
+      max-width: 350px;
+
+      .delete-modal-header {
+        padding: 16px 20px 12px;
+
+        .delete-modal-title {
+          font-size: 1.1rem;
+        }
+      }
+
+      .delete-modal-body {
+        padding: 20px;
+
+        .delete-expense-details {
+          padding: 12px;
+
+          .delete-detail-item {
+            padding: 6px 0;
+
+            .delete-detail-label,
+            .delete-detail-value {
+              font-size: 0.85rem;
+            }
+          }
+        }
+      }
+
+      .delete-modal-footer {
+        padding: 12px 20px 20px;
+        flex-direction: column;
+
+        .btn {
+          width: 100%;
+          justify-content: center;
+        }
+      }
+    }
+  }
+
+  .expense-form-section {
+    margin-bottom: 16px;
+
+    .form-header {
+      padding: 16px 20px;
+
+      .form-header-content {
+        .form-title {
+          font-size: 1.1rem;
+        }
+
+        .form-subtitle {
+          font-size: 0.85rem;
+        }
+      }
+
+      .form-toggle {
+        width: 36px;
+        height: 36px;
+
+        i {
+          font-size: 1.1rem;
+        }
+      }
+    }
+
+    .form-content {
+      &.visible {
+        padding: 20px;
+      }
+
+      .form-wrapper {
+        padding: 20px;
+      }
+    }
+  }
+}
+
+// ===== RESPONSIVE DESIGN - MOBILE =====
 @media (max-width: 767px) {
+  .parent-container {
+    padding: 0;
+  }
+
   .weekly-chart {
     padding: 0;
-    padding-top: 10px;
     padding-bottom: 5px;
+    min-height: 300px;
   }
 
   .monthly-chart {
@@ -61,14 +503,6 @@
     padding: 0;
     padding-top: 5px;
     padding-left: 5px;
-  }
-
-  .overlay {
-    height: 100% !important;
-  }
-
-  .overlay-content {
-    width: 80% !important;
   }
 }
 
@@ -95,5 +529,33 @@
 
   .source-chart {
     padding: 10px 0px 0px 5px;
+  }
+}
+
+// ===== ACCESSIBILITY =====
+@media (prefers-reduced-motion: reduce) {
+  .form-header,
+  .form-content,
+  .form-toggle i,
+  .delete-confirmation-overlay,
+  .delete-confirmation-modal,
+  .btn {
+    transition: none;
+    animation: none;
+  }
+}
+
+// ===== HIGH CONTRAST MODE =====
+@media (prefers-contrast: high) {
+  .expense-form-section {
+    border: 2px solid #000;
+  }
+
+  .form-header {
+    border: 2px solid #fff;
+  }
+
+  .delete-confirmation-modal {
+    border: 2px solid #000;
   }
 }

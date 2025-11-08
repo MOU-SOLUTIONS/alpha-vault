@@ -1,9 +1,14 @@
-// ====================================================================
-//      Coded by Mohamed Dhaoui for Alpha Vault
-// ====================================================================
+/*
+  Alpha Vault Financial System
+  
+  @author Mohamed Dhaoui
+  @component CryptoInvestmentTableComponent
+  @description Crypto investment table component for displaying crypto investments
+*/
 
-import { AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, Component, EventEmitter, HostListener, Input, OnChanges, OnDestroy, OnInit, Output, SimpleChanges, ViewChild } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { ScrollingModule } from '@angular/cdk/scrolling';
+import { CommonModule, isPlatformBrowser } from '@angular/common';
+import { AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, Component, EventEmitter, HostListener, inject, Input, OnChanges, OnDestroy, OnInit, Output, PLATFORM_ID, SimpleChanges, ViewChild } from '@angular/core';
 import { FormBuilder, FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { MatBadgeModule } from '@angular/material/badge';
 import { MatButtonModule } from '@angular/material/button';
@@ -15,14 +20,14 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSelectModule } from '@angular/material/select';
 import { MatTableDataSource, MatTableModule } from '@angular/material/table';
 import { MatTooltipModule } from '@angular/material/tooltip';
-import { Meta } from '@angular/platform-browser';
-import { ScrollingModule } from '@angular/cdk/scrolling';
-
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 
-import { Investment } from '../../../../models/investment.model';
+import { LoggingService } from '../../../../core/services/logging.service';
+import { META_FRAGMENT } from '../../../../core/seo/page-meta.model';
+import { InvestmentStatus } from '../../../../enums/investment-status';
 import { RISK_LEVEL_OPTIONS } from '../../../../enums/risk-level';
+import { Investment } from '../../../../models/investment.model';
 
 @Component({
   standalone: true,
@@ -44,6 +49,14 @@ import { RISK_LEVEL_OPTIONS } from '../../../../enums/risk-level';
     MatTableModule,
     MatTooltipModule,
     ScrollingModule,
+  ],
+  providers: [
+    {
+      provide: META_FRAGMENT,
+      useValue: {
+        description: 'Manage and track your cryptocurrency investments with real-time data, comprehensive analytics, filtering, and detailed portfolio insights.'
+      }
+    }
   ],
 })
 export class CryptoInvestmentTableComponent implements OnInit, OnChanges, AfterViewInit, OnDestroy {
@@ -68,7 +81,7 @@ export class CryptoInvestmentTableComponent implements OnInit, OnChanges, AfterV
     'profitLoss',
     'startDate',
     'riskLevel',
-    'isSold',
+    'status',
     'actions',
   ];
 
@@ -90,17 +103,13 @@ export class CryptoInvestmentTableComponent implements OnInit, OnChanges, AfterV
   totalProfitLossPercentage = 0;
 
   private readonly destroy$ = new Subject<void>();
+  private readonly isBrowser = isPlatformBrowser(inject(PLATFORM_ID));
+  private readonly loggingService = inject(LoggingService);
 
   constructor(
     private readonly fb: FormBuilder,
     private readonly cdr: ChangeDetectorRef,
-    private readonly meta: Meta,
   ) {
-    this.meta.addTags([
-      { name: 'description', content: 'Manage and track your cryptocurrency investments with real-time data and comprehensive analytics' },
-      { name: 'robots', content: 'index,follow' },
-      { name: 'viewport', content: 'width=device-width, initial-scale=1' },
-    ]);
   }
 
   ngOnInit(): void {
@@ -115,7 +124,14 @@ export class CryptoInvestmentTableComponent implements OnInit, OnChanges, AfterV
     this.filterForm.valueChanges
       .pipe(takeUntil(this.destroy$))
       .subscribe(() => this.applyFilter());
-    this.checkMobile();
+    
+    if (this.investments.length > 0) {
+      this.applyFilter();
+    }
+    
+    if (this.isBrowser) {
+      this.checkMobile();
+    }
   }
 
   ngOnChanges(changes: SimpleChanges): void {
@@ -143,23 +159,27 @@ export class CryptoInvestmentTableComponent implements OnInit, OnChanges, AfterV
 
   @HostListener('window:resize')
   onResize(): void {
-    this.checkMobile();
-    this.cdr.detectChanges();
+    if (this.isBrowser) {
+      this.checkMobile();
+      this.cdr.markForCheck();
+    }
   }
 
   checkMobile(): void {
-    this.isMobile = window.innerWidth < 768;
+    if (this.isBrowser) {
+      this.isMobile = window.innerWidth < 768;
+    }
     this.viewportHeight = this.isMobile ? 300 : 400;
   }
 
   toggleFilterSection(): void {
     this.isFilterExpanded = !this.isFilterExpanded;
-    this.cdr.detectChanges();
+    this.cdr.markForCheck();
   }
 
   toggleRowExpand(element: Investment): void {
     this.expandedElement = this.expandedElement === element ? null : element;
-    this.cdr.detectChanges();
+    this.cdr.markForCheck();
   }
 
   hasActiveFilters(): boolean {
@@ -180,13 +200,13 @@ export class CryptoInvestmentTableComponent implements OnInit, OnChanges, AfterV
       filtered = filtered.filter(investment =>
         investment.name.toLowerCase().includes(searchTerm) ||
         investment.amountInvested.toString().includes(searchTerm) ||
-        investment.currentValue.toString().includes(searchTerm),
+        (investment.currentValue?.toString() || '').includes(searchTerm),
       );
     }
 
     if (formValue.sold !== 'all') {
       const isSold = formValue.sold === 'sold';
-      filtered = filtered.filter(investment => investment.isSold === isSold);
+      filtered = filtered.filter(investment => investment.status === (isSold ? InvestmentStatus.CLOSED : InvestmentStatus.OPEN));
     }
 
     if (formValue.risk !== 'all') {
@@ -195,8 +215,16 @@ export class CryptoInvestmentTableComponent implements OnInit, OnChanges, AfterV
 
     if (formValue.sortBy && formValue.sortOrder) {
       filtered.sort((a, b) => {
-        const aValue = a[formValue.sortBy as keyof Investment];
-        const bValue = b[formValue.sortBy as keyof Investment];
+        let aValue: any;
+        let bValue: any;
+        
+        if (formValue.sortBy === 'profitLoss') {
+          aValue = this.getProfitLoss(a);
+          bValue = this.getProfitLoss(b);
+        } else {
+          aValue = a[formValue.sortBy as keyof Investment];
+          bValue = b[formValue.sortBy as keyof Investment];
+        }
         
         if (typeof aValue === 'string' && typeof bValue === 'string') {
           return formValue.sortOrder === 'asc' 
@@ -208,6 +236,12 @@ export class CryptoInvestmentTableComponent implements OnInit, OnChanges, AfterV
           return formValue.sortOrder === 'asc' ? aValue - bValue : bValue - aValue;
         }
         
+        if (formValue.sortBy === 'startDate') {
+          const aDate = new Date(aValue).getTime();
+          const bDate = new Date(bValue).getTime();
+          return formValue.sortOrder === 'asc' ? aDate - bDate : bDate - aDate;
+        }
+        
         return 0;
       });
     }
@@ -215,7 +249,7 @@ export class CryptoInvestmentTableComponent implements OnInit, OnChanges, AfterV
     this.dataSource.data = filtered;
     this.filteredCount = filtered.length;
     this.calculateStatistics();
-    this.cdr.detectChanges();
+    this.cdr.markForCheck();
   }
 
   private calculateStatistics(): void {
@@ -253,18 +287,20 @@ export class CryptoInvestmentTableComponent implements OnInit, OnChanges, AfterV
   getRiskLevelClass(riskLevel: string | undefined): string {
     if (!riskLevel) return 'risk-neutral';
     
-    const riskClasses: { [key: string]: string } = {
+    const normalized = riskLevel.toUpperCase().trim();
+    
+    const riskClasses: Record<string, string> = {
       'LOW': 'risk-low',
       'MEDIUM': 'risk-medium',
       'HIGH': 'risk-high',
     };
-    return riskClasses[riskLevel] || 'risk-neutral';
+    return riskClasses[normalized] || 'risk-neutral';
   }
 
   getRiskColor(riskLevel: string | undefined): string {
     if (!riskLevel) return '#6b7280';
     
-    const riskColors: { [key: string]: string } = {
+    const riskColors: Record<string, string> = {
       'LOW': '#10b981',
       'MEDIUM': '#f59e0b',
       'HIGH': '#ef4444',
@@ -275,12 +311,32 @@ export class CryptoInvestmentTableComponent implements OnInit, OnChanges, AfterV
   getRiskIcon(riskLevel: string | undefined): string {
     if (!riskLevel) return 'help_outline';
     
-    const riskIcons: { [key: string]: string } = {
+    const riskIcons: Record<string, string> = {
       'LOW': 'trending_up',
       'MEDIUM': 'trending_flat',
       'HIGH': 'trending_down',
     };
     return riskIcons[riskLevel] || 'help_outline';
+  }
+
+  getRiskLevelLabel(riskLevel: string | undefined): string {
+    if (!riskLevel) return 'None';
+    
+    const normalized = riskLevel.toUpperCase().trim();
+    
+    const riskLabels: Record<string, string> = {
+      'LOW': 'Low',
+      'MEDIUM': 'Medium',
+      'HIGH': 'High',
+    };
+    
+    const label = riskLabels[normalized];
+    if (!label) {
+      this.loggingService.warn('Unknown risk level value:', { riskLevel, normalized });
+      return normalized;
+    }
+    
+    return label;
   }
 
   formatCurrency(value: number): string {
@@ -325,12 +381,14 @@ export class CryptoInvestmentTableComponent implements OnInit, OnChanges, AfterV
     });
   }
 
+  InvestmentStatus = InvestmentStatus;
+
   trackByInvestment(index: number, investment: Investment): string {
     return investment.id ? investment.id.toString() : index.toString();
   }
 
   onPageChange(event: PageEvent): void {
-    this.cdr.detectChanges();
+    this.cdr.markForCheck();
   }
 
   onModifyClicked(investment: Investment): void {
