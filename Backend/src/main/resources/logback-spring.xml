@@ -2,15 +2,24 @@
 <configuration>
     <include resource="org/springframework/boot/logging/logback/defaults.xml"/>
     
-    <!-- Enable debug logging for security and JWT -->
-    <logger name="com.alpha.alphavault.security" level="DEBUG"/>
-    <logger name="org.springframework.security" level="DEBUG"/>
-    <logger name="org.springframework.web.cors" level="DEBUG"/>
+    <!-- Development profile: Debug logging -->
+    <springProfile name="!prod">
+        <logger name="com.alpha.alphavault.security" level="DEBUG"/>
+        <logger name="org.springframework.security" level="DEBUG"/>
+        <logger name="org.springframework.web.cors" level="DEBUG"/>
+    </springProfile>
+    
+    <!-- Production profile: Info logging only -->
+    <springProfile name="prod">
+        <logger name="com.alpha.alphavault" level="INFO"/>
+        <logger name="org.springframework.security" level="WARN"/>
+        <logger name="org.springframework.web.cors" level="WARN"/>
+    </springProfile>
     
     <!-- Console appender -->
     <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
         <encoder>
-            <pattern>%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>
+            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>
         </encoder>
     </appender>
     
