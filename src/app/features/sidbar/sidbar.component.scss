@@ -1,0 +1,753 @@
+/*
+  Alpha Vault Financial System
+  
+  @author Mohamed Dhaoui
+  @component SidbarComponent
+  @description Advanced styling for navigation sidebar with dynamic color theming and smooth animations
+*/
+
+:host {
+  --sidebar-primary: #6366f1;
+  --sidebar-secondary: #8b5cf6;
+  --sidebar-primary-dark: #4f46e5;
+  --sidebar-secondary-dark: #7c3aed;
+  --sidebar-accent: #a855f7;
+  --sidebar-glow: rgba(139, 92, 246, 0.3);
+  --sidebar-background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+  --sidebar-background-hover: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+  
+  --text-dark: #1a1a1a;
+  --text-light: #ffffff;
+  --text-muted: rgba(255, 255, 255, 0.7);
+  
+  --background-dark: #1a1a2e;
+  --background-darker: #0f0f20;
+  --background-light: #fafafa;
+  
+  --shadow-color: rgba(0, 0, 0, 0.2);
+  --transition-standard: all 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-bounce: all 1s cubic-bezier(0.34, 1.56, 0.64, 1);
+  
+  --spacing-sm: 6px;
+  --spacing-md: 12px;
+  --spacing-lg: 18px;
+  
+  --border-radius: 12px;
+  
+  --sidebar-width: 70px;
+  --button-height: 48px;
+  --logo-size: 40px;
+  --icon-size: 20px;
+}
+
+:host.colors-updated {
+  animation: colorTransition 0.3s ease-out;
+}
+
+@keyframes colorTransition {
+  0% {
+      transform: scale(1);
+    opacity: 0.95;
+  }
+  50% {
+    transform: scale(1.02);
+    opacity: 0.98;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+.nav-container {
+  width: var(--sidebar-width);
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  background: var(--sidebar-background);
+  box-shadow: 
+    0 8px 30px var(--shadow-color),
+    0 0 0 1px rgba(255, 255, 255, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+  overflow: hidden;
+  position: relative;
+  transition: var(--transition-standard);
+  will-change: transform, box-shadow;
+  box-sizing: border-box;
+}
+
+.nav-container::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: 
+    radial-gradient(circle at 15% 15%, var(--sidebar-primary) 0%, transparent 45%),
+    radial-gradient(circle at 85% 85%, var(--sidebar-secondary) 0%, transparent 55%),
+    radial-gradient(circle at 35% 65%, var(--sidebar-primary-dark) 0%, transparent 50%),
+    radial-gradient(circle at 65% 35%, var(--sidebar-secondary-dark) 0%, transparent 40%),
+    
+    radial-gradient(circle at 25% 75%, var(--sidebar-accent) 0%, transparent 35%),
+    radial-gradient(circle at 75% 25%, rgba(255, 255, 255, 0.12) 0%, transparent 30%),
+    
+    radial-gradient(circle at 8% 92%, rgba(0, 0, 0, 0.18) 0%, transparent 45%),
+    radial-gradient(circle at 92% 8%, rgba(0, 0, 0, 0.12) 0%, transparent 40%),
+    
+    radial-gradient(circle at 45% 20%, rgba(139, 92, 246, 0.3) 0%, transparent 40%),
+    radial-gradient(circle at 20% 45%, rgba(99, 102, 241, 0.25) 0%, transparent 35%),
+    radial-gradient(circle at 80% 55%, rgba(168, 85, 247, 0.2) 0%, transparent 30%),
+    radial-gradient(circle at 55% 80%, rgba(79, 70, 229, 0.15) 0%, transparent 25%);
+  
+  background-size: 160% 160%, 180% 180%, 170% 170%, 140% 140%, 150% 150%, 130% 130%, 145% 145%, 135% 135%, 155% 155%, 165% 165%, 175% 175%, 185% 185%;
+  opacity: 0.85;
+  animation: 
+    livingColorMesh 35s ease-in-out infinite,
+    colorBreathing 12s ease-in-out infinite,
+    meshShift 25s ease-in-out infinite,
+    smoothFlow 40s ease-in-out infinite;
+  pointer-events: none;
+  transition: opacity 1.2s cubic-bezier(0.4, 0, 0.2, 1);
+  mix-blend-mode: soft-light;
+  filter: blur(0.5px);
+  will-change: background-position, opacity, filter;
+}
+
+.nav-container:hover::before {
+  opacity: 1;
+  animation-duration: 28s, 10s, 20s, 32s;
+  filter: blur(0px);
+}
+
+@keyframes livingColorMesh {
+  0%, 100% {
+    background-position: 
+      0% 0%, 100% 100%, 50% 50%, 0% 100%,
+      100% 0%, 0% 50%, 50% 100%, 100% 50%,
+      25% 75%, 75% 25%, 60% 40%, 40% 60%;
+  }
+  16.66% {
+    background-position: 
+      100% 0%, 0% 100%, 100% 50%, 100% 0%,
+      0% 100%, 100% 50%, 0% 0%, 50% 100%,
+      75% 25%, 25% 75%, 40% 60%, 60% 40%;
+  }
+  33.33% {
+    background-position: 
+      100% 100%, 0% 0%, 50% 100%, 0% 50%,
+      50% 0%, 100% 100%, 100% 50%, 0% 0%,
+      50% 100%, 100% 50%, 25% 75%, 75% 25%;
+  }
+  50% {
+    background-position: 
+      50% 0%, 100% 50%, 0% 100%, 50% 50%,
+      100% 100%, 0% 0%, 50% 0%, 100% 100%,
+      0% 50%, 50% 100%, 100% 25%, 25% 100%;
+  }
+  66.66% {
+    background-position: 
+      0% 100%, 50% 0%, 100% 50%, 100% 100%,
+      0% 50%, 50% 100%, 100% 0%, 0% 50%,
+      75% 75%, 25% 25%, 40% 40%, 60% 60%;
+  }
+  83.33% {
+    background-position: 
+      50% 100%, 0% 50%, 50% 0%, 0% 0%,
+      100% 50%, 0% 100%, 50% 50%, 100% 0%,
+      25% 25%, 75% 75%, 60% 60%, 40% 40%;
+  }
+}
+
+@keyframes colorBreathing {
+  0%, 100% {
+    opacity: 0.8;
+    filter: brightness(1) contrast(1) saturate(1);
+    transform: scale(1);
+  }
+  25% {
+    opacity: 0.9;
+    filter: brightness(1.1) contrast(1.05) saturate(1.1);
+    transform: scale(1.005);
+  }
+  50% {
+    opacity: 1;
+    filter: brightness(1.15) contrast(1.08) saturate(1.15);
+    transform: scale(1.01);
+  }
+  75% { 
+    opacity: 0.95;
+    filter: brightness(1.05) contrast(1.03) saturate(1.05);
+    transform: scale(1.002);
+  }
+}
+
+@keyframes meshShift {
+  0%, 100% {
+    transform: translateX(0px) translateY(0px) scale(1) rotate(0deg);
+  }
+  20% {
+    transform: translateX(-0.5px) translateY(-0.3px) scale(1.002) rotate(0.1deg);
+  }
+  40% {
+    transform: translateX(0.3px) translateY(-0.5px) scale(1.005) rotate(-0.1deg);
+  }
+  60% {
+    transform: translateX(0.5px) translateY(0.3px) scale(1.003) rotate(0.05deg);
+  }
+  80% {
+    transform: translateX(-0.3px) translateY(0.5px) scale(0.998) rotate(-0.05deg);
+  }
+}
+
+@keyframes smoothFlow {
+  0%, 100% {
+    background-size: 160% 160%, 180% 180%, 170% 170%, 140% 140%, 150% 150%, 130% 130%, 145% 145%, 135% 135%, 155% 155%, 165% 165%, 175% 175%, 185% 185%;
+  }
+  25% {
+    background-size: 165% 165%, 175% 175%, 180% 180%, 145% 145%, 155% 155%, 135% 135%, 150% 150%, 140% 140%, 160% 160%, 170% 170%, 180% 180%, 190% 190%;
+  }
+  50% {
+    background-size: 170% 170%, 170% 170%, 175% 175%, 150% 150%, 160% 160%, 140% 140%, 155% 155%, 145% 145%, 165% 165%, 175% 175%, 185% 185%, 195% 195%;
+  }
+  75% {
+    background-size: 175% 175%, 165% 165%, 170% 170%, 155% 155%, 165% 165%, 145% 145%, 160% 160%, 150% 150%, 170% 170%, 180% 180%, 190% 190%, 200% 200%;
+  }
+}
+
+.nav-container::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: 
+    radial-gradient(circle at 50% 50%, var(--sidebar-glow) 0%, transparent 75%),
+    radial-gradient(circle at 25% 25%, rgba(255, 255, 255, 0.08) 0%, transparent 55%),
+    radial-gradient(circle at 75% 75%, var(--sidebar-accent) 0%, transparent 65%),
+    radial-gradient(circle at 40% 60%, rgba(139, 92, 246, 0.15) 0%, transparent 45%),
+    radial-gradient(circle at 60% 40%, rgba(99, 102, 241, 0.12) 0%, transparent 40%);
+  opacity: 0;
+  transition: opacity 1.2s cubic-bezier(0.4, 0, 0.2, 1);
+  pointer-events: none;
+  filter: blur(45px);
+  animation: 
+    glowPulse 15s ease-in-out infinite,
+    glowShift 20s ease-in-out infinite,
+    glowFlow 30s ease-in-out infinite;
+  mix-blend-mode: screen;
+  will-change: opacity, transform, filter;
+}
+
+.nav-container:hover::after {
+  opacity: 0.7;
+  animation-duration: 12s, 18s, 25s;
+}
+
+@keyframes glowPulse {
+  0%, 100% {
+    opacity: 0;
+    transform: scale(1);
+  }
+  25% {
+    opacity: 0.3;
+    transform: scale(1.1);
+  }
+  50% {
+    opacity: 0.7;
+    transform: scale(1.25);
+  }
+  75% {
+    opacity: 0.4;
+    transform: scale(1.15);
+  }
+}
+
+@keyframes glowShift {
+  0%, 100% {
+    background-position: 50% 50%, 25% 25%, 75% 75%, 40% 60%, 60% 40%;
+  }
+  33% {
+    background-position: 75% 25%, 50% 75%, 25% 50%, 60% 40%, 40% 60%;
+  }
+  66% {
+    background-position: 25% 75%, 75% 25%, 50% 50%, 20% 80%, 80% 20%;
+  }
+}
+
+@keyframes glowFlow {
+  0%, 100% {
+    background-size: 100% 100%, 120% 120%, 140% 140%, 110% 110%, 130% 130%;
+  }
+  50% {
+    background-size: 120% 120%, 140% 140%, 160% 160%, 130% 130%, 150% 150%;
+  }
+}
+
+.image-container {
+  margin-top: 12px;
+  padding: var(--spacing-sm);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  overflow: visible;
+  z-index: 1;
+  position: relative;
+  perspective: 1000px;
+  transform-style: preserve-3d;
+}
+
+.image-container::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 15%;
+  width: 70%;
+  height: 1px;
+  background: var(--text-light);
+  opacity: 0.7;
+  border-radius: 1px;
+  box-shadow: 0 0 8px rgba(255, 255, 255, 0.5);
+  transition: all 0.8s ease;
+  z-index: 2;
+}
+
+.image-container:hover::after {
+  box-shadow: 0 0 16px var(--sidebar-accent);
+  opacity: 1;
+  transform: scaleX(1.1);
+}
+
+.image-container:hover .logo {
+  animation: logoSmoothDance 2.5s ease-in-out infinite;
+  filter: 
+    drop-shadow(0 0 12px rgba(255, 255, 255, 0.8)) 
+    drop-shadow(0 0 24px var(--sidebar-accent))
+    drop-shadow(0 0 36px rgba(139, 92, 246, 0.6));
+}
+
+@keyframes logoSmoothDance {
+  0%, 100% {
+    transform: 
+      translateX(0) 
+      translateY(0) 
+      rotate(0deg) 
+      scale(1);
+    filter: 
+      drop-shadow(0 0 12px rgba(255, 255, 255, 0.8)) 
+      drop-shadow(0 0 24px var(--sidebar-accent))
+      drop-shadow(0 0 36px rgba(139, 92, 246, 0.6));
+  }
+  12.5% {
+    transform: 
+      translateX(-4px) 
+      translateY(-3px) 
+      rotate(-5deg) 
+      scale(1.02);
+    filter: 
+      drop-shadow(0 0 14px rgba(255, 255, 255, 0.85)) 
+      drop-shadow(0 0 28px var(--sidebar-accent))
+      drop-shadow(0 0 42px rgba(139, 92, 246, 0.65));
+  }
+  25% {
+    transform: 
+      translateX(4px) 
+      translateY(-2px) 
+      rotate(5deg) 
+      scale(1.04);
+    filter: 
+      drop-shadow(0 0 16px rgba(255, 255, 255, 0.9)) 
+      drop-shadow(0 0 32px var(--sidebar-accent))
+      drop-shadow(0 0 48px rgba(139, 92, 246, 0.7));
+  }
+  37.5% {
+    transform: 
+      translateX(-3px) 
+      translateY(3px) 
+      rotate(-4deg) 
+      scale(1.02);
+    filter: 
+      drop-shadow(0 0 14px rgba(255, 255, 255, 0.85)) 
+      drop-shadow(0 0 28px var(--sidebar-accent))
+      drop-shadow(0 0 42px rgba(139, 92, 246, 0.65));
+  }
+  50% {
+    transform: 
+      translateX(3px) 
+      translateY(2px) 
+      rotate(4deg) 
+      scale(1.03);
+    filter: 
+      drop-shadow(0 0 15px rgba(255, 255, 255, 0.88)) 
+      drop-shadow(0 0 30px var(--sidebar-accent))
+      drop-shadow(0 0 45px rgba(139, 92, 246, 0.68));
+  }
+  62.5% {
+    transform: 
+      translateX(-2px) 
+      translateY(-3px) 
+      rotate(-3deg) 
+      scale(1.01);
+    filter: 
+      drop-shadow(0 0 13px rgba(255, 255, 255, 0.82)) 
+      drop-shadow(0 0 26px var(--sidebar-accent))
+      drop-shadow(0 0 39px rgba(139, 92, 246, 0.62));
+  }
+  75% {
+    transform: 
+      translateX(2px) 
+      translateY(-1px) 
+      rotate(3deg) 
+      scale(1.02);
+    filter: 
+      drop-shadow(0 0 14px rgba(255, 255, 255, 0.85)) 
+      drop-shadow(0 0 28px var(--sidebar-accent))
+      drop-shadow(0 0 42px rgba(139, 92, 246, 0.65));
+  }
+  87.5% {
+    transform: 
+      translateX(-1px) 
+      translateY(2px) 
+      rotate(-2deg) 
+      scale(1.01);
+    filter: 
+      drop-shadow(0 0 13px rgba(255, 255, 255, 0.82)) 
+      drop-shadow(0 0 26px var(--sidebar-accent))
+      drop-shadow(0 0 39px rgba(139, 92, 246, 0.62));
+  }
+}
+
+.button-container {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  padding: 20px 0;
+  gap: 18px;
+  overflow-y: auto;
+  position: relative;
+  margin-top: 25%;
+  padding-top: 30px;
+}
+
+.button-container::-webkit-scrollbar {
+  display: none;
+}
+
+.button-container {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+button {
+  background-color: transparent;
+  border: none;
+  width: 100%;
+  height: var(--button-height);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+    cursor: pointer;
+  position: relative;
+  transition: var(--transition-standard);
+  overflow: hidden;
+  z-index: 1;
+  will-change: transform;
+}
+
+button::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  height: 100%;
+  width: 3px;
+  background: var(--text-light);
+  transform: scaleY(0);
+  opacity: 0;
+  border-radius: 0 3px 3px 0;
+  transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+  animation: buttonGlow 4s ease-in-out infinite;
+}
+
+@keyframes buttonGlow {
+  0%, 100% {
+    box-shadow: 0 0 4px var(--sidebar-accent);
+  }
+  50% {
+    box-shadow: 0 0 12px var(--sidebar-accent), 0 0 20px var(--sidebar-accent);
+  }
+}
+
+button::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  height: 100%;
+  width: 100%;
+  background: 
+    linear-gradient(90deg, rgba(255, 255, 255, 0.15) 0%, rgba(255, 255, 255, 0) 100%),
+    radial-gradient(circle at 50% 50%, var(--sidebar-accent) 0%, transparent 70%);
+  opacity: 0;
+  transition: opacity 0.6s ease;
+  z-index: -1;
+  animation: buttonMesh 6s ease-in-out infinite;
+}
+
+@keyframes buttonMesh {
+  0%, 100% {
+    background-position: 0% 50%, 50% 50%;
+  }
+  50% {
+    background-position: 100% 50%, 50% 50%;
+  }
+}
+
+button:hover {
+  transform: translateX(2px);
+}
+
+button:hover::before {
+  transform: scaleY(0.7);
+  opacity: 1;
+  background: var(--sidebar-accent);
+  box-shadow: 0 0 16px var(--sidebar-accent);
+}
+
+button:hover::after {
+  opacity: 1;
+}
+
+button:hover .nav-icon,
+button:focus-visible .nav-icon {
+  color: var(--text-light);
+  transform: translateY(-1px) scale(1.05);
+}
+
+button:focus-visible {
+  outline: 2px solid var(--sidebar-accent);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+button.active {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 0 8px 8px 0;
+  margin-right: 6px;
+  animation: activeButtonGlow 3s ease-in-out infinite;
+  position: relative;
+}
+
+button.active::before {
+  transform: scaleY(1);
+  opacity: 1;
+  background: var(--sidebar-accent);
+  box-shadow: 0 0 20px var(--sidebar-accent);
+}
+
+button.active .nav-icon {
+  color: var(--text-light);
+  transform: scale(1.05);
+  filter: drop-shadow(0 0 12px var(--sidebar-accent));
+}
+
+button.active::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: 
+    var(--sidebar-accent),
+    radial-gradient(circle at 30% 30%, rgba(255, 255, 255, 0.2) 0%, transparent 50%),
+    radial-gradient(circle at 70% 70%, var(--sidebar-primary) 0%, transparent 40%);
+  opacity: 0.15;
+  border-radius: 0 8px 8px 0;
+  animation: 
+    activeGlow 3s ease-in-out infinite,
+    activeMesh 5s ease-in-out infinite;
+  background-size: 100% 100%, 150% 150%, 120% 120%;
+}
+
+@keyframes activeButtonGlow {
+  0%, 100% {
+    box-shadow: 0 0 15px rgba(255, 255, 255, 0.2);
+  }
+  50% {
+    box-shadow: 0 0 25px rgba(255, 255, 255, 0.3);
+  }
+}
+
+@keyframes activeGlow {
+  0% {
+    opacity: 0.1;
+    box-shadow: 0 0 15px var(--sidebar-accent);
+  }
+  50% {
+    opacity: 0.2;
+    box-shadow: 0 0 25px var(--sidebar-accent), 0 0 35px var(--sidebar-accent);
+  }
+  100% {
+    opacity: 0.1;
+    box-shadow: 0 0 15px var(--sidebar-accent);
+  }
+}
+
+@keyframes activeMesh {
+  0%, 100% {
+    background-position: 0% 0%, 30% 30%, 70% 70%;
+  }
+  50% {
+    background-position: 100% 100%, 70% 70%, 30% 30%;
+  }
+}
+
+.nav-icon {
+  font-size: var(--icon-size);
+  color: var(--text-muted);
+  transition: var(--transition-standard);
+  position: relative;
+}
+
+button:hover .nav-icon,
+button.active .nav-icon {
+  color: var(--text-light);
+}
+
+button.active .nav-icon {
+  animation: iconPulse 3s ease-in-out infinite;
+}
+
+@keyframes iconPulse {
+  0% {
+    opacity: 0.9;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.05);
+    filter: drop-shadow(0 0 12px var(--sidebar-accent));
+  }
+  100% {
+    opacity: 0.9;
+    transform: scale(1);
+  }
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px; 
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+@media (max-width: 1024px) {
+  .image-container {
+    padding: var(--spacing-sm);
+  }
+  
+  .button-container {
+    padding: var(--spacing-sm) 0;
+    gap: var(--spacing-sm);
+  }
+  
+  button {
+    height: 42px;
+  }
+  
+  .nav-icon {
+    font-size: 18px;
+  }
+}
+
+@media (max-width: 768px) {
+  :host {
+    --sidebar-width: 50px;
+    --button-height: 38px;
+    --logo-size: 32px;
+    --icon-size: 18px;
+  }
+  
+  .image-container {
+    margin-top: 8px;
+    padding: 4px;
+  }
+  
+  .button-container {
+    padding: 12px 0;
+    gap: 8px;
+    margin-top: 15%;
+  }
+  
+  .nav-container {
+    width: var(--sidebar-width);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .nav-container,
+  .nav-container::before,
+  .nav-container::after,
+  .image-container::after,
+  button::before,
+  button.active::before,
+  button.active::after,
+  .nav-icon,
+  .logo {
+    animation: none !important;
+    transition: none !important;
+  }
+  
+  .image-container:hover .logo {
+    transform: scale(1.05) rotate(2deg);
+    filter: drop-shadow(0 4px 8px rgba(255, 255, 255, 0.3));
+  }
+}
+
+@media (prefers-contrast: high) {
+  .nav-container {
+    border: 2px solid var(--text-light);
+  }
+  
+  button.active {
+    background: var(--text-light);
+    color: var(--background-dark);
+  }
+  
+  .nav-icon {
+    color: var(--text-light);
+  }
+}
+
+@media print {
+  .nav-container {
+    position: static;
+    width: auto;
+    height: auto;
+    background: white;
+    color: black;
+    overflow: visible;
+  }
+  
+  .nav-container::before,
+  .nav-container::after {
+    display: none;
+  }
+  
+  button {
+    display: inline-block;
+    width: auto;
+    height: auto;
+    padding: 0.5rem 1rem;
+    border: 1px solid #ccc;
+    background: white;
+    color: black;
+  }
+}

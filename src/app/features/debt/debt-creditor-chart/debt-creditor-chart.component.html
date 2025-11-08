@@ -1,0 +1,108 @@
+<!--
+  Alpha Vault Financial System
+  
+  @author Mohamed Dhaoui
+  @component DebtCreditorChartComponent
+  @description Main debt dashboard component template for managing debt by creditor distribution
+-->
+
+<section class="creditor-chart-container" role="region" aria-labelledby="creditorChartTitle">
+  
+  <header class="chart-header">
+    <div class="header-content">
+      <div class="header-left">
+        <div class="header-icon" role="img" aria-label="Creditor distribution icon">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+            <path d="M3 6H21M3 12H21M3 18H21" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            <circle cx="7" cy="6" r="1" fill="currentColor"/>
+            <circle cx="7" cy="12" r="1" fill="currentColor"/>
+            <circle cx="7" cy="18" r="1" fill="currentColor"/>
+          </svg>
+          <div class="icon-glow"></div>
+        </div>
+        <div class="header-text">
+          <h2 id="creditorChartTitle" class="header-title">Debt by Creditor</h2>
+          <p class="header-subtitle">Distribution of your total debt across creditors</p>
+        </div>
+      </div>
+      
+      <div class="header-stats" *ngIf="hasCreditorData">
+        <div class="stat-badge">
+          <span class="stat-label">Creditors</span>
+          <span class="stat-value">{{ creditorCount }}</span>
+        </div>
+      </div>
+    </div>
+  </header>
+  
+  <div class="chart-content">
+    <div *ngIf="!hasCreditorData" class="no-data">
+      <div class="no-data-icon" aria-label="Chart icon">
+        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M3 3v18h18" stroke="currentColor" stroke-width="2"/>
+          <path d="M3 12h18" stroke="currentColor" stroke-width="2"/>
+          <path d="M3 21h18" stroke="currentColor" stroke-width="2"/>
+        </svg>
+      </div>
+      <h3 class="no-data-title">No Debt Data Available</h3>
+      <p class="no-data-description">Start adding your debts to see the creditor distribution chart</p>
+    </div>
+    
+    <div *ngIf="hasCreditorData" class="creditor-list" role="list" aria-label="Creditor debt distribution list">
+      <div 
+        *ngFor="let creditor of creditorEntries; let i = index; trackBy: trackByCreditor" 
+        class="creditor-item"
+        role="listitem"
+        [attr.aria-label]="creditor.key + ' debt: $' + (creditor.value | number:'1.0-2')"
+        [style.--percentage]="getCreditorPercentage(creditor.value) + '%'"
+        [style.--animation-delay]="(i * 0.1) + 's'"
+      >
+        <div class="creditor-info">
+          <div class="creditor-details">
+            <span class="creditor-name">{{ creditor.key }}</span>
+            <span class="creditor-percentage">{{ getCreditorPercentage(creditor.value) | number:'1.0-1' }}%</span>
+          </div>
+          <span class="creditor-amount">${{ creditor.value | number:'1.0-2' }}</span>
+        </div>
+        
+        <div class="creditor-bar" role="progressbar" [attr.aria-valuenow]="getCreditorPercentage(creditor.value)" aria-valuemin="0" aria-valuemax="100" [attr.aria-label]="creditor.key + ' percentage: ' + (getCreditorPercentage(creditor.value) | number:'1.0-1') + ' percent'">
+          <div class="bar-fill" [style.width.%]="getCreditorPercentage(creditor.value)"></div>
+          <div class="bar-glow" [style.width.%]="getCreditorPercentage(creditor.value)"></div>
+        </div>
+        
+        <div class="creditor-rank" *ngIf="i < 3">
+          <span class="rank-badge" [class]="'rank-' + (i + 1)" [attr.aria-label]="'Rank ' + (i + 1)">{{ i + 1 }}</span>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <footer class="chart-footer" *ngIf="hasCreditorData">
+    <div class="footer-content">
+      <div class="total-info">
+        <div class="total-label">
+          <svg class="label-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+            <path d="M12 2L2 7L12 12L22 7L12 2Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M2 17L12 22L22 17" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M2 12L12 17L22 12" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          <span>Total Debt</span>
+        </div>
+        <span class="total-amount">${{ totalDebt | number:'1.0-2' }}</span>
+      </div>
+      
+      <div class="footer-insights" *ngIf="topCreditor as topCreditor">
+        <div class="insight-item">
+          <svg class="insight-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+            <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/>
+            <path d="M12 6V12L16 14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+          </svg>
+          <span class="insight-text">
+            <strong>{{ topCreditor.key }}</strong> represents 
+            <strong>{{ getCreditorPercentage(topCreditor.value) | number:'1.0-1' }}%</strong> of your total debt
+          </span>
+        </div>
+      </div>
+    </div>
+  </footer>
+</section>

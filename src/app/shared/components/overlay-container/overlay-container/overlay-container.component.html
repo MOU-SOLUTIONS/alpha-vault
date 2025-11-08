@@ -1,0 +1,31 @@
+<!-- ─────────────────────────────
+     Overlay Container Layout
+───────────────────────────── -->
+<div
+  #overlayBackdrop
+  class="overlay-backdrop"
+  role="dialog"
+  aria-modal="true"
+  aria-labelledby="overlayTitle"
+  (click)="onBackdropClick($event)"
+>
+  <div class="overlay-wrapper" [ngClass]="theme" [style.width]="width">
+    <!-- ─────────────── Header ─────────────── -->
+    <div class="overlay-header">
+      <h2 id="overlayTitle" class="overlay-title">{{ title }}</h2>
+      <button
+        class="close-btn"
+        type="button"
+        aria-label="Close dialog"
+        (click)="cancel.emit()"
+      >
+        &times;
+      </button>
+    </div>
+
+    <!-- ─────────────── Content Body ─────────────── -->
+    <div class="overlay-body">
+      <ng-content></ng-content>
+    </div>
+  </div>
+</div>

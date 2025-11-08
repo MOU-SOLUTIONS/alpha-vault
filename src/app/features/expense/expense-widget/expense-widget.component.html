@@ -1,0 +1,39 @@
+<!--
+  Alpha Vault Financial System
+  
+  @author Mohamed Dhaoui
+  @component ExpenseWidgetComponent
+  @description Expense widget template for displaying expense statistics across different time periods
+-->
+
+<section class="expense-cards-container" role="region" aria-label="Expense statistics dashboard">
+  <article 
+    *ngFor="let item of cards; trackBy: trackByKey" 
+    class="expense-card"
+    role="article"
+    [attr.aria-label]="item.label + ' expense: ' + (getExpenseValue(item.key) | currency:currency:'symbol':'1.0-0')"
+    >
+    
+    <div class="expense-box"
+         role="button"
+         tabindex="0"
+         [attr.aria-labelledby]="item.key + 'Label'"
+         (click)="onCardClick(item)"
+         (keydown.enter)="onCardClick(item)"
+         (keydown.space)="onCardClick(item)">
+      
+      <div class="expense-icon" aria-hidden="true">
+        <i class="fas" [ngClass]="item.icon"></i>
+      </div>
+      
+      <div class="expense-content">
+        <p class="expense-label" [id]="item.key + 'Label'">{{ item.label }}</p>
+        <div class="expense-amount-wrapper">
+          <span class="expense-amount">{{ getExpenseValue(item.key) | currency:currency:'symbol':'1.0-0' }}</span>
+        </div>
+      </div>
+      
+      <div class="expense-indicator" [ngClass]="item.class" aria-hidden="true"></div>
+    </div>
+  </article>
+</section>

@@ -1,0 +1,266 @@
+<!--
+  Alpha Vault Financial System
+  
+  @author Mohamed Dhaoui
+  @component DashboardComponent
+  @description Elite financial dashboard template
+-->
+
+<main class="dashboard-container" role="main" aria-label="Financial Dashboard">
+    <header class="dashboard-header">
+    <!-- Animated Background -->
+    <div class="header-background">
+      <div class="animated-gradient"></div>
+      <div class="particles">
+        <div class="particle" *ngFor="let i of [1,2,3,4,5,6,7,8,9,10]"></div>
+      </div>
+    </div>
+
+    <!-- Header Content -->
+    <div class="header-content-wrapper">
+      <!-- Left Section: Title, Icon & Greeting -->
+      <div class="header-left">
+        <div class="title-section">
+          <span class="title-icon" aria-hidden="true">
+            <i class="fas fa-tachometer-alt"></i>
+          </span>
+          <div class="title-text-group">
+            <div class="greeting-text">{{ greeting }}, {{ getUserFirstName() }}</div>
+            <h1 class="dashboard-title">
+              Financial Dashboard
+            </h1>
+            <p class="dashboard-subtitle">
+              Comprehensive overview of your financial health
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right Section: Time & Weather -->
+      <div class="header-right">
+        <!-- Time & Date Widget -->
+        <div class="time-widget">
+          <div class="time-display">
+            <i class="fas fa-clock" aria-hidden="true"></i>
+            <span class="time-text">{{ currentTime }}</span>
+          </div>
+          <div class="date-display">
+            <span class="day-text">{{ currentDay }}</span>
+            <span class="date-text">{{ currentDate }}</span>
+          </div>
+        </div>
+
+        <!-- Weather Widget -->
+        <div class="weather-widget" *ngIf="!weatherLoading">
+          <div class="weather-icon" [class]="'weather-' + weather.icon">
+            <i [class]="'fas fa-' + weather.icon" aria-hidden="true"></i>
+          </div>
+          <div class="weather-content">
+            <div class="weather-temp">{{ weather.temperature }}°C</div>
+            <div class="weather-condition">{{ weather.condition }}</div>
+            <div class="weather-details">
+              <span class="weather-detail">
+                <i class="fas fa-tint" aria-hidden="true"></i>
+                {{ weather.humidity }}%
+              </span>
+              <span class="weather-detail">
+                <i class="fas fa-wind" aria-hidden="true"></i>
+                {{ weather.windSpeed }} km/h
+              </span>
+            </div>
+          </div>
+        </div>
+        <div class="weather-widget loading" *ngIf="weatherLoading">
+          <div class="weather-loading">
+            <i class="fas fa-spinner fa-spin" aria-hidden="true"></i>
+            <span>Loading weather...</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <div *ngIf="isLoading" class="loading-container" role="status" aria-label="Loading dashboard data">
+    <div class="loading-spinner"></div>
+    <p class="loading-text">Loading your financial overview...</p>
+  </div>
+
+  <div *ngIf="!isLoading" class="dashboard-content">
+    <section class="dashboard-section overview-section" aria-labelledby="overviewHeading">
+      <h2 id="overviewHeading" class="sr-only">Financial Overview</h2>
+      <div class="overview-grid">
+        <article class="overview-card net-worth-card" role="article" aria-label="Net Worth">
+          <div class="card-header">
+            <div class="card-icon net-worth-icon">
+              <i class="fas fa-wallet" aria-hidden="true"></i>
+            </div>
+            <div class="card-title-group">
+              <h3 class="card-title">Net Worth</h3>
+              <p class="card-subtitle">Total Assets - Liabilities</p>
+            </div>
+          </div>
+          <div class="card-value">
+            <span class="value-amount">{{ netWorth | currency:'USD':'symbol':'1.0-0' }}</span>
+          </div>
+          <div class="card-footer">
+            <span class="footer-text">Current estimated value</span>
+          </div>
+        </article>
+
+        <article class="overview-card income-card" role="article" aria-label="Total Income">
+          <div class="card-header">
+            <div class="card-icon income-icon">
+              <i class="fas fa-dollar-sign" aria-hidden="true"></i>
+            </div>
+            <div class="card-title-group">
+              <h3 class="card-title">Total Income</h3>
+              <p class="card-subtitle">{{ currentYear }} Year Total</p>
+            </div>
+          </div>
+          <div class="card-value">
+            <span class="value-amount">{{ totalIncome | currency:'USD':'symbol':'1.0-0' }}</span>
+          </div>
+          <div class="card-footer">
+            <span class="footer-text">Monthly: {{ monthlyIncome | currency:'USD':'symbol':'1.0-0' }}</span>
+          </div>
+        </article>
+
+        <article class="overview-card expense-card" role="article" aria-label="Total Expenses">
+          <div class="card-header">
+            <div class="card-icon expense-icon">
+              <i class="fas fa-chart-line" aria-hidden="true"></i>
+            </div>
+            <div class="card-title-group">
+              <h3 class="card-title">Total Expenses</h3>
+              <p class="card-subtitle">{{ currentYear }} Year Total</p>
+            </div>
+          </div>
+          <div class="card-value">
+            <span class="value-amount">{{ totalExpense | currency:'USD':'symbol':'1.0-0' }}</span>
+          </div>
+          <div class="card-footer">
+            <span class="footer-text">Monthly: {{ monthlyExpense | currency:'USD':'symbol':'1.0-0' }}</span>
+          </div>
+        </article>
+
+        <article class="overview-card savings-card" role="article" aria-label="Total Savings">
+          <div class="card-header">
+            <div class="card-icon savings-icon">
+              <i class="fas fa-piggy-bank" aria-hidden="true"></i>
+            </div>
+            <div class="card-title-group">
+              <h3 class="card-title">Total Savings</h3>
+              <p class="card-subtitle">Active Goals Progress</p>
+            </div>
+          </div>
+          <div class="card-value">
+            <span class="value-amount">{{ totalSavings | currency:'USD':'symbol':'1.0-0' }}</span>
+          </div>
+          <div class="card-footer">
+            <span class="footer-text">Saved across all goals</span>
+          </div>
+        </article>
+
+        <article class="overview-card investment-card" role="article" aria-label="Total Investments">
+          <div class="card-header">
+            <div class="card-icon investment-icon">
+              <i class="fas fa-coins" aria-hidden="true"></i>
+            </div>
+            <div class="card-title-group">
+              <h3 class="card-title">Investments</h3>
+              <p class="card-subtitle">Portfolio Value</p>
+            </div>
+          </div>
+          <div class="card-value">
+            <span class="value-amount">{{ totalInvestments | currency:'USD':'symbol':'1.0-0' }}</span>
+          </div>
+          <div class="card-footer">
+            <span class="footer-text">Current market value</span>
+          </div>
+        </article>
+
+        <article class="overview-card debt-card" role="article" aria-label="Total Debt">
+          <div class="card-header">
+            <div class="card-icon debt-icon">
+              <i class="fas fa-credit-card" aria-hidden="true"></i>
+            </div>
+            <div class="card-title-group">
+              <h3 class="card-title">Total Debt</h3>
+              <p class="card-subtitle">Outstanding Balance</p>
+            </div>
+          </div>
+          <div class="card-value">
+            <span class="value-amount">{{ totalDebt | currency:'USD':'symbol':'1.0-0' }}</span>
+          </div>
+          <div class="card-footer">
+            <span class="footer-text">Total obligations</span>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <section class="dashboard-section quick-stats-section" aria-labelledby="quickStatsHeading">
+      <h2 id="quickStatsHeading" class="section-title">Quick Statistics</h2>
+      <div class="quick-stats-grid">
+        <article class="stat-card budget-stat" role="article" aria-label="Budget Status">
+          <div class="stat-icon">
+            <i class="fas fa-calculator" aria-hidden="true"></i>
+          </div>
+          <div class="stat-content">
+            <h3 class="stat-label">Monthly Budget</h3>
+            <p class="stat-value">{{ monthlyBudget | currency:'USD':'symbol':'1.0-0' }}</p>
+            <p class="stat-detail">Available: {{ availableBudget | currency:'USD':'symbol':'1.0-0' }}</p>
+          </div>
+        </article>
+
+        <article class="stat-card comparison-stat" role="article" aria-label="Income vs Expenses">
+          <div class="stat-icon">
+            <i class="fas fa-balance-scale" aria-hidden="true"></i>
+          </div>
+          <div class="stat-content">
+            <h3 class="stat-label">Income vs Expenses</h3>
+            <p class="stat-value">{{ monthlySurplus | currency:'USD':'symbol':'1.0-0' }}</p>
+            <p class="stat-detail" [class.positive]="isSurplus" [class.negative]="!isSurplus">
+              {{ isSurplus ? 'Surplus' : 'Deficit' }}
+            </p>
+          </div>
+        </article>
+
+        <article class="stat-card savings-rate-stat" role="article" aria-label="Savings Rate">
+          <div class="stat-icon">
+            <i class="fas fa-percentage" aria-hidden="true"></i>
+          </div>
+          <div class="stat-content">
+            <h3 class="stat-label">Savings Rate</h3>
+            <p class="stat-value">{{ savingsRate }}%</p>
+            <p class="stat-detail">Based on monthly income</p>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <section class="dashboard-section widgets-section" aria-labelledby="widgetsHeading">
+      <h2 id="widgetsHeading" class="section-title">Detailed Insights</h2>
+      <div class="widgets-grid">
+        <div class="widgets-row">
+          <app-dashboard-monthly-trend></app-dashboard-monthly-trend>
+          <app-dashboard-recent-activity></app-dashboard-recent-activity>
+        </div>
+        
+        <div class="widgets-row">
+          <app-dashboard-budget-summary></app-dashboard-budget-summary>
+          <app-dashboard-savings-summary></app-dashboard-savings-summary>
+        </div>
+        
+        <div class="widgets-row">
+          <app-dashboard-investment-summary></app-dashboard-investment-summary>
+          <app-dashboard-debt-summary></app-dashboard-debt-summary>
+        </div>
+      </div>
+    </section>
+  </div>
+</main>
+
+<div class="sr-only" aria-live="polite" aria-atomic="true">
+  Dashboard loaded with financial overview data
+</div>

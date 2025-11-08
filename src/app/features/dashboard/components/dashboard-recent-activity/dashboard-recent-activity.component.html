@@ -1,0 +1,56 @@
+<!--
+  Alpha Vault Financial System
+  
+  @author Mohamed Dhaoui
+  @component DashboardRecentActivityComponent
+  @description Recent activity template
+-->
+
+<article class="activity-card" role="article" aria-labelledby="activityTitle">
+  <header class="activity-header">
+    <h2 id="activityTitle" class="activity-title">
+      <i class="fas fa-history" aria-hidden="true"></i>
+      Recent Activity
+    </h2>
+  </header>
+
+  <div *ngIf="isLoading" class="loading-state">
+    <div class="loading-spinner-small"></div>
+    <p>Loading recent activity...</p>
+  </div>
+
+  <div *ngIf="!isLoading" class="activity-content">
+    <ul class="activity-list" role="list">
+      <li 
+        *ngFor="let activity of activities; trackBy: trackByActivity"
+        class="activity-item"
+        [class.income]="activity.type === 'income'"
+        [class.expense]="activity.type === 'expense'"
+        role="listitem"
+        [attr.aria-label]="activity.type + ': ' + activity.title + ', ' + activity.formattedDate + ', ' + activity.formattedAmount"
+        tabindex="0"
+        (keydown.enter)="$event.stopPropagation()"
+        (keydown.space)="$event.preventDefault(); $event.stopPropagation()">
+        <div class="activity-icon" [style.background-color]="activity.color + '20'" [style.color]="activity.color" aria-hidden="true">
+          <i class="fas" [ngClass]="activity.icon" aria-hidden="true"></i>
+        </div>
+        <div class="activity-details">
+          <h3 class="activity-name">{{ activity.title }}</h3>
+          <p class="activity-date">{{ activity.formattedDate }}</p>
+        </div>
+        <div class="activity-amount" [style.color]="activity.color">
+          <span *ngIf="activity.type === 'income'" class="amount-sign" aria-hidden="true">+</span>
+          <span *ngIf="activity.type === 'expense'" class="amount-sign" aria-hidden="true">-</span>
+          <span class="sr-only">{{ activity.type === 'income' ? 'Income' : 'Expense' }}: </span>
+          {{ activity.formattedAmount }}
+        </div>
+      </li>
+    </ul>
+
+    <div *ngIf="activities.length === 0" class="empty-state">
+      <i class="fas fa-inbox" aria-hidden="true"></i>
+      <p>No recent activity</p>
+    </div>
+  </div>
+</article>
+

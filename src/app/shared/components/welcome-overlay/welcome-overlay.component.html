@@ -1,0 +1,33 @@
+<div class="overlay-container" *ngIf="showOverlay" [@overlayAnimation] (click)="onClose()">
+  <div class="welcome-modal" [@modalAnimation] (click)="onModalClick($event)">
+    <div class="modal-header">
+      <div class="logo-section">
+        <img
+          class="alpha-logo"
+          src="../../../assets/logos/black-alpha.png"
+          alt="Alpha Vault - Financial Dominance"
+          width="60"
+          height="60"
+          loading="eager"
+        />
+        <span class="brand-text"><span class="highlight">ALPHA</span> VAULT</span>
+      </div>
+    </div>
+    
+    <div class="modal-content" [@contentAnimation]>
+      <div class="master-quote" [@masterQuoteAnimation]>
+        <p>Stop surviving. Start commanding your money. Join the Alpha generation.</p>
+      </div>
+      
+      <div class="secondary-quote" [@secondaryQuoteAnimation]>
+        <p>We don't manage your money. We empower you to master it.</p>
+      </div>
+      
+      <div class="progress-bar">
+        <div class="progress-fill"></div>
+      </div>
+      
+      <p class="subtle-text">Click anywhere to continue your journey</p>
+    </div>
+  </div>
+</div>

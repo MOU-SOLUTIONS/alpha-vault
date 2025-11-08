@@ -1,0 +1,85 @@
+/*
+  Alpha Vault Financial System
+  
+  @author Mohamed Dhaoui
+  @component IncomeTableContainerComponent
+  @description Comprehensive styling for income table container component with responsive design
+*/
+
+/* CSS Variables */
+:host {
+  --primary-color: #667eea;
+  --primary-light: rgba(102, 126, 234, 0.1);
+  --primary-dark: #5a67d8;
+  --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  --success-color: #68d391;
+  --success-light: rgba(104, 211, 145, 0.1);
+  --danger-color: #fc8181;
+  --danger-light: rgba(252, 129, 129, 0.1);
+  --text-color: #2d3748;
+  --text-light: #718096;
+  --background-color: #ffffff;
+  --border-color: #e2e8f0;
+  --border-radius: 8px;
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.1);
+  --transition-fast: 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+  display: block;
+  width: 100%;
+}
+
+/* Income Table Section */
+.income-table-section {
+  width: 100%;
+  max-width: 100%;
+}
+
+/* Container */
+.container {
+  padding: 0;
+  margin: 0;
+  width: 100%;
+  max-width: 100%;
+}
+
+/* Row */
+.row.justify-content-center {
+  justify-content: flex-start;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+/* Col */
+.col-12 {
+  margin: 0;
+  padding: 0;
+  flex: 0 0 100%;
+  max-width: 100%;
+}
+
+/* Table Card */
+.table-card {
+  background: var(--background-color);
+  position: relative;
+  width: 100%;
+  border: 1px solid #e5e7eb;
+  border-radius: var(--border-radius);
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: var(--primary-gradient);
+    z-index: 1;
+  }
+}
+
+/* Table Content */
+.table-content {
+  position: relative;
+}

@@ -1,0 +1,214 @@
+/*
+  Alpha Vault Financial System
+  
+  @author Mohamed Dhaoui
+  @component ExpenseEvaluationComponent
+  @description Container styling for expense evaluation component
+*/
+
+/* Host */
+:host {
+  display: block;
+  min-height: 100vh;
+  background: linear-gradient(135deg, #0f0f23 0%, #1a1a2e 50%, #16213e 100%);
+  position: relative;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  color: #ffffff;
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-image: 
+      radial-gradient(circle at 20% 80%, rgba(120, 119, 198, 0.3) 0%, transparent 50%),
+      radial-gradient(circle at 80% 20%, rgba(255, 119, 198, 0.3) 0%, transparent 50%),
+      radial-gradient(circle at 40% 40%, rgba(120, 219, 255, 0.2) 0%, transparent 50%);
+    animation: backgroundShift 20s ease-in-out infinite;
+    z-index: 0;
+  }
+
+  &::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-image: 
+      radial-gradient(2px 2px at 20px 30px, #667eea, transparent),
+      radial-gradient(2px 2px at 40px 70px, #ff6b6b, transparent),
+      radial-gradient(1px 1px at 90px 40px, #4ecdc4, transparent),
+      radial-gradient(1px 1px at 130px 80px, #667eea, transparent),
+      radial-gradient(2px 2px at 160px 30px, #ff6b6b, transparent);
+    background-repeat: repeat;
+    background-size: 200px 100px;
+    animation: sparkle 4s linear infinite;
+    opacity: 0.3;
+    z-index: 0;
+  }
+}
+
+/* Expense Evaluation Container */
+.expense-evaluation-container {
+  min-height: 100vh;
+  position: relative;
+  font-family: inherit;
+  color: inherit;
+
+  &.loading {
+    pointer-events: none;
+  }
+}
+
+/* Main Content */
+.main-content {
+  position: relative;
+  z-index: 1;
+}
+
+/* Content Grid */
+.content-grid {
+  margin: 0 auto;
+  padding: 2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+  z-index: 1;
+  position: relative;
+}
+
+/* Row Split */
+.row-split {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2rem;
+  min-height: 600px;
+  align-items: stretch;
+
+  @media (max-width: 768px) {
+    grid-template-columns: 1fr;
+    min-height: auto;
+  }
+}
+
+/* Focus Management for Accessibility */
+button:focus,
+.btn-secondary:focus {
+  outline: 2px solid #ffd700;
+  outline-offset: 2px;
+  box-shadow: 0 0 20px rgba(255, 215, 0, 0.3);
+}
+
+/* Ensure Buttons are Keyboard Accessible */
+button,
+.btn-secondary {
+  cursor: pointer;
+  
+  &:focus-visible {
+    outline: 2px solid #ffd700;
+    outline-offset: 2px;
+    box-shadow: 0 0 20px rgba(255, 215, 0, 0.3);
+  }
+}
+
+/* Background Animations */
+@keyframes backgroundShift {
+  0%, 100% { transform: translateX(0) translateY(0); }
+  25% { transform: translateX(-10px) translateY(-10px); }
+  50% { transform: translateX(10px) translateY(-5px); }
+  75% { transform: translateX(-5px) translateY(10px); }
+}
+
+/* Sparkle Animation */
+@keyframes sparkle {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-200px); }
+}
+
+/* Reduced Motion Support */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* No Data Overlay */
+.no-data-overlay {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 400px;
+  padding: 2rem;
+  text-align: center;
+}
+
+.no-data-content {
+  max-width: 500px;
+  margin: 0 auto;
+  
+  .no-data-icon {
+    font-size: 4rem;
+    margin-bottom: 2.5rem;
+    opacity: 0.7;
+  }
+  
+  h3 {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: #ffffff;
+    margin: 0 0 1rem 0;
+  }
+  
+  p {
+    font-size: 1rem;
+    color: #ffffff;
+    opacity: 0.8;
+    margin: 0 0 2rem 0;
+    line-height: 1.5;
+  }
+  
+  .no-data-actions {
+    .btn-secondary {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      border: none;
+      padding: 0.75rem 2rem;
+      border-radius: 50px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+      
+      &:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+      }
+      
+      &:focus {
+        outline: 2px solid #ffd700;
+        outline-offset: 2px;
+      }
+      
+      &:focus-visible {
+        outline: 2px solid #ffd700;
+        outline-offset: 2px;
+      }
+    }
+  }
+}
+
+/* Print Styles */
+@media print {
+  :host {
+    background: white;
+    color: black;
+  }
+}

@@ -1,0 +1,133 @@
+/* ================= VARIABLES ================= */
+
+:host {
+  --primary-color: #6366f1;
+  --secondary-color: #8b5cf6;
+  --text-dark: #1a1a1a;
+  --text-light: #64748b;
+  --background-light: #fafafa;
+  --background-white: #ffffff;
+  --border-color: #e2e8f0;
+  --shadow-color: rgba(0, 0, 0, 0.1);
+  --primary-gradient: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+  --spacing-sm: 10px;
+  --spacing-md: 20px;
+  --spacing-lg: 40px;
+  --spacing-xl: 60px;
+  --border-radius-md: 20px;
+  --transition-standard: all 0.3s ease;
+  
+  display: block;
+}
+
+/* ================= FEATURES SECTION ================= */
+
+.features {
+  padding: 120px 0;
+  background: var(--background-white);
+}
+
+/* ================= SECTION HEADER ================= */
+
+.section-header {
+  text-align: center;
+  margin-bottom: 100px;
+  
+  h2 {
+    font-size: 3rem;
+    font-weight: 700;
+    margin-bottom: var(--spacing-md);
+    color: var(--text-dark);
+  }
+  
+  p {
+    font-size: 1.25rem;
+    color: var(--text-light);
+  }
+}
+
+/* ================= FEATURES GRID ================= */
+
+.features-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+  gap: var(--spacing-xl);
+}
+
+/* ================= FEATURE CARD ================= */
+
+.feature-card {
+  background: var(--background-light);
+  border-radius: var(--border-radius-md);
+  padding: var(--spacing-xl);
+  text-align: center;
+  transition: var(--transition-standard);
+  border: 1px solid var(--border-color);
+  
+  &:hover {
+    transform: translateY(-10px);
+    box-shadow: 0 25px 50px var(--shadow-color);
+    background: var(--background-white);
+  }
+  
+  h3 {
+    font-size: 1.5rem;
+    font-weight: 600;
+    margin-bottom: 15px;
+    color: var(--text-dark);
+  }
+  
+  p {
+    color: var(--text-light);
+    line-height: 1.6;
+  }
+}
+
+/* ================= ACCESSIBILITY ENHANCEMENTS ================= */
+
+@media (prefers-reduced-motion: reduce) {
+  .feature-card {
+    transition: none;
+    
+    &:hover {
+      transform: none;
+    }
+  }
+}
+
+/* ================= FEATURE ICON ================= */
+
+.feature-icon {
+  width: 80px;
+  height: 80px;
+  background: var(--primary-gradient);
+  border-radius: var(--border-radius-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 30px;
+  color: white;
+  font-size: 32px;
+}
+
+/* ================= GRADIENT TEXT ================= */
+
+.gradient-text {
+  background: var(--primary-gradient);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  display: inline;
+}
+
+/* ================= RESPONSIVE DESIGN ================= */
+
+@media (max-width: 768px) {
+  .section-header h2 {
+    font-size: 2rem;
+  }
+  
+  .features-grid {
+    grid-template-columns: 1fr;
+  }
+}

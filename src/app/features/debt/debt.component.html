@@ -1,0 +1,89 @@
+<!--
+  Alpha Vault Financial System
+  
+  @author Mohamed Dhaoui
+  @component DebtComponent
+  @description Main debt dashboard component template for managing debt dashboard
+-->
+
+<main class="parent-container" role="main">
+  <section class="first-row" aria-labelledby="debtSummary">
+    <h2 id="debtSummary" class="sr-only">Debt Summary</h2>
+    <app-debt-widget
+      [totalDebt]="totalDebt"
+      [totalMinPayments]="totalMinPayments"
+      [overdueDebts]="overdueDebts.length"
+      [totalCreditors]="creditorCount"
+    ></app-debt-widget>
+  </section>
+
+  <section class="second-row row" aria-labelledby="debtProgress">
+    <h2 id="debtProgress" class="sr-only">Debt Progress</h2>
+    <div class="debt-progress col-12 col-md-6">
+      <app-debt-progress
+        [totalDebt]="totalDebt"
+        [totalPaid]="totalPaid"
+      ></app-debt-progress>
+    </div>
+    <div class="debt-creditor-chart col-12 col-md-6">
+      <app-debt-creditor-chart [creditorData]="creditorSummary"></app-debt-creditor-chart>
+    </div>
+  </section>
+
+  <section class="third-row row" aria-labelledby="debtAnalytics">
+    <h2 id="debtAnalytics" class="sr-only">Debt Analytics</h2>
+    <div class="debt-evaluation col-12 col-md-6">
+      <app-debt-evaluation
+        [totalDebt]="totalDebt"
+        [totalPaid]="totalPaid"
+        [overdueDebts]="overdueDebts"
+        [creditorSummary]="creditorSummary"
+        [top5LargestDebts]="top5LargestDebts"
+        [debts]="debts"
+      ></app-debt-evaluation>
+    </div>
+    <div class="due-date-chart col-12 col-md-6">
+      <app-debt-due-date-chart [debts]="debts"></app-debt-due-date-chart>
+    </div>
+  </section>
+
+  <section class="fifth-row" aria-labelledby="debtTable">
+    <h2 id="debtTable" class="sr-only">Debt Table</h2>
+    <app-debt-table
+      [debts]="debts"
+      (onAdd)="onAddDebt()"
+      (onModify)="onModifyDebt($event)"
+      (onDelete)="onDeleteDebt($event)"
+      (onFormSubmit)="handleDebtFormSubmit($event)"
+    ></app-debt-table>
+  </section>
+</main>
+
+<app-overlay-container
+  *ngIf="isAddOverlayVisible"
+  [title]="'Add Debt'"
+  [theme]="'add'"
+  (cancel)="closeOverlay()"
+>
+  <app-debt-form
+    [formGroup]="debtForm"
+    [mode]="'add'"
+    (formSubmit)="addDebt()"
+    (cancel)="closeOverlay()"
+  />
+</app-overlay-container>
+
+<app-overlay-container
+  *ngIf="isModifyOverlayVisible"
+  [title]="'Modify Debt'"
+  [theme]="'modify'"
+  (cancel)="closeOverlay()"
+>
+  <app-debt-form
+    [formGroup]="debtForm"
+    [mode]="'edit'"
+    (formSubmit)="modifyDebt()"
+    (cancel)="closeOverlay()"
+  />
+</app-overlay-container>
+

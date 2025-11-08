@@ -1,0 +1,339 @@
+/*
+  Alpha Vault Financial System
+  
+  @author Mohamed Dhaoui
+  @component IncomeTableDesktopComponent
+  @description Comprehensive styling for income table desktop component with responsive design
+*/
+
+/* CSS Variables */
+:host {
+  --primary-color: #667eea;
+  --text-color: #2d3748;
+  --success-color: #68d391;
+  --danger-color: #fc8181;
+  --border-radius-sm: 8px;
+  --spacing-sm: 4px;
+  font-family: 'Inter', sans-serif;
+}
+
+/* Table Wrapper */
+.table-wrapper {
+  overflow-x: auto;
+  width: 100%;
+}
+
+/* Mat Table */
+.mat-table {
+  width: 100%;
+  background: transparent;
+}
+
+/* Mat Header Cell */
+.mat-header-cell {
+  color: var(--text-color);
+  text-align: center;
+  padding: 8px 4px;
+  letter-spacing: 0.5px;
+  position: relative;
+  background: #f8fafc;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+/* Select and Amount Columns */
+.mat-column-select,
+.mat-column-amount {
+  text-align: center;
+  
+  .mat-cell {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+  }
+}
+
+/* Status Circle */
+.status-circle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 37px;
+  height: 37px;
+  border-radius: 50%;
+  font-size: 1rem;
+  font-weight: 600;
+  transition: all 0.2s ease;
+  margin: 0 auto;
+  
+  &:hover {
+    transform: scale(1.05);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+  }
+  
+  &.received {
+    background-color: #dcfce7;
+    color: #16a34a;
+    border: 2px solid #22c55e;
+  }
+  
+  &.pending {
+    background-color: #fef2f2;
+    color: #dc2626;
+    border: 2px solid #ef4444;
+  }
+  
+  mat-icon {
+    font-size: 1.2rem;
+    width: 1.2rem;
+    height: 1.2rem;
+  }
+}
+
+/* Method Circle */
+.method-circle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 37px;
+  height: 37px;
+  border-radius: 50%;
+  border: 2px solid;
+  font-size: 1rem;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  
+  &:hover {
+    transform: scale(1.05);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+  }
+  
+  mat-icon {
+    font-size: 1.3rem;
+    width: 1.3rem;
+    height: 1.3rem;
+  }
+  
+  /* Cash */
+  &.cash {
+    background-color: rgba(16, 185, 129, 0.2);
+    border-color: #10b981;
+    color: #10b981;
+  }
+  
+  /* Card */
+  &.card {
+    background-color: rgba(220, 53, 69, 0.2);
+    border-color: #dc3545;
+    color: #dc3545;
+  }
+  
+  /* Check */
+  &.check {
+    background-color: rgba(139, 92, 246, 0.2);
+    border-color: #8b5cf6;
+    color: #8b5cf6;
+  }
+  
+  /* Transfer */
+  &.transfer {
+    background-color: rgba(23, 162, 184, 0.2);
+    border-color: #17a2b8;
+    color: #17a2b8;
+  }
+  
+  /* Crypto */
+  &.crypto {
+    background-color: rgba(245, 158, 11, 0.2);
+    border-color: #f59e0b;
+    color: #f59e0b;
+  }
+  
+  /* PayPal */
+  &.paypal {
+    background-color: rgba(30, 64, 175, 0.2);
+    border-color: #1e40af;
+    color: #1e40af;
+  }
+  
+  /* Other */
+  &.other {
+    background-color: rgba(107, 114, 128, 0.2);
+    border-color: #6b7280;
+    color: #6b7280;
+  }
+}
+
+/* Source Display */
+.source-elite {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px;
+  border-radius: var(--border-radius-md);
+
+  position: relative;
+  
+  .source-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 45px;
+    height: 45px;
+    background: linear-gradient(135deg, rgba(99, 102, 241, 0.2), rgba(79, 70, 229, 0.2));
+    border-radius: var(--border-radius-sm);
+  
+    
+    mat-icon {
+      font-size: 24px;
+      width: 24px;
+      height: 24px;
+      color: var(--primary-color);
+
+    }
+  }
+  
+  .source-content {
+    flex: 1;
+    
+    .source-name {
+  font-size: 0.8rem;
+      font-weight: 700;
+      color: var(--primary-color);
+      margin-bottom: var(--spacing-xs);
+      line-height: 1.2;
+      letter-spacing: 0.3px;
+  font-family: 'Inter', 'Segoe UI', 'Roboto', -apple-system, BlinkMacSystemFont, sans-serif;
+    }
+    
+    .source-category {
+  font-size: 0.7rem;
+      color: var(--text-lighter);
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      font-weight: 500;
+  font-family: 'Inter', 'Segoe UI', 'Roboto', -apple-system, BlinkMacSystemFont, sans-serif;
+    }
+  }
+}
+
+/* Amount Display */
+.amount-display {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--spacing-sm);
+  min-width: 120px;
+  margin: 0 auto;
+  
+  &.high-amount {
+    .amount-value {
+      color: #059669;
+    }
+  }
+  
+  &.medium-amount {
+    .amount-value {
+      color: #d97706;
+    }
+  }
+  
+  &.regular-amount {
+    .amount-value {
+      color: #6b7280;
+    }
+  }
+  
+  .amount-value {
+    font-size: 0.9rem;
+    font-weight: 500;
+    line-height: 1.2;
+    letter-spacing: -0.01em;
+    font-family: 'Inter', 'Segoe UI', 'Roboto', -apple-system, BlinkMacSystemFont, sans-serif;
+  }
+}
+
+/* Date Text */
+.date-text {
+  font-weight: 500;
+  color: var(--text-light);
+  font-size: 0.9rem;
+  font-family: 'Inter', 'Segoe UI', 'Roboto', -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+/* Description Text */
+.description-text {
+  font-weight: 500;
+  color: var(--text-light);
+  font-size: 0.9rem;
+  font-family: 'Inter', 'Segoe UI', 'Roboto', -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+/* Actions Wrapper */
+.actions-wrapper {
+  display: flex;
+  gap: var(--spacing-sm);
+  align-items: center;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+/* Edit and Delete Buttons */
+.edit-button, .delete-button {
+  width: 36px;
+  height: 36px;
+  min-width: 36px;
+  min-height: 36px;
+  margin: 0;
+  padding: 0;
+  border-radius: var(--border-radius-sm);
+  transition: all 0.6s cubic-bezier(0.23, 1, 0.32, 1);
+  cursor: pointer;
+  border: none;
+  
+  &:hover {
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.12);
+  }
+  
+  &:active {
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+    transition: all 0.2s ease-out;
+  }
+  
+  mat-icon {
+    font-size: 18px;
+    width: 18px;
+    height: 18px;
+    line-height: 18px;
+    color: white;
+    transition: transform 0.6s cubic-bezier(0.23, 1, 0.32, 1);
+  }
+  
+  &:hover mat-icon {
+    transform: scale(1.1);
+  }
+}
+
+/* Edit Button */
+.edit-button {
+  background-color: var(--success-color);
+  color: white;
+  
+  &:hover {
+    background-color: #388e3c;
+    box-shadow: 0 6px 20px rgba(56, 142, 60, 0.3);
+  }
+}
+
+/* Delete Button */
+.delete-button {
+  background-color: var(--danger-color);
+  color: white;
+  
+  &:hover {
+    background-color: #d32f2f;
+    box-shadow: 0 6px 20px rgba(211, 47, 47, 0.3);
+  }
+}

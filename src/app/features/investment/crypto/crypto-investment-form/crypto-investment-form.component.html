@@ -1,0 +1,229 @@
+<!--
+  Alpha Vault Financial System
+  
+  @author Mohamed Dhaoui
+  @component CryptoInvestmentFormComponent
+  @description Crypto investment form template for adding and editing crypto investments
+-->
+
+<h2 id="cryptoFormTitle" class="visually-hidden">Crypto Investment Form</h2>
+
+<form
+  [formGroup]="formGroup"
+  (ngSubmit)="submit()"
+  (keydown.escape)="cancelForm.emit()"
+  class="crypto-form"
+  role="form"
+  aria-labelledby="cryptoFormTitle"
+>
+  <!-- Description Text -->
+  <p class="form-text">
+    {{
+      mode === 'modify'
+        ? "Please update the details of this investment."
+        : "Please add the details of your new investment."
+    }}
+  </p>
+
+  <!-- ── Row 1: Name (dropdown) & Amount Invested ── -->
+  <div class="row">
+    <!-- Name / Symbol (dropdown) -->
+    <div class="col-12 col-md-6">
+      <div class="form-group">
+        <label for="invName-{{ mode }}">Name</label>
+        <select
+          id="invName-{{ mode }}"
+          class="form-control"
+          formControlName="name"
+        >
+          <option value="" disabled hidden>Select coin…</option>
+          <option *ngFor="let asset of allAssets; trackBy: trackByAssetSymbol" [value]="asset.symbol">
+            {{ asset.symbol }} — {{ asset.name }}
+          </option>
+        </select>
+        <div
+          class="error"
+          role="alert"
+          aria-live="polite"
+          *ngIf="
+            nameControl?.touched &&
+            nameControl?.hasError('required')
+          "
+        >
+          Please select a valid coin.
+        </div>
+      </div>
+    </div>
+
+    <!-- Amount Invested -->
+    <div class="col-12 col-md-6">
+      <div class="form-group">
+        <label for="invAmount-{{ mode }}">Amount Invested</label>
+        <input
+          id="invAmount-{{ mode }}"
+          type="number"
+          class="form-control"
+          formControlName="amountInvested"
+          placeholder="e.g. 1000"
+        />
+        <div
+          class="error"
+          role="alert"
+          aria-live="polite"
+          *ngIf="
+            amountInvestedControl?.touched &&
+            (amountInvestedControl?.hasError('required') ||
+              amountInvestedControl?.hasError('min'))
+          "
+        >
+          Please enter a valid amount.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Row 2: Start Date & Risk Level ── -->
+  <div class="row">
+    <div class="col-12 col-md-6">
+      <div class="form-group">
+        <label for="invStart-{{ mode }}">Start Date</label>
+        <input
+          id="invStart-{{ mode }}"
+          type="date"
+          class="form-control"
+          formControlName="startDate"
+        />
+        <div
+          class="error"
+          role="alert"
+          aria-live="polite"
+          *ngIf="
+            startDateControl?.touched &&
+            startDateControl?.hasError('required')
+          "
+        >
+          Please select a date.
+        </div>
+      </div>
+    </div>
+
+    <div class="col-12 col-md-6">
+      <div class="form-group">
+        <label for="invRisk-{{ mode }}">Risk Level</label>
+        <select
+          id="invRisk-{{ mode }}"
+          class="form-control"
+          formControlName="riskLevel"
+        >
+          <option [value]="null">None</option>
+          <option *ngFor="let r of risks; trackBy: trackByRiskValue" [value]="r.value">
+            {{ r.label }}
+          </option>
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Row 3: Notes ── -->
+  <div class="row">
+    <div class="col-12">
+      <div class="form-group">
+        <label for="invNotes-{{ mode }}">Notes</label>
+        <textarea
+          id="invNotes-{{ mode }}"
+          class="form-control"
+          rows="3"
+          formControlName="notes"
+          placeholder="Optional notes…"
+        ></textarea>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Row 4: Sold Checkbox & Conditional Sold Fields ── -->
+  <div class="form-group form-check mt-3">
+    <input
+      type="checkbox"
+      id="invSold-{{ mode }}"
+      class="form-check-input"
+      [checked]="formGroup.get('status')!.value === InvestmentStatus.CLOSED"
+      [attr.aria-checked]="formGroup.get('status')!.value === InvestmentStatus.CLOSED"
+      (change)="onStatusChange($event)"
+    />
+    <label for="invSold-{{ mode }}" class="form-check-label">
+      I have sold this investment
+    </label>
+  </div>
+
+  <div class="sold-fields row mt-2" *ngIf="statusControl?.value === InvestmentStatus.CLOSED">
+    <div class="col-12 col-md-6">
+      <div class="form-group">
+        <label for="invSoldValue-{{ mode }}">Sold Value</label>
+        <input
+          id="invSoldValue-{{ mode }}"
+          type="number"
+          class="form-control"
+          formControlName="soldValue"
+          placeholder="Amount you sold at"
+        />
+        <div
+          class="error"
+          role="alert"
+          aria-live="polite"
+          *ngIf="
+            soldValueControl?.touched &&
+            soldValueControl?.hasError('required')
+          "
+        >
+          Please enter the sold value.
+        </div>
+      </div>
+    </div>
+
+    <div class="col-12 col-md-6">
+      <div class="form-group">
+        <label for="invSoldDate-{{ mode }}">Sold Date</label>
+        <input
+          id="invSoldDate-{{ mode }}"
+          type="date"
+          class="form-control"
+          formControlName="soldDate"
+        />
+        <div
+          class="error"
+          role="alert"
+          aria-live="polite"
+          *ngIf="
+            soldDateControl?.touched &&
+            soldDateControl?.hasError('required')
+          "
+        >
+          Please select the sold date.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Action Buttons: Cancel / Submit ── -->
+  <div class="d-flex justify-content-end gap-2 mt-4">
+    <button 
+      class="btn btn-secondary" 
+      type="button" 
+      (click)="cancelForm.emit()"
+      (keydown.enter)="cancelForm.emit()"
+      (keydown.space)="cancelForm.emit(); $event.preventDefault()"
+      aria-label="Cancel form"
+    >
+      Cancel
+    </button>
+    <button
+      class="btn"
+      [ngClass]="mode === 'add' ? 'btn-add' : 'btn-modify'"
+      type="submit"
+      [disabled]="formGroup.invalid"
+      [attr.aria-label]="mode === 'add' ? 'Add investment' : 'Modify investment'"
+    >
+      {{ mode === "add" ? "Add" : "Modify" }}
+    </button>
+  </div>
+</form>

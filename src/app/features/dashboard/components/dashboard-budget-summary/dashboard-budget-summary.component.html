@@ -1,0 +1,61 @@
+<!--
+  Alpha Vault Financial System
+  
+  @author Mohamed Dhaoui
+  @component DashboardBudgetSummaryComponent
+  @description Budget summary template
+-->
+
+<article class="budget-card" role="article" aria-labelledby="budgetTitle">
+  <header class="budget-header">
+    <h2 id="budgetTitle" class="budget-title">
+      <i class="fas fa-calculator" aria-hidden="true"></i>
+      Budget Overview
+    </h2>
+    <a 
+      routerLink="/main/body/budget" 
+      class="view-all-link" 
+      aria-label="View full budget details"
+      (keydown.enter)="$event.preventDefault(); $event.stopPropagation();"
+      (keydown.space)="$event.preventDefault(); $event.stopPropagation();">
+      View All
+      <i class="fas fa-arrow-right" aria-hidden="true"></i>
+    </a>
+  </header>
+
+  <div *ngIf="isLoading" class="loading-state">
+    <div class="loading-spinner-small"></div>
+  </div>
+
+  <div *ngIf="!isLoading" class="budget-content">
+    <div class="budget-stats">
+      <div class="stat-item">
+        <span class="stat-label">Total Budget</span>
+        <span class="stat-value">{{ totalBudget | currency:'USD':'symbol':'1.0-0' }}</span>
+      </div>
+      <div class="stat-item">
+        <span class="stat-label">Spent</span>
+        <span class="stat-value spent">{{ spent | currency:'USD':'symbol':'1.0-0' }}</span>
+      </div>
+      <div class="stat-item">
+        <span class="stat-label">Available</span>
+        <span class="stat-value available">{{ available | currency:'USD':'symbol':'1.0-0' }}</span>
+      </div>
+    </div>
+
+    <div class="progress-section">
+      <div class="progress-header">
+        <span class="progress-label">Budget Usage</span>
+        <span class="progress-percentage">{{ formattedPercentage }}%</span>
+      </div>
+      <div class="progress-bar-container" role="progressbar" [attr.aria-valuenow]="progressWidth" aria-valuemin="0" aria-valuemax="100" [attr.aria-label]="'Budget usage: ' + formattedPercentage + ' percent'">
+        <div 
+          class="progress-bar" 
+          [style.width.%]="progressWidth"
+          [style.background-color]="progressColor">
+        </div>
+      </div>
+    </div>
+  </div>
+</article>
+

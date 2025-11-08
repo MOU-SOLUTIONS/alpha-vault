@@ -1,0 +1,51 @@
+<!--
+  Alpha Vault Financial System
+  
+  @author Mohamed Dhaoui
+  @component IncomeSourceChartComponent
+  @description Income source chart component for displaying income data
+-->
+
+<section class="row" role="region" aria-labelledby="sourceChartTitle">
+  <div class="col-12 h-100">
+    <div class="source-chart-box d-flex flex-column h-100">
+      <header class="source-chart-header">
+        <h3 id="sourceChartTitle" class="source-chart-title">Income by Source</h3>
+        <div class="source-chart-badge">Current Month</div>
+      </header>
+
+      <div class="source-chart-content flex-grow-1">
+        <ng-container *ngIf="!hasData; else showChart">
+          <div class="no-data-message">
+            <div class="no-data-icon">📈</div>
+            <p>No source data available for this month</p>
+            <p class="no-data-hint">Add some incomes this month to see this chart</p>
+          </div>
+        </ng-container>
+
+        <ng-template #showChart>
+          <div class="source-chart-wrapper">
+            <canvas
+              baseChart
+              [data]="pieChartData"
+              [labels]="pieChartLabels"
+              [type]="'pie'"
+              [options]="pieChartOptions"
+              class="source-chart-canvas"
+              role="img"
+              aria-label="Current month income distribution by source"
+            ></canvas>
+          </div>
+
+          <div class="legend-container">
+            <div *ngFor="let label of pieChartLabels; let i = index" class="legend-item">
+              <div class="legend-color" [style.background-color]="colorPalette[i % colorPalette.length]"></div>
+              <div class="legend-label">{{ label }}</div>
+              <div class="legend-value">{{ (rawData[label] || 0) | currency }}</div>
+            </div>
+          </div>
+        </ng-template>
+      </div>
+    </div>
+  </div>
+</section>

@@ -1,0 +1,57 @@
+<!--
+  Alpha Vault Financial System
+  
+  @author Mohamed Dhaoui
+  @component DashboardInvestmentSummaryComponent
+  @description Investment summary template
+-->
+
+<article class="investment-card" role="article" aria-labelledby="investmentTitle">
+  <header class="investment-header">
+    <h2 id="investmentTitle" class="investment-title">
+      <i class="fas fa-coins" aria-hidden="true"></i>
+      Investment Portfolio
+    </h2>
+    <a 
+      routerLink="/main/body/investment" 
+      class="view-all-link" 
+      aria-label="View all investments"
+      (keydown.enter)="$event.preventDefault(); $event.stopPropagation();"
+      (keydown.space)="$event.preventDefault(); $event.stopPropagation();">
+      View All
+      <i class="fas fa-arrow-right" aria-hidden="true"></i>
+    </a>
+  </header>
+
+  <div *ngIf="isLoading" class="loading-state">
+    <div class="loading-spinner-small"></div>
+  </div>
+
+  <div *ngIf="!isLoading" class="investment-content">
+    <div class="investment-stats">
+      <div class="stat-item">
+        <span class="stat-label">Portfolio Value</span>
+        <span class="stat-value value">{{ totalValue | currency:'USD':'symbol':'1.0-0' }}</span>
+      </div>
+      <div class="stat-item">
+        <span class="stat-label">Total Invested</span>
+        <span class="stat-value invested">{{ totalInvested | currency:'USD':'symbol':'1.0-0' }}</span>
+      </div>
+      <div class="stat-item">
+        <span class="stat-label">Active</span>
+        <span class="stat-value active">{{ activeInvestments }}</span>
+      </div>
+    </div>
+
+    <div class="gain-section" [class.positive]="isGainPositive" [class.negative]="!isGainPositive">
+      <div class="gain-header">
+        <span class="gain-label">Total Gain/Loss</span>
+        <span class="gain-percentage">{{ formattedGainPercentage }}</span>
+      </div>
+      <div class="gain-amount">
+        {{ isGainPositive ? '+' : '' }}{{ totalGain | currency:'USD':'symbol':'1.0-0' }}
+      </div>
+    </div>
+  </div>
+</article>
+

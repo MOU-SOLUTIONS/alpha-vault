@@ -1,0 +1,208 @@
+/*
+  Alpha Vault Financial System
+  
+  @author Mohamed Dhaoui
+  @component IncomeMonthChartComponent
+  @description Comprehensive styling for income month chart with responsive design
+*/
+
+:host {
+  --primary-color: #6366f1;
+  --primary-light: rgba(99, 102, 241, 0.2);
+  --text-color: #1e293b;
+  --text-light: #64748b;
+  --bg-white: #ffffff;
+
+  --radius: 12px;
+  --transition: all 0.3s ease;
+  --shadow-sm: 0 2px 6px rgba(0, 0, 0, 0.1);
+  --shadow-md: 0 4px 10px rgba(0, 0, 0, 0.15);
+  
+  display: block;
+  width: 100%;
+  height: auto;
+  
+  @media (min-width: 768px) {
+    height: 100%;
+  }
+}
+
+.row {
+  height: auto;
+  margin: 0;
+  
+  @media (min-width: 768px) {
+    height: 100%;
+  }
+}
+
+.col-12 {
+  height: auto;
+  padding: 0;
+  
+  @media (min-width: 768px) {
+    height: 100%;
+  }
+}
+
+.chart-box {
+  background-color: var(--bg-white);
+  padding: 1.25rem;
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-sm);
+  height: 100%;
+  transition: var(--transition);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  min-height: 350px;
+
+  &:hover {
+    box-shadow: var(--shadow-md);
+    transform: translateY(-2px);
+  }
+}
+
+.chart-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.25rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.chart-title {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--text-color);
+  margin: 0;
+}
+
+.chart-actions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.toggle-btn {
+  background: transparent;
+  border: none;
+  color: var(--text-light);
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: var(--transition);
+  padding: 0 10px;
+  border-radius: 14px;
+
+  &:hover {
+    background-color: var(--primary-light);
+    color: var(--primary-color);
+  }
+
+  &:focus {
+    outline: 2px solid var(--primary-color);
+    outline-offset: 2px;
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--primary-color);
+    outline-offset: 2px;
+  }
+
+  .toggle-icon {
+    font-size: 14px;
+  }
+}
+
+.chart-container {
+  position: relative;
+  transition: opacity var(--transition);
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: stretch;
+  min-height: 200px;
+  width: 100%;
+}
+
+.chart-canvas {
+  width: 100%;
+  height: auto;
+  max-height: 250px;
+  display: block;
+  margin: 0;
+  flex: 1;
+  min-width: 0;
+  
+  // Override Chart.js default styles
+  canvas {
+    width: 100%;
+    height: auto;
+  }
+}
+
+.chart-summary {
+  display: flex;
+  justify-content: space-around;
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid rgba(0, 0, 0, 0.05);
+  min-height: 60px;
+}
+
+.chart-box:not(:has(.chart-summary)) {
+  padding-bottom: 60px;
+}
+
+.summary-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+
+  .summary-label {
+    font-size: 0.8rem;
+    color: var(--text-light);
+    margin-bottom: 0.25rem;
+  }
+
+  .summary-value {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--primary-color);
+  }
+
+  .placeholder {
+    font-weight: 600;
+    color: var(--primary-color);
+  }
+}
+
+@media (max-width: 768px) {
+  .chart-box { padding: 1rem; }
+  .chart-title { font-size: 1rem; }
+  .chart-canvas { max-height: 200px; }
+  .summary-value { font-size: 1rem; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .chart-box {
+    transition: none;
+    
+    &:hover {
+      transform: none;
+      box-shadow: var(--shadow-sm);
+    }
+  }
+  
+  .toggle-btn {
+    transition: none;
+  }
+  
+  .chart-container {
+    transition: none;
+  }
+}

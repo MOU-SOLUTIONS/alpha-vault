@@ -1,0 +1,223 @@
+<!--
+  Alpha Vault Financial System
+  
+  @author Mohamed Dhaoui
+  @component BudgetTableComponent
+  @description Budget table component template for displaying and managing budget categories
+-->
+
+<section class="budget-table-section">
+  <div class="container">
+    <div class="row justify-content-center g-2">
+      <div class="col-12">
+        <div class="table-card" role="region" aria-labelledby="budgetBreakdownTitle">
+          
+          <header class="table-header">
+            <h2 id="budgetBreakdownTitle" class="table-title">
+              <mat-icon aria-hidden="true">account_balance</mat-icon>
+              Budget Breakdown
+            </h2>
+            <div class="header-actions">
+              <button 
+                class="add-button" 
+                mat-flat-button 
+                type="button" 
+                (click)="onAdd()"
+                (keydown)="onAddKeydown($event)"
+                matTooltip="Add new budget"
+                aria-label="Add new budget"
+                [attr.aria-describedby]="'add-budget-description'"
+                role="button"
+                tabindex="0">
+                <mat-icon aria-hidden="true">add</mat-icon>
+                <span class="button-text">Add Budget</span>
+              </button>
+              <span id="add-budget-description" class="sr-only">Click to add a new budget category</span>
+            </div>
+          </header>
+
+          <div class="summary-section" *ngIf="hasData">
+            <div class="summary-stats">
+              <div class="stat-item" *ngFor="let stat of computedSummaryStats() | keyvalue; trackBy: trackByKey">
+                <div class="stat-value">{{ stat.value }}</div>
+                <div class="stat-label">{{ stat.key | titlecase }}</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="empty-state" *ngIf="!hasData || computedTableData().length === 0">
+            <div class="empty-icon">
+              <mat-icon>account_balance</mat-icon>
+            </div>
+            <h3 class="empty-title">No Budget Data</h3>
+            <p class="empty-description">Start by creating your first budget allocation to track your spending across different categories.</p>
+            <button 
+              class="empty-action-button" 
+              mat-flat-button 
+              (click)="onAdd()"
+              (keydown)="onAddKeydown($event)"
+              aria-label="Add new budget"
+              [attr.aria-describedby]="'empty-add-description'"
+              role="button"
+              tabindex="0">
+              <mat-icon aria-hidden="true">add</mat-icon>
+              <span>Add Budget</span>
+            </button>
+            <span id="empty-add-description" class="sr-only">Start by creating your first budget allocation</span>
+          </div>
+
+          <div *ngIf="hasData && computedTableData().length > 0" class="table-content">
+            <div *ngIf="!isMobile()" class="table-wrapper">
+              <table mat-table [dataSource]="computedTableData()" class="w-100" [trackBy]="trackByCategory">
+                <ng-container matColumnDef="category">
+                  <th mat-header-cell *matHeaderCellDef>Category</th>
+                  <td mat-cell *matCellDef="let element">
+                    <div class="category-elite">
+                      <div class="category-icon">
+                        <mat-icon aria-hidden="true">{{ element.categoryIcon }}</mat-icon>
+                      </div>
+                      <div class="category-content">
+                        <div class="category-name">{{ element.categoryLabel }}</div>
+                        <div class="category-type">Budget Category</div>
+                      </div>
+                    </div>
+                  </td>
+                </ng-container>
+                <ng-container matColumnDef="allocated">
+                  <th mat-header-cell *matHeaderCellDef>Allocated</th>
+                  <td mat-cell *matCellDef="let element">
+                    <div class="amount-display" [ngClass]="element.allocatedClass">
+                      <div class="amount-value">{{ element.formattedAllocated }}</div>
+                    </div>
+                  </td>
+                </ng-container>
+                <ng-container matColumnDef="remaining">
+                  <th mat-header-cell *matHeaderCellDef>Remaining</th>
+                  <td mat-cell *matCellDef="let element">
+                    <div class="amount-display" [ngClass]="element.remainingClass">
+                      <div class="amount-value">{{ element.formattedRemaining }}</div>
+                    </div>
+                  </td>
+                </ng-container>
+                <ng-container matColumnDef="usage">
+                  <th mat-header-cell *matHeaderCellDef>Usage</th>
+                  <td mat-cell *matCellDef="let element">
+                    <div class="usage-display" [ngClass]="element.usageClass">
+                      <div class="usage-value">{{ element.formattedUsage }}%</div>
+                    </div>
+                  </td>
+                </ng-container>
+                <ng-container matColumnDef="actions">
+                  <th mat-header-cell *matHeaderCellDef>Actions</th>
+                  <td mat-cell *matCellDef="let element">
+                    <div class="actions-wrapper">
+                      <button
+                        class="edit-button"
+                        type="button"
+                        (click)="onModify(element)"
+                        (keydown)="onModifyKeydown($event, element)"
+                        title="Edit budget"
+                        [attr.aria-label]="'Edit budget for ' + element.categoryLabel"
+                        role="button"
+                        tabindex="0">
+                        <mat-icon aria-hidden="true">edit</mat-icon>
+                      </button>
+                      <button
+                        class="delete-button"
+                        type="button"
+                        (click)="onDelete(element.category)"
+                        (keydown)="onDeleteKeydown($event, element.category)"
+                        title="Delete budget"
+                        [attr.aria-label]="'Delete budget for ' + element.categoryLabel"
+                        role="button"
+                        tabindex="0">
+                        <mat-icon aria-hidden="true">delete</mat-icon>
+                      </button>
+                    </div>
+                  </td>
+                </ng-container>
+                <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+                <tr 
+                  mat-row 
+                  *matRowDef="let row; columns: displayedColumns"
+                ></tr>
+              </table>
+            </div>
+
+            <div *ngIf="isMobile()" class="mobile-cards">
+              <div 
+                *ngFor="let item of computedTableData(); trackBy: trackByCategory"
+                class="budget-card"
+                [attr.aria-label]="'Budget card for ' + item.categoryLabel"
+              >
+                <div class="card-header">
+                  <div class="category-elite">
+                    <div class="category-icon">
+                      <mat-icon aria-hidden="true">{{ item.categoryIcon }}</mat-icon>
+                    </div>
+                    <div class="category-content">
+                      <div class="category-name">{{ item.categoryLabel }}</div>
+                      <div class="category-type">Budget Category</div>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="card-content">
+                  <div class="amount-item">
+                    <div class="amount-label">Allocated</div>
+                    <div class="amount-value" [ngClass]="item.allocatedClass">{{ item.formattedAllocated }}</div>
+                  </div>
+                  <div class="amount-item">
+                    <div class="amount-label">Remaining</div>
+                    <div class="amount-value" [ngClass]="item.remainingClass">{{ item.formattedRemaining }}</div>
+                  </div>
+                  <div class="amount-item">
+                    <div class="amount-label">Usage</div>
+                    <div class="amount-value" [ngClass]="item.usageClass">{{ item.formattedUsage }}%</div>
+                  </div>
+                </div>
+
+                <div class="card-actions">
+                  <button 
+                    class="edit-button"
+                    type="button"
+                    (click)="onModify(item)"
+                    (keydown)="onModifyKeydown($event, item)"
+                    [attr.aria-label]="'Modify budget for ' + item.categoryLabel"
+                    role="button"
+                    tabindex="0"
+                  >
+                    <mat-icon aria-hidden="true">edit</mat-icon>
+                  </button>
+                  <button 
+                    class="delete-button"
+                    type="button"
+                    (click)="onDelete(item.category)"
+                    (keydown)="onDeleteKeydown($event, item.category)"
+                    [attr.aria-label]="'Delete budget for ' + item.categoryLabel"
+                    role="button"
+                    tabindex="0"
+                  >
+                    <mat-icon aria-hidden="true">delete</mat-icon>
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <div class="paginator-wrapper">
+              <mat-paginator
+                [length]="computedTableData().length"
+                [pageSize]="pageSize"
+                [pageSizeOptions]="pageSizeOptions"
+                [pageIndex]="currentPage"
+                (page)="onPageChange($event)"
+                aria-label="Select page of budget items">
+              </mat-paginator>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </div>
+</section>

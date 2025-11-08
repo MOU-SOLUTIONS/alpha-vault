@@ -1,0 +1,336 @@
+/*
+  Alpha Vault Financial System
+  
+  @author Mohamed Dhaoui
+  @component ExpenseEvaluationTrendsComponent
+  @description Comprehensive styling for expense evaluation trends component with responsive design
+*/
+
+/* CSS Variables */
+.trends-section {
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 20px;
+  padding: 2rem;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+  margin-bottom: 2rem;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(20px);
+
+  /* Section Header */
+  .section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+    flex-wrap: wrap;
+    gap: 1rem;
+
+    /* Section Title */
+    .section-title {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      margin: 0;
+      font-size: 1.5rem;
+      font-weight: 600;
+      color: #ffffff;
+
+      /* Title Icon */
+      .title-icon {
+        font-size: 1.75rem;
+      }
+    }
+
+    /* Trend Indicator */
+    .trend-indicator {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.75rem 1.5rem;
+      border-radius: 50px;
+      font-weight: 600;
+      font-size: 1.1rem;
+      transition: all 0.3s ease;
+      cursor: pointer;
+
+      /* Focus */
+      &:focus {
+        outline: 2px solid #667eea;
+        outline-offset: 2px;
+      }
+
+      /* Focus Visible */
+        &:focus-visible {
+        outline: 2px solid #667eea;
+        outline-offset: 2px;
+      }
+
+      /* Positive Trend */
+      &.positive {
+        background: linear-gradient(135deg, #48bb78, #38a169);
+        color: white;
+        box-shadow: 0 4px 15px rgba(72, 187, 120, 0.3);
+      }
+
+      /* Negative Trend */
+      &.negative {
+        background: linear-gradient(135deg, #f56565, #e53e3e);
+        color: white;
+        box-shadow: 0 4px 15px rgba(245, 101, 101, 0.3);
+      }
+
+      /* Neutral Trend */
+      &.neutral {
+        background: linear-gradient(135deg, #a0aec0, #718096);
+        color: white;
+        box-shadow: 0 4px 15px rgba(160, 174, 192, 0.3);
+      }
+
+      /* Trend Arrow */
+      .trend-arrow {
+        font-size: 1.25rem;
+        font-weight: bold;
+      }
+    }
+  }
+
+  /* Trends Grid */
+  .trends-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 1.5rem;
+    flex: 1; // Fill remaining space
+
+    @media (max-width: 768px) {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  /* Trend Card */
+  .trend-card {
+    background: rgba(255, 255, 255, 0.03);
+    border-radius: 15px;
+    padding: 1.5rem;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+    cursor: pointer;
+    backdrop-filter: blur(10px);
+
+    /* Focus */
+    &:focus {
+      outline: 2px solid #667eea;
+      outline-offset: 2px;
+    }
+
+    /* Focus Visible */
+    &:focus-visible {
+      outline: 2px solid #667eea;
+      outline-offset: 2px;
+    }
+
+    /* Hover */
+      &:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+    }
+
+    /* Primary */
+    &.primary {
+      background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+      color: white;
+      border: 1px solid rgba(79, 70, 229, 0.3);
+      box-shadow: 0 4px 20px rgba(79, 70, 229, 0.2);
+
+      .card-header h3,
+      .metric-value {
+        color: white;
+      }
+
+      .progress-bar {
+        background: rgba(255, 255, 255, 0.2);
+      }
+
+      .progress-fill {
+        background: linear-gradient(90deg, #7986cb, #9fa8da);
+      }
+    }
+
+    /* Secondary */
+    &.secondary {
+      background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+      color: white;
+      border: 1px solid rgba(16, 185, 129, 0.3);
+      box-shadow: 0 4px 20px rgba(16, 185, 129, 0.2);
+
+      .card-header h3,
+      .metric-value {
+        color: white;
+      }
+
+      .progress-bar {
+        background: rgba(255, 255, 255, 0.2);
+      }
+
+      .progress-fill {
+        background: linear-gradient(90deg, #6ee7b7, #a7f3d0);
+      }
+    }
+
+    /* Accent */
+    &.accent {
+      background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+      color: white;
+      border: 1px solid rgba(245, 158, 11, 0.3);
+      box-shadow: 0 4px 20px rgba(245, 158, 11, 0.2);
+
+      .card-header h3,
+      .metric-value {
+        color: white;
+      }
+
+      .progress-bar {
+        background: rgba(255, 255, 255, 0.2);
+      }
+
+      .progress-fill {
+        background: linear-gradient(90deg, #fbbf24, #fcd34d);
+      }
+    }
+
+    /* Card Header */
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1rem;
+
+      h3 {
+        margin: 0;
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: #ffffff;
+      }
+
+      .card-icon {
+        font-size: 1.5rem;
+        opacity: 0.8;
+      }
+    }
+
+    /* Card Content */
+    .card-content {
+      .metric-display {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1rem;
+
+        /* Metric Value */
+        .metric-value {
+          font-size: 2rem;
+          font-weight: 700;
+          color: #ffffff;
+        }
+
+        /* Metric Change */
+        .metric-change {
+          padding: 0.25rem 0.75rem;
+          border-radius: 20px;
+          font-size: 0.9rem;
+          font-weight: 600;
+
+          /* Positive */
+          &.positive {
+            background: rgba(16, 185, 129, 0.2);
+            color: #ffffff;
+          }
+
+          /* Negative */
+          &.negative {
+            background: rgba(239, 68, 68, 0.2);
+            color: #ffffff;
+          }
+
+          /* Neutral */
+          &.neutral {
+            background: rgba(156, 163, 175, 0.2);
+            color: #ffffff;
+          }
+        }
+      }
+
+      /* Progress Bar */
+      .progress-bar {
+        width: 100%;
+        height: 8px;
+        background: rgba(255, 255, 255, 0.05);
+        border-radius: 4px;
+        overflow: hidden;
+        margin-bottom: 0.5rem;
+
+        /* Progress Fill */
+          .progress-fill {
+          height: 100%;
+          background: linear-gradient(90deg, #667eea, #764ba2);
+          border-radius: 4px;
+          transition: width 0.6s ease;
+        }
+      }
+
+      /* Achievement Badge */
+      .achievement-badge {
+        position: absolute;
+        top: 1rem;
+        right: 1rem;
+        background: linear-gradient(135deg, #ffd700, #ffed4e);
+        color: #1a202c;
+        padding: 0.25rem 0.75rem;
+        border-radius: 15px;
+        font-size: 0.8rem;
+        font-weight: 600;
+        box-shadow: 0 2px 10px rgba(255, 215, 0, 0.3);
+        animation: pulse 2s infinite;
+      }
+    }
+  }
+}
+
+/* Pulse Animation */
+@keyframes pulse {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+}
+
+/* Reduced Motion Support */
+@media (prefers-reduced-motion: reduce) {
+  .trends-section {
+    .trend-indicator,
+    .trend-card {
+      transition: none;
+      
+      &:hover {
+        transform: none;
+        box-shadow: none;
+      }
+    }
+
+    /* Progress Fill */
+    .progress-fill {
+      transition: none;
+    }
+
+    /* Achievement Badge */
+    .achievement-badge {
+      animation: none;
+    }
+  }
+}

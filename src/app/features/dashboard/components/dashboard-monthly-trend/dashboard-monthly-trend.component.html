@@ -1,0 +1,84 @@
+<!--
+  Alpha Vault Financial System
+  
+  @author Mohamed Dhaoui
+  @component DashboardMonthlyTrendComponent
+  @description Monthly trend chart template
+-->
+
+<article class="trend-card" role="article" aria-labelledby="trendTitle">
+  <header class="trend-header">
+    <h2 id="trendTitle" class="trend-title">
+      <i class="fas fa-chart-area" aria-hidden="true"></i>
+      Monthly Trends
+    </h2>
+  </header>
+
+  <div *ngIf="isLoading" class="loading-state">
+    <div class="loading-spinner-small"></div>
+    <p>Loading trend data...</p>
+  </div>
+
+  <div *ngIf="!isLoading" class="trend-content">
+    <div class="chart-container">
+      <div class="chart-wrapper">
+        <div class="chart-bars">
+          <div 
+            *ngFor="let data of monthlyData; trackBy: trackByMonth" 
+            class="chart-bar-group"
+            role="img"
+            [attr.aria-label]="'Month ' + data.month + ': Income ' + (data.income | currency:'USD':'symbol':'1.0-0') + ', Expense ' + (data.expense | currency:'USD':'symbol':'1.0-0')">
+            <div class="bar-column">
+              <div class="bar-tooltip" *ngIf="data.income > 0 || data.expense > 0" role="tooltip">
+                <div class="tooltip-item income-tooltip">
+                  <span class="tooltip-label">Income:</span>
+                  <span class="tooltip-value">{{ data.income | currency:'USD':'symbol':'1.0-0' }}</span>
+                </div>
+                <div class="tooltip-item expense-tooltip">
+                  <span class="tooltip-label">Expense:</span>
+                  <span class="tooltip-value">{{ data.expense | currency:'USD':'symbol':'1.0-0' }}</span>
+                </div>
+                <div class="tooltip-item net-tooltip" *ngIf="data.net !== 0">
+                  <span class="tooltip-label">Net:</span>
+                  <span class="tooltip-value" [class.positive]="data.net > 0" [class.negative]="data.net < 0">
+                    {{ data.net | currency:'USD':'symbol':'1.0-0' }}
+                  </span>
+                </div>
+              </div>
+              <div class="bars-container" role="presentation">
+                <div 
+                  class="bar income-bar" 
+                  [style.height.%]="data.incomePercentage"
+                  [style.animation-delay]="data.animationDelay"
+                  [attr.aria-label]="'Income bar: ' + (data.income | currency:'USD':'symbol':'1.0-0')">
+                </div>
+                <div 
+                  class="bar expense-bar" 
+                  [style.height.%]="data.expensePercentage"
+                  [style.animation-delay]="data.animationDelay"
+                  [attr.aria-label]="'Expense bar: ' + (data.expense | currency:'USD':'symbol':'1.0-0')">
+                </div>
+              </div>
+              <span class="month-label">{{ data.month }}</span>
+            </div>
+          </div>
+        </div>
+        <div class="chart-grid">
+          <div class="grid-line" *ngFor="let line of gridLines; trackBy: trackByGridLine"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="chart-legend">
+      <div class="legend-item">
+        <span class="legend-color income-legend"></span>
+        <span class="legend-text">Income</span>
+      </div>
+      <div class="legend-item">
+        <span class="legend-color expense-legend"></span>
+        <span class="legend-text">Expenses</span>
+      </div>
+    </div>
+  </div>
+</article>
+

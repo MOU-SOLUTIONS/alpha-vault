@@ -1,0 +1,89 @@
+<!-- ================= HERO SECTION ================= -->
+<section id="hero" class="hero" #heroSection aria-label="Hero section">
+  <div class="hero-container">
+    <!-- Hero Content Area -->
+    <div class="hero-content">
+      <h1 class="hero-title">
+        Your Financial <span class="gradient-text">Freedom</span><br>
+        Starts Here
+      </h1>
+      <p class="hero-subtitle">
+        Take control of your money with Alpha Vault. Manage income, expenses, budgets, savings, investments, and debt - all in one powerful platform designed for the next generation.
+      </p>
+      
+      <!-- Call to Action Buttons -->
+      <div class="hero-buttons">
+        <button 
+          type="button"
+          class="btn-primary large" 
+          routerLink="/auth"
+          (keydown.enter)="navigateToAuth()"
+          (keydown.space)="navigateToAuth(); $event.preventDefault()"
+          aria-label="Start your journey with Alpha Vault">
+          <i class="fas fa-rocket" aria-hidden="true"></i>
+          Start Your Journey
+        </button>
+      </div>
+      
+      <!-- Statistics Display -->
+      <div class="hero-stats" aria-label="Alpha Vault statistics">
+        <div class="stat">
+          <span class="stat-number">10K+</span>
+          <span class="stat-label">Active Users</span>
+        </div>
+        <div class="stat">
+          <span class="stat-number">$2M+</span>
+          <span class="stat-label">Money Managed</span>
+        </div>
+        <div class="stat">
+          <span class="stat-number">95%</span>
+          <span class="stat-label">Success Rate</span>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Hero Visual Area -->
+    <div class="hero-visual">
+      <div class="device-background-wrapper">
+        <div class="marketing-blob"></div>
+      </div>
+      
+      <!-- Device Mockup -->
+      <div class="device-mockup">
+        <div class="device-frame">
+          <div class="device-power-button"></div>
+
+          <div class="device-screen">
+            <div class="screen-content">
+              <div class="screen-overlay"></div>
+              <!-- App Interface Mockup -->
+              <div class="app-interface">
+                <div class="balance-card">
+                  <h3>Total Balance</h3>
+                  <span class="balance">$2,847.50</span>
+                  <div class="balance-change positive">+12.5% this month</div>
+                </div>
+                <div class="quick-actions">
+                  <div class="action-btn"><i class="fas fa-plus" aria-hidden="true"></i></div>
+                  <div class="action-btn"><i class="fas fa-minus" aria-hidden="true"></i></div>
+                  <div class="action-btn"><i class="fas fa-chart-line" aria-hidden="true"></i></div>
+                  <div class="action-btn"><i class="fas fa-piggy-bank" aria-hidden="true"></i></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Background Elements -->
+  <div class="hero-bg-elements">
+    <div class="floating-element element-1">
+      <i class="fas fa-wallet" aria-hidden="true"></i>
+    </div>
+    <div class="floating-element element-2">
+      <i class="fas fa-gem" aria-hidden="true"></i>
+    </div>
+  </div>
+</section>

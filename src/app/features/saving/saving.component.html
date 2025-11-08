@@ -1,0 +1,161 @@
+<!--
+  Alpha Vault Financial System
+  
+  @author Mohamed Dhaoui
+  @component SavingComponent
+  @description Main saving dashboard component template for managing saving goals
+-->
+
+<div class="saving-container">
+  <h1 class="sr-only">Saving Dashboard</h1>
+
+  <section class="add-form-section" [class.expanded]="showAddForm">
+    <div class="form-header" [class.modify-mode]="isModifyMode" (click)="toggleAddForm()" (keydown.enter)="toggleAddForm()" (keydown.space)="toggleAddForm()" tabindex="0" role="button" [attr.aria-expanded]="showAddForm" aria-controls="savingFormContent">
+      <div class="form-header-content">
+        <h3 class="form-title">
+          <i class="fas" [ngClass]="isModifyMode ? 'fa-edit' : 'fa-plus-circle'"></i>
+          {{ isModifyMode ? 'Modify Saving Goal' : 'Add New Saving Goal' }}
+        </h3>
+        <p class="form-subtitle">
+          {{ isModifyMode ? 'Edit the selected saving goal' : 'Click to add a new saving goal' }}
+        </p>
+      </div>
+      <div class="form-toggle">
+        <i class="fas fa-chevron-down" [class.rotated]="showAddForm"></i>
+      </div>
+    </div>
+    
+    <div class="form-content" [class.visible]="showAddForm" id="savingFormContent">
+      <div class="form-wrapper">
+        <app-saving-goal-form
+          [formGroup]="savingForm"
+          [mode]="isModifyMode ? 'edit' : 'add'"
+          [categories]="categories"
+          [priorities]="priorities"
+          (formSubmit)="isModifyMode ? submitModification() : submitCreation()"
+          (cancel)="closeAddForm()"
+        />
+      </div>
+    </div>
+  </section>
+
+  <section class="controls-section">
+    <div class="filter-container">
+      <app-saving-filter
+        (filterChange)="onFilterChanged($event)"
+        (addGoal)="openAddOverlay()"
+      ></app-saving-filter>
+    </div>
+  </section>
+
+  <section class="view-section" *ngIf="showViewToggle">
+    <div class="view-controls">
+      <div class="quote-container">
+        <blockquote class="inspirational-quote">
+          "A goal without a plan is just a wish."
+        </blockquote>
+      </div>
+      
+      <div class="view-toggle">
+        <button
+          class="view-btn"
+          [class.active]="selectedView === 'cards'"
+          (click)="onToggleView('cards')"
+          aria-label="Switch to card view"
+        >
+          <i class="bi bi-grid-fill" aria-hidden="true"></i>
+          <span class="btn-text">Cards</span>
+        </button>
+        
+        <button
+          class="view-btn"
+          [class.active]="selectedView === 'table'"
+          (click)="onToggleView('table')"
+          aria-label="Switch to table view"
+        >
+          <i class="bi bi-table" aria-hidden="true"></i>
+          <span class="btn-text">Table</span>
+        </button>
+      </div>
+    </div>
+  </section>
+
+  <section class="content-section">
+
+    <div 
+      class="cards-view"
+      [class.active]="selectedView === 'cards' || isMobile"
+      role="region"
+      aria-label="Saving goals in card format"
+      [hidden]="selectedView === 'table' && !isMobile"
+    >
+      <app-saving-card-list
+        [goals]="filteredGoals()"
+        (openOverlay)="onOpenOverlay($event)"
+      ></app-saving-card-list>
+    </div>
+
+    <div 
+      class="table-view"
+      [class.active]="selectedView === 'table' && !isMobile"
+      role="region"
+      aria-label="Saving goals in table format"
+      [hidden]="selectedView === 'cards' || isMobile"
+    >
+        <app-saving-table
+          [goals]="filteredGoals()"
+          (modify)="onModifyGoal($event)"
+          (delete)="onDeleteGoal($event)"
+          (add)="onAddGoal()"
+          (addMoney)="onAddMoneyToGoal($event)"
+        ></app-saving-table>
+    </div>
+  </section>
+</div>
+
+<section class="overlays-section">
+
+  <app-saving-overlay
+    *ngIf="overlayVisible && selectedGoal"
+    [goal]="selectedGoal!"
+    [cardPosition]="cardPosition"
+    (close)="onCloseOverlay()"
+    (refresh)="onGoalUpdated()"
+    (modify)="onModifyGoal($event)"
+    (delete)="onDeleteGoal($event)"
+  ></app-saving-overlay>
+
+
+  <app-overlay-container
+    *ngIf="isModifyOverlayVisible"
+    [title]="'Modify Goal'"
+    [theme]="'modify'"
+    (cancel)="closeOverlay()"
+  >
+    <app-saving-goal-form
+      [formGroup]="savingForm"
+      [mode]="'edit'"
+      [categories]="categories"
+      [priorities]="priorities"
+      (formSubmit)="submitModification()"
+      (cancel)="closeOverlay()"
+    />
+  </app-overlay-container>
+
+
+  <app-overlay-container
+    *ngIf="isAddOverlayVisible"
+    [title]="'Add Goal'"
+    [theme]="'add'"
+    (cancel)="closeOverlay()"
+  >
+    <app-saving-goal-form
+      [formGroup]="savingForm"
+      [mode]="'add'"
+      [categories]="categories"
+      [priorities]="priorities"
+      (formSubmit)="submitCreation()"
+      (cancel)="closeOverlay()"
+    />
+  </app-overlay-container>
+</section>

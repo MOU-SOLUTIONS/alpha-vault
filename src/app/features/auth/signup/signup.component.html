@@ -1,0 +1,476 @@
+<!--
+  Alpha Vault Financial System
+  
+  @author Mohamed Dhaoui
+  @component SignupComponent
+  @description Multi-phase user registration template with progressive form validation
+-->
+
+<div class="signup-container" itemscope itemtype="https://schema.org/WebPage">
+  <!-- Header Section -->
+  <div class="signup-header">
+    <h1 class="signup-title" itemprop="name">Create Your Account</h1>
+    <p class="signup-subtitle" itemprop="description">Join Alpha Vault for secure financial management</p>
+  </div>
+
+  <!-- Progress Indicator -->
+  <nav class="progress-indicator" role="navigation" aria-label="Signup progress">
+    <div class="progress-step" [class.active]="currentPhase >= 1" [class.completed]="currentPhase > 1" role="listitem">
+      <div class="step-number" aria-label="Step 1">1</div>
+      <span class="step-label">Personal</span>
+    </div>
+    <div class="progress-line" [class.completed]="currentPhase > 1" aria-hidden="true"></div>
+    <div class="progress-step" [class.active]="currentPhase >= 2" [class.completed]="currentPhase > 2" role="listitem">
+      <div class="step-number" aria-label="Step 2">2</div>
+      <span class="step-label">Email</span>
+    </div>
+    <div class="progress-line" [class.completed]="currentPhase > 2" aria-hidden="true"></div>
+    <div class="progress-step" [class.active]="currentPhase >= 3" [class.completed]="currentPhase > 3" role="listitem">
+      <div class="step-number" aria-label="Step 3">3</div>
+      <span class="step-label">Password</span>
+    </div>
+    <div class="progress-line" [class.completed]="currentPhase > 3" aria-hidden="true"></div>
+    <div class="progress-step" [class.active]="currentPhase >= 4" role="listitem">
+      <div class="step-number" aria-label="Step 4">4</div>
+      <span class="step-label">Preferences</span>
+    </div>
+  </nav>
+
+  <!-- Phase 1: Personal Information -->
+  <form [formGroup]="phase1Form" 
+        (ngSubmit)="onPhase1Submit()" 
+        *ngIf="currentPhase === 1" 
+        class="phase-form" 
+        [attr.aria-busy]="isSubmitting"
+        role="form"
+        aria-labelledby="phase1-title">
+    
+    <div class="phase-header">
+      <h2 id="phase1-title" class="phase-title">Personal Information</h2>
+      <p class="phase-description">Tell us about yourself</p>
+    </div>
+
+    <div class="form-row">
+      <div class="form-group">
+        <label for="firstName" class="form-label">First Name</label>
+        <input
+          id="firstName"
+          type="text"
+          formControlName="firstName"
+          class="form-input"
+          placeholder="John"
+          autocomplete="given-name"
+          minlength="2"
+          maxlength="50"
+          [class.error]="isFieldInvalid('firstName', phase1Form)"
+          [readOnly]="isSubmitting"
+          [attr.aria-invalid]="isFieldInvalid('firstName', phase1Form)"
+          [attr.aria-describedby]="isFieldInvalid('firstName', phase1Form) ? 'firstName-error' : null"
+          required
+        />
+        <div id="firstName-error" 
+             class="error-message" 
+             *ngIf="isFieldInvalid('firstName', phase1Form)"
+             role="alert"
+             aria-live="polite">
+          <span *ngIf="phase1Form.get('firstName')?.errors?.['required']">First name is required</span>
+          <span *ngIf="phase1Form.get('firstName')?.errors?.['minlength']">First name must be at least 2 characters</span>
+          <span *ngIf="phase1Form.get('firstName')?.errors?.['maxlength']">First name must be less than 50 characters</span>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="lastName" class="form-label">Last Name</label>
+        <input
+          id="lastName"
+          type="text"
+          formControlName="lastName"
+          class="form-input"
+          placeholder="Doe"
+          autocomplete="family-name"
+          minlength="2"
+          maxlength="50"
+          [class.error]="isFieldInvalid('lastName', phase1Form)"
+          [readOnly]="isSubmitting"
+          [attr.aria-invalid]="isFieldInvalid('lastName', phase1Form)"
+          [attr.aria-describedby]="isFieldInvalid('lastName', phase1Form) ? 'lastName-error' : null"
+          required
+        />
+        <div id="lastName-error" 
+             class="error-message" 
+             *ngIf="isFieldInvalid('lastName', phase1Form)"
+             role="alert"
+             aria-live="polite">
+          <span *ngIf="phase1Form.get('lastName')?.errors?.['required']">Last name is required</span>
+          <span *ngIf="phase1Form.get('lastName')?.errors?.['minlength']">Last name must be at least 2 characters</span>
+          <span *ngIf="phase1Form.get('lastName')?.errors?.['maxlength']">Last name must be less than 50 characters</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="form-actions">
+      <button type="submit" class="step1-next">
+        Next: Email
+        <i class="fas fa-arrow-right" aria-hidden="true"></i>
+      </button>
+    </div>
+  </form>
+
+  <!-- Phase 2: Email -->
+  <form [formGroup]="phase2Form" 
+        (ngSubmit)="onPhase2Submit()" 
+        *ngIf="currentPhase === 2" 
+        class="phase-form" 
+        [attr.aria-busy]="isSubmitting"
+        role="form"
+        aria-labelledby="phase2-title">
+    
+    <div class="phase-header">
+      <h2 id="phase2-title" class="phase-title">Email Address</h2>
+      <p class="phase-description">We'll use this for your account and communications</p>
+    </div>
+
+    <div class="form-group">
+      <label for="email" class="form-label">Email Address</label>
+      <div class="input-wrapper">
+        <i class="fas fa-envelope input-icon" aria-hidden="true"></i>
+        <input
+          id="email"
+          type="email"
+          formControlName="email"
+          class="form-input"
+          placeholder="Enter your email address"
+          autocomplete="email"
+          minlength="1"
+          maxlength="254"
+          [class.error]="isFieldInvalid('email', phase2Form)"
+          [readOnly]="isSubmitting"
+          [attr.aria-invalid]="isFieldInvalid('email', phase2Form)"
+          [attr.aria-describedby]="isFieldInvalid('email', phase2Form) ? 'email-error' : null"
+          required
+        />
+      </div>
+      <div id="email-error" 
+           class="error-message" 
+           *ngIf="isFieldInvalid('email', phase2Form)"
+           role="alert"
+           aria-live="polite">
+        <span *ngIf="phase2Form.get('email')?.errors?.['required']">Email is required</span>
+        <span *ngIf="phase2Form.get('email')?.errors?.['email']">Please enter a valid email address</span>
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label for="confirmEmail" class="form-label">Confirm Email</label>
+      <div class="input-wrapper">
+        <i class="fas fa-envelope input-icon" aria-hidden="true"></i>
+        <input
+          id="confirmEmail"
+          type="email"
+          formControlName="confirmEmail"
+          class="form-input"
+          placeholder="Re-enter your email address"
+          autocomplete="email"
+          minlength="1"
+          maxlength="254"
+          [class.error]="isFieldInvalid('confirmEmail', phase2Form)"
+          [readOnly]="isSubmitting"
+          [attr.aria-invalid]="isFieldInvalid('confirmEmail', phase2Form)"
+          [attr.aria-describedby]="isFieldInvalid('confirmEmail', phase2Form) ? 'confirmEmail-error' : null"
+          required
+        />
+      </div>
+      <div id="confirmEmail-error" 
+           class="error-message" 
+           *ngIf="isFieldInvalid('confirmEmail', phase2Form)"
+           role="alert"
+           aria-live="polite">
+        <span *ngIf="phase2Form.get('confirmEmail')?.errors?.['required']">Email confirmation is required</span>
+        <span *ngIf="phase2Form.errors?.['emailMismatch']">Emails don't match</span>
+      </div>
+    </div>
+
+    <div class="form-actions">
+      <button type="button" class="step2-back" (click)="previousPhase()">
+        <i class="fas fa-arrow-left" aria-hidden="true"></i>
+        Back
+      </button>
+      <button type="submit" class="step2-next">
+        Next: Password
+        <i class="fas fa-arrow-right" aria-hidden="true"></i>
+      </button>
+    </div>
+  </form>
+
+  <!-- Phase 3: Password -->
+  <form [formGroup]="phase3Form" 
+        (ngSubmit)="onPhase3Submit()" 
+        *ngIf="currentPhase === 3" 
+        class="phase-form" 
+        [attr.aria-busy]="isSubmitting"
+        role="form"
+        aria-labelledby="phase3-title">
+    
+    <div class="phase-header">
+      <h2 id="phase3-title" class="phase-title">Create Password</h2>
+      <p class="phase-description">Set up your account security</p>
+    </div>
+
+    <div class="form-group">
+      <label for="password" class="form-label">Password</label>
+      <div class="input-wrapper">
+        <i class="fas fa-lock input-icon" aria-hidden="true"></i>
+        <input
+          id="password"
+          [type]="showPassword ? 'text' : 'password'"
+          formControlName="password"
+          class="form-input"
+          placeholder="Create a strong password"
+          autocomplete="new-password"
+          minlength="8"
+          maxlength="128"
+          [class.error]="isFieldInvalid('password', phase3Form)"
+          [readOnly]="isSubmitting"
+          [attr.aria-invalid]="isFieldInvalid('password', phase3Form)"
+          [attr.aria-describedby]="isFieldInvalid('password', phase3Form) ? 'password-error' : null"
+          required
+        />
+        <button
+          type="button"
+          class="password-toggle"
+          (click)="togglePasswordVisibility()"
+          [attr.aria-label]="showPassword ? 'Hide password' : 'Show password'"
+        >
+          <i [class]="showPassword ? 'fas fa-eye-slash' : 'fas fa-eye'" aria-hidden="true"></i>
+        </button>
+      </div>
+      <div id="password-error" 
+           class="error-message" 
+           *ngIf="isFieldInvalid('password', phase3Form)"
+           role="alert"
+           aria-live="polite">
+        <span *ngIf="phase3Form.get('password')?.errors?.['required']">Password is required</span>
+        <span *ngIf="phase3Form.get('password')?.errors?.['minlength']">Password must be at least 8 characters</span>
+        <span *ngIf="phase3Form.get('password')?.errors?.['maxlength']">Password must be less than 128 characters</span>
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label for="confirmPassword" class="form-label">Confirm Password</label>
+      <div class="input-wrapper">
+        <i class="fas fa-lock input-icon" aria-hidden="true"></i>
+        <input
+          id="confirmPassword"
+          [type]="showConfirmPassword ? 'text' : 'password'"
+          formControlName="confirmPassword"
+          class="form-input"
+          placeholder="Confirm your password"
+          autocomplete="new-password"
+          minlength="8"
+          maxlength="128"
+          [class.error]="isFieldInvalid('confirmPassword', phase3Form)"
+          [readOnly]="isSubmitting"
+          [attr.aria-invalid]="isFieldInvalid('confirmPassword', phase3Form)"
+          [attr.aria-describedby]="isFieldInvalid('confirmPassword', phase3Form) ? 'confirmPassword-error' : null"
+          required
+        />
+        <button
+          type="button"
+          class="password-toggle"
+          (click)="toggleConfirmPasswordVisibility()"
+          [attr.aria-label]="showConfirmPassword ? 'Hide password' : 'Show password'"
+        >
+          <i [class]="showConfirmPassword ? 'fas fa-eye-slash' : 'fas fa-eye'" aria-hidden="true"></i>
+        </button>
+      </div>
+      <div id="confirmPassword-error" 
+           class="error-message" 
+           *ngIf="isFieldInvalid('confirmPassword', phase3Form)"
+           role="alert"
+           aria-live="polite">
+        <span *ngIf="phase3Form.get('confirmPassword')?.errors?.['required']">Password confirmation is required</span>
+        <span *ngIf="phase3Form.errors?.['passwordMismatch']">Passwords don't match</span>
+      </div>
+    </div>
+
+    <div class="form-actions">
+      <button type="button" class="step3-back" (click)="previousPhase()">
+        <i class="fas fa-arrow-left" aria-hidden="true"></i>
+        Back
+      </button>
+      <button type="submit" class="step3-next">
+        Next: Preferences
+        <i class="fas fa-arrow-right" aria-hidden="true"></i>
+      </button>
+    </div>
+  </form>
+
+  <!-- Phase 4: Preferences & Policy -->
+  <form [formGroup]="phase4Form" 
+        (ngSubmit)="onPhase4Submit()" 
+        *ngIf="currentPhase === 4" 
+        class="phase-form" 
+        [attr.aria-busy]="isSubmitting"
+        role="form"
+        aria-labelledby="phase4-title">
+    
+    <div class="phase-header">
+      <h2 id="phase4-title" class="phase-title">Preferences & Policy</h2>
+      <p class="phase-description">Customize your experience and accept terms</p>
+    </div>
+
+    <div class="form-row">
+      <div class="form-group">
+        <label for="preferredLanguage" class="form-label">Preferred Language</label>
+        <select
+          id="preferredLanguage"
+          formControlName="preferredLanguage"
+          class="form-select"
+          [class.error]="isFieldInvalid('preferredLanguage', phase4Form)"
+          [attr.aria-invalid]="isFieldInvalid('preferredLanguage', phase4Form)"
+          [attr.aria-describedby]="isFieldInvalid('preferredLanguage', phase4Form) ? 'preferredLanguage-error' : null"
+          required
+        >
+          <option value="">Select language</option>
+          <option value="en">English</option>
+          <option value="fr">Français</option>
+          <option value="de">Deutsch</option>
+          <option value="es">Español</option>
+          <option value="it">Italiano</option>
+          <option value="pt">Português</option>
+          <option value="ru">Русский</option>
+          <option value="ar">العربية</option>
+          <option value="zh">中文</option>
+          <option value="ja">日本語</option>
+        </select>
+        <div id="preferredLanguage-error" 
+             class="error-message" 
+             *ngIf="isFieldInvalid('preferredLanguage', phase4Form)"
+             role="alert"
+             aria-live="polite">
+          <span *ngIf="phase4Form.get('preferredLanguage')?.errors?.['required']">Please select a language</span>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="preferredCurrency" class="form-label">Preferred Currency</label>
+        <select
+          id="preferredCurrency"
+          formControlName="preferredCurrency"
+          class="form-select"
+          [class.error]="isFieldInvalid('preferredCurrency', phase4Form)"
+          [attr.aria-invalid]="isFieldInvalid('preferredCurrency', phase4Form)"
+          [attr.aria-describedby]="isFieldInvalid('preferredCurrency', phase4Form) ? 'preferredCurrency-error' : null"
+          required
+        >
+          <option value="">Select currency</option>
+          <option value="USD">US Dollar ($)</option>
+          <option value="EUR">Euro (€)</option>
+          <option value="GBP">British Pound (£)</option>
+          <option value="JPY">Japanese Yen (¥)</option>
+          <option value="CAD">Canadian Dollar (C$)</option>
+          <option value="AUD">Australian Dollar (A$)</option>
+          <option value="CHF">Swiss Franc (CHF)</option>
+          <option value="CNY">Chinese Yuan (¥)</option>
+          <option value="INR">Indian Rupee (₹)</option>
+          <option value="BRL">Brazilian Real (R$)</option>
+        </select>
+        <div id="preferredCurrency-error" 
+             class="error-message" 
+             *ngIf="isFieldInvalid('preferredCurrency', phase4Form)"
+             role="alert"
+             aria-live="polite">
+          <span *ngIf="phase4Form.get('preferredCurrency')?.errors?.['required']">Please select a currency</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label class="checkbox-wrapper">
+        <input type="checkbox" 
+               formControlName="acceptTerms" 
+               class="sr-only-checkbox" 
+               required>
+        <span class="checkbox-custom" aria-hidden="true"></span>
+        <span class="checkbox-label">
+          I accept the <a routerLink="/legal/terms" 
+                         target="_blank" 
+                         rel="noopener noreferrer" 
+                         class="terms-link">Terms of Service</a> and 
+          <a routerLink="/legal/privacy" 
+             target="_blank" 
+             rel="noopener noreferrer" 
+             class="terms-link">Privacy Policy</a>
+        </span>
+      </label>
+      <div id="acceptTerms-error" 
+           class="error-message" 
+           *ngIf="isFieldInvalid('acceptTerms', phase4Form)"
+           role="alert"
+           aria-live="polite">
+        <span *ngIf="phase4Form.get('acceptTerms')?.errors?.['required']">You must accept the terms to continue</span>
+      </div>
+    </div>
+
+    <!-- Error Message -->
+    <div class="error-banner" 
+         *ngIf="signupError" 
+         role="alert" 
+         aria-live="polite">
+      <i class="fas fa-exclamation-triangle" aria-hidden="true"></i>
+      <span>{{ signupError }}</span>
+    </div>
+
+    <div class="form-actions">
+      <button type="button" class="step4-back" (click)="previousPhase()">
+        <i class="fas fa-arrow-left" aria-hidden="true"></i>
+        Back
+      </button>
+      <button type="submit" 
+              class="step4-submit" 
+              [class.loading]="isSubmitting">
+        <span class="button-text" *ngIf="!isSubmitting">Create Account</span>
+        <span class="button-text" *ngIf="isSubmitting">Creating Account...</span>
+        <div class="spinner" 
+             *ngIf="isSubmitting" 
+             role="status" 
+             aria-live="polite" 
+             aria-label="Submitting..."></div>
+      </button>
+    </div>
+  </form>
+
+  <!-- Login Link -->
+  <div class="login-section">
+    <p class="login-text">Already have an account?</p>
+    <button type="button" 
+            class="login-button" 
+            (click)="navigateToLogin()">
+      Sign In
+    </button>
+  </div>
+</div>
+
+<!-- Structured Data for SEO -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "WebPage",
+  "name": "Sign Up - Alpha Vault",
+  "description": "Create your Alpha Vault account for secure financial management",
+  "url": "https://alphavault.com/auth/signup",
+  "mainEntity": {
+    "@type": "SignUpAction",
+    "target": {
+      "@type": "EntryPoint",
+      "urlTemplate": "https://alphavault.com/auth/signup"
+    },
+    "description": "User registration form for Alpha Vault financial platform"
+  },
+  "potentialAction": {
+    "@type": "SearchAction",
+    "target": "https://alphavault.com/search?q={search_term_string}",
+    "query-input": "required name=search_term_string"
+  }
+}
+</script>

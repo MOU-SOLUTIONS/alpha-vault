@@ -1,0 +1,447 @@
+@use '../../../shared/styles/animations.scss' as *;
+
+/* ================= VARIABLES ================= */
+
+$primary-color: #6366f1;
+$secondary-color: #8b5cf6;
+$text-dark: #1a1a1a;
+$text-light: #64748b;
+$background-light: #fafafa;
+$spacing-sm: 15px;
+$spacing-md: 20px;
+$spacing-lg: 30px;
+$spacing-xl: 60px;
+$spacing-xxl: 100px;
+$border-radius-full: 50%;
+$transition-standard: transform 0.3s ease;
+$primary-gradient: linear-gradient(135deg, $primary-color 0%, $secondary-color 100%);
+
+:host {
+  display: block;
+}
+
+/* ================= ABOUT SECTION ================= */
+
+.about {
+  padding: 120px 0;
+  background: $background-light;
+}
+
+/* ================= CONTAINER ================= */
+
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 $spacing-md;
+}
+
+/* ================= SECTION HEADER ================= */
+
+.section-header {
+  text-align: center;
+  margin-bottom: $spacing-xxl;
+  
+  h2 {
+    font-size: 2.5rem;
+    font-weight: 700;
+    margin-bottom: $spacing-sm;
+  }
+  
+  p {
+    font-size: 1.2rem;
+    color: $text-light;
+  }
+}
+
+.gradient-text {
+  background: $primary-gradient;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  display: inline-block;
+}
+
+/* ================= ABOUT CONTENT ================= */
+
+.about-content {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: $spacing-xl;
+  align-items: center;
+  @include reveal-on-scroll;
+}
+
+/* ================= ABOUT TEXT ================= */
+
+.about-text {
+  h3 {
+    font-size: 1.8rem;
+    font-weight: 600;
+    margin-bottom: $spacing-md;
+    color: $text-dark;
+  }
+  
+  p {
+    font-size: 1.1rem;
+    color: $text-light;
+    margin-bottom: $spacing-lg;
+    line-height: 1.6;
+  }
+}
+
+/* ================= TEAM SECTION ================= */
+
+.team-section {
+  text-align: center;
+  
+  h3 {
+    font-size: 1.8rem;
+    font-weight: 600;
+    margin-bottom: $spacing-lg;
+    color: $text-dark;
+    text-align: center;
+  }
+}
+
+.team-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: $spacing-sm;
+  justify-items: center;
+  
+  // First row: Founder & CEO alone, centered
+  .founder-ceo {
+    grid-column: 1;
+    grid-row: 1;
+  }
+  
+  // Second row: Two members side by side
+  .team-member:not(.founder-ceo) {
+    grid-column: span 1;
+    
+    &:nth-child(2) {
+      grid-row: 2;
+      grid-column: 1;
+    }
+    
+    &:nth-child(3) {
+      grid-row: 2;
+      grid-column: 2;
+    }
+  }
+}
+
+// Desktop: Second row should be 2 columns
+@media (min-width: 769px) {
+  .team-grid {
+    grid-template-columns: repeat(2, 1fr);
+    max-width: 800px;
+    margin: 0 auto;
+    gap: $spacing-sm;
+    row-gap: $spacing-md;
+    
+    .founder-ceo {
+      grid-column: 1 / -1; // Span full width
+      grid-row: 1;
+    }
+    
+    .team-member:not(.founder-ceo) {
+      &:nth-child(2) {
+        grid-row: 2;
+        grid-column: 1;
+      }
+      
+      &:nth-child(3) {
+        grid-row: 2;
+        grid-column: 2;
+      }
+    }
+  }
+}
+
+.team-member {
+  text-align: center;
+  @include reveal-on-scroll;
+  transition-delay: calc(var(--index, 0) * 0.1s);
+  transition: $transition-standard;
+  
+  &:hover {
+    transform: translateY(-10px);
+    
+    .member-photo {
+      transform: scale(1.05);
+    }
+  }
+  
+  h4 {
+    font-size: 1.2rem;
+    font-weight: 600;
+    margin-bottom: 5px;
+    color: $text-dark;
+  }
+  
+  p {
+    color: $text-light;
+  }
+}
+
+.member-photo {
+  width: 120px;
+  height: 120px;
+  border-radius: $border-radius-full;
+  margin: 0 auto $spacing-sm;
+  transition: $transition-standard;
+  overflow: hidden;
+  position: relative;
+  background: $primary-gradient;
+  border: 4px solid $primary-color;
+  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+  
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center 25%;
+    border-radius: $border-radius-full;
+    display: block;
+    transform: scale(1.2);
+    transform-origin: center center;
+  }
+}
+
+/* ================= ACCESSIBILITY ENHANCEMENTS ================= */
+
+@media (prefers-reduced-motion: reduce) {
+  .about-content,
+  .team-member {
+    animation: none;
+    transition: none;
+  }
+  
+  .team-member {
+    &:hover {
+      transform: none;
+      
+      .member-photo {
+        transform: none;
+      }
+    }
+  }
+  
+  .member-photo {
+    transition: none;
+    
+    img {
+      transform: scale(1);
+    }
+  }
+}
+
+/* ================= RESPONSIVE DESIGN ================= */
+
+@media (max-width: 768px) {
+  .container {
+    padding: 0 $spacing-md;
+  }
+
+  .about {
+    padding: 60px 0;
+  }
+
+  .section-header {
+    margin-bottom: 40px;
+    
+    h2 {
+      font-size: 1.75rem;
+    }
+    
+    p {
+      font-size: 1rem;
+    }
+  }
+
+  .about-content {
+    grid-template-columns: 1fr;
+    gap: 30px;
+  }
+
+  .about-text {
+    h3 {
+      font-size: 1.4rem;
+    }
+    
+    p {
+      font-size: 1rem;
+      margin-bottom: 20px;
+    }
+  }
+
+  .team-section {
+    h3 {
+      font-size: 1.4rem;
+      margin-bottom: 20px;
+    }
+  }
+  
+  .team-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+    row-gap: 15px;
+    max-width: 100%;
+    
+    .founder-ceo {
+      grid-column: 1 / -1; // Span full width
+      grid-row: 1;
+    }
+    
+    .team-member:not(.founder-ceo) {
+      &:nth-child(2) {
+        grid-row: 2;
+        grid-column: 1;
+      }
+      
+      &:nth-child(3) {
+        grid-row: 2;
+        grid-column: 2;
+      }
+    }
+  }
+
+  .team-member {
+    h4 {
+      font-size: 1.1rem;
+    }
+    
+    &.founder-ceo {
+      .member-photo {
+        width: 140px;
+        height: 140px;
+        border: 5px solid $primary-color;
+        
+        img {
+          transform: scale(1.2);
+        }
+      }
+      
+      h4 {
+        font-size: 1.3rem;
+      }
+      
+      p {
+        font-size: 1rem;
+      }
+    }
+  }
+
+  .member-photo {
+    width: 100px;
+    height: 100px;
+    border: 3px solid $primary-color;
+    
+    img {
+      width: 100%;
+      height: 100%;
+      transform: scale(1.2);
+      object-position: center 25%;
+    }
+  }
+}
+
+@media (max-width: 480px) {
+  .container {
+    padding: 0 20px;
+  }
+
+  .about {
+    padding: 40px 0;
+  }
+
+  .section-header {
+    margin-bottom: 30px;
+    
+    h2 {
+      font-size: 1.5rem;
+    }
+    
+    p {
+      font-size: 0.9rem;
+    }
+  }
+
+  .about-content {
+    gap: 25px;
+  }
+
+  .about-text {
+    h3 {
+      font-size: 1.2rem;
+    }
+    
+    p {
+      font-size: 0.95rem;
+    }
+  }
+
+  .team-section {
+    h3 {
+      font-size: 1.2rem;
+    }
+  }
+  
+  .team-grid {
+    grid-template-columns: 1fr;
+    gap: 10px;
+    
+    .founder-ceo {
+      grid-column: 1;
+      grid-row: 1;
+    }
+    
+    .team-member:not(.founder-ceo) {
+      &:nth-child(2) {
+        grid-row: 2;
+        grid-column: 1;
+      }
+      
+      &:nth-child(3) {
+        grid-row: 3;
+        grid-column: 1;
+      }
+    }
+  }
+
+  .team-member {
+    &.founder-ceo {
+      .member-photo {
+        width: 110px;
+        height: 110px;
+        border: 4px solid $primary-color;
+        
+        img {
+          transform: scale(1.2);
+        }
+      }
+      
+      h4 {
+        font-size: 1.15rem;
+      }
+      
+      p {
+        font-size: 0.9rem;
+      }
+    }
+  }
+
+  .member-photo {
+    width: 80px;
+    height: 80px;
+    border: 3px solid $primary-color;
+    
+    img {
+      width: 100%;
+      height: 100%;
+      transform: scale(1.2);
+      object-position: center 25%;
+    }
+  }
+}

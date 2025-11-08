@@ -1,0 +1,127 @@
+<!--
+  Alpha Vault Financial System
+  
+  @author Mohamed Dhaoui
+  @component CryptoValueChartComponent
+  @description Crypto value chart component for displaying crypto portfolio value
+-->
+
+<!-- Section: Portfolio Value Chart Container -->
+<section class="crypto-value-container" [@fadeInUp] role="region" aria-labelledby="valueChartTitle">
+
+  <!-- Section: Header -->
+  <header class="header-section">
+    <div class="header-content">
+      <div class="header-left">
+        <div class="header-icon" role="img" aria-label="Portfolio value icon">
+          <mat-icon>trending_up</mat-icon>
+          <div class="icon-glow"></div>
+        </div>
+        <div class="header-text">
+          <h2 id="valueChartTitle" class="header-title">Portfolio Value</h2>
+          <p class="header-subtitle">Track your crypto investment performance over time</p>
+        </div>
+      </div>
+      
+      <div class="header-actions">
+        <button 
+          class="action-btn refresh-btn"
+          (click)="computePortfolioMetrics()"
+          [disabled]="isLoading"
+          aria-label="Refresh portfolio data"
+          matTooltip="Refresh data"
+          type="button"
+        >
+          <mat-icon [class.spinning]="isLoading" aria-hidden="true">refresh</mat-icon>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Section: Portfolio Summary -->
+  <section class="stats-section" [@staggerCards] role="region" aria-labelledby="valueStatsTitle" aria-live="polite">
+    <h3 id="valueStatsTitle" class="sr-only">Portfolio Value Statistics</h3>
+    <article class="stat-card total-invested" [@slideIn]>
+      <div class="stat-icon" role="img" aria-label="Total invested icon">
+        <mat-icon>account_balance_wallet</mat-icon>
+      </div>
+      <div class="stat-content">
+        <span class="stat-label">Total Invested</span>
+        <span class="stat-value" [@pulse]="totalInvested">{{ formatCurrency(totalInvested) }}</span>
+      </div>
+    </article>
+
+    <article class="stat-card current-value" [@slideIn]>
+      <div class="stat-icon" role="img" aria-label="Current value icon">
+        <mat-icon>monetization_on</mat-icon>
+      </div>
+      <div class="stat-content">
+        <span class="stat-label">Current Value</span>
+        <span class="stat-value" [@pulse]="currentValue">{{ formatCurrency(currentValue) }}</span>
+      </div>
+    </article>
+
+    <article class="stat-card profit-loss" [ngClass]="{ 'positive': isPositive, 'negative': !isPositive }" [@slideIn]>
+      <div class="stat-icon" [style.color]="getProfitLossColor(isPositive)" role="img" aria-label="Profit loss icon">
+        <mat-icon>{{ getProfitLossIcon(isPositive) }}</mat-icon>
+      </div>
+      <div class="stat-content">
+        <span class="stat-label">Profit & Loss</span>
+        <span class="stat-value" [@pulse]="profitLoss" [style.color]="getProfitLossColor(isPositive)">
+          {{ formatCurrency(profitLoss) }}
+        </span>
+      </div>
+    </article>
+
+    <article class="stat-card growth-percentage" [ngClass]="{ 'positive': isPositive, 'negative': !isPositive }" [@slideIn]>
+      <div class="stat-icon" [style.color]="getProfitLossColor(isPositive)" role="img" aria-label="Growth percentage icon">
+        <mat-icon>trending_up</mat-icon>
+      </div>
+      <div class="stat-content">
+        <span class="stat-label">Growth</span>
+        <span class="stat-value" [@pulse]="profitLossPercentage" [style.color]="getProfitLossColor(isPositive)">
+          {{ formatPercentage(profitLossPercentage) }}
+        </span>
+      </div>
+    </article>
+  </section>
+
+  <!-- Section: Chart Display -->
+  <section class="chart-section" [@slideIn]>
+    <header class="chart-header">
+      <h3 class="chart-title">Portfolio Performance - {{ timeframeLabel }}</h3>
+      <div class="chart-controls">
+        <div class="timeframe-controls">
+          <button 
+            *ngFor="let timeframe of timeframes; trackBy: trackByTimeframe"
+            class="timeframe-btn"
+            [class.active]="selectedTimeframe === timeframe"
+            (click)="changeTimeframe(timeframe)"
+            [attr.aria-label]="'View ' + timeframe + ' performance'"
+            matTooltip="View {{ timeframe }} performance"
+            type="button"
+          >
+            {{ timeframe }}
+          </button>
+        </div>
+      </div>
+    </header>
+    
+    <div class="chart-container" role="img" aria-label="Portfolio performance chart">
+      <canvas
+        baseChart
+        [data]="lineData"
+        [options]="lineOptions"
+        [type]="'line'"
+        class="chart-canvas"
+      ></canvas>
+      
+      <div *ngIf="isLoading" class="loading-overlay" role="status" aria-label="Loading chart data">
+        <div class="loading-content">
+          <mat-icon class="loading-spinner spinning" aria-hidden="true">sync</mat-icon>
+          <span class="loading-text">Updating chart data...</span>
+        </div>
+      </div>
+    </div>
+  </section>
+</section>

@@ -1,0 +1,64 @@
+<!--
+  Alpha Vault Financial System
+  
+  @author Mohamed Dhaoui
+  @component ExpenseMethodChartComponent
+  @description Expense method chart component for displaying expense data
+-->
+
+<section class="row justify-content-center h-100" role="region" aria-labelledby="expenseMethodChartTitle">
+  <div class="col-12 h-100">
+    <div class="method-chart-box d-flex flex-column h-100">
+      <header class="method-chart-header">
+        <h3 id="expenseMethodChartTitle" class="method-chart-title">Payment Methods</h3>
+        <div class="method-chart-badge">Current Month</div>
+      </header>
+
+      <div class="method-chart-content flex-grow-1">
+        <ng-container *ngIf="!hasData(); else showChart">
+          <div class="no-data-message" role="status" aria-live="polite">
+            <div class="no-data-icon" aria-hidden="true">💰</div>
+            <p>No expense method data available for this month</p>
+            <p class="no-data-hint">Add some expenses this month to see this chart</p>
+          </div>
+        </ng-container>
+
+        <ng-template #showChart>
+          <div class="method-chart-wrapper">
+            <canvas
+              baseChart
+              [data]="pieChartData()"
+              [labels]="pieChartLabels()"
+              [type]="'doughnut'"
+              [options]="pieChartOptions"
+              class="method-chart-canvas"
+              role="img"
+              aria-label="Current month expense distribution by payment method"
+            ></canvas>
+          </div>
+
+          <div class="legend-container" role="list" aria-label="Payment method legend">
+            <div 
+              *ngFor="let label of pieChartLabels(); let i = index; trackBy: trackByLabel" 
+              class="legend-item"
+              role="listitem"
+              tabindex="0"
+              [attr.aria-label]="'Payment method: ' + label + ', Amount: ' + (getValueForLabel(label) | currency)"
+              (click)="onLegendItemActivate($event, label)"
+              (keydown.enter)="onLegendItemActivate($event, label)"
+              (keydown.space)="onLegendItemActivate($event, label)"
+            >
+              <div 
+                class="legend-color" 
+                [style.background-color]="colorPalette[i % colorPalette.length]"
+                [attr.aria-hidden]="true"
+              ></div>
+              <div class="legend-label">{{ label }}</div>
+              <div class="legend-value">{{ getValueForLabel(label) | currency }}</div>
+            </div>
+          </div>
+        </ng-template>
+      </div>
+    </div>
+  </div>
+</section>

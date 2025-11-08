@@ -1,0 +1,143 @@
+/*
+  Alpha Vault Financial System
+  
+  @author Mohamed Dhaoui
+  @component SavingTableEmptyComponent
+  @description Comprehensive styling for saving table empty component with responsive design
+*/
+
+:host {
+  --empty-icon-size: 3rem;
+  --empty-padding: 3rem 1.5rem;
+  --empty-title-size: 1.25rem;
+  --empty-text-size: 0.875rem;
+  --empty-icon-opacity: 0.6;
+  --theme-primary: #8d5603;
+  --theme-primary-hover: #a66a0a;
+  --theme-surface: #fefcf8;
+  --theme-background: #faf8f3;
+  --theme-border: rgba(141, 86, 3, 0.15);
+  --theme-radius: 8px;
+  --theme-radius-small: 6px;
+  --theme-text-primary: #2d3748;
+  --theme-text-secondary: #4a5568;
+  --theme-transition: all 0.2s ease;
+  --theme-shadow: 0 2px 8px rgba(141, 86, 3, 0.1);
+  --theme-shadow-hover: 0 4px 12px rgba(141, 86, 3, 0.15);
+}
+
+.empty-state {
+  text-align: center;
+  padding: var(--empty-padding);
+  background: var(--theme-surface);
+  border-radius: var(--theme-radius);
+  border: 1px solid var(--theme-border);
+
+  .empty-icon {
+    margin-bottom: 1.5rem;
+
+    i {
+      font-size: var(--empty-icon-size);
+      color: var(--theme-primary);
+      opacity: var(--empty-icon-opacity);
+    }
+  }
+
+  h3 {
+    font-size: var(--empty-title-size);
+    font-weight: 600;
+    color: var(--theme-text-primary);
+    margin: 0 0 0.75rem 0;
+  }
+
+  p {
+    font-size: var(--empty-text-size);
+    color: var(--theme-text-secondary);
+    margin: 0 0 1.5rem 0;
+    opacity: 0.8;
+  }
+
+  .btn-create-goal {
+    background: var(--theme-primary);
+    color: white;
+    border: none;
+    padding: 0.75rem 1.5rem;
+    border-radius: var(--theme-radius-small);
+    font-weight: 600;
+    font-size: 0.875rem;
+    cursor: pointer;
+    transition: var(--theme-transition);
+    box-shadow: var(--theme-shadow);
+    position: relative;
+
+    &:hover {
+      background: var(--theme-primary-hover);
+      box-shadow: var(--theme-shadow-hover);
+      transform: translateY(-1px);
+    }
+
+    &:focus {
+      outline: 2px solid var(--theme-primary);
+      outline-offset: 2px;
+      box-shadow: 
+        var(--theme-shadow-hover),
+        0 0 0 3px rgba(141, 86, 3, 0.2);
+    }
+
+    &:active {
+      transform: translateY(0);
+      box-shadow: var(--theme-shadow);
+    }
+
+    &:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+      transform: none;
+      
+      &:hover {
+        transform: none;
+        box-shadow: var(--theme-shadow);
+      }
+    }
+
+    i {
+      margin-right: 0.5rem;
+    }
+  }
+}
+
+.empty-state {
+  &:focus-within {
+    .btn-create-goal {
+      box-shadow: 
+        var(--theme-shadow-hover),
+        0 0 0 3px rgba(141, 86, 3, 0.1);
+    }
+  }
+}
+
+@media (prefers-contrast: high) {
+  .btn-create-goal {
+    border: 2px solid var(--theme-primary);
+    
+    &:focus {
+      outline-width: 3px;
+    }
+  }
+  
+  .empty-state {
+    border-width: 2px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .empty-state {
+    .btn-create-goal {
+      transition: none;
+    }
+
+    .btn-create-goal:hover {
+      transform: none;
+    }
+  }
+}

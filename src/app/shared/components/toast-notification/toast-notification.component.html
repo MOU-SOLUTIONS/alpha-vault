@@ -1,0 +1,44 @@
+<!--
+  Alpha Vault Financial System
+  
+  @author Mohamed Dhaoui
+  @component ToastNotificationComponent
+  @description Toast notification template with small panel design
+-->
+
+<div class="toast-container" *ngIf="visibleToasts.length > 0">
+  <div 
+    *ngFor="let toast of visibleToasts; trackBy: trackByNotificationId"
+    class="toast-notification"
+    [ngClass]="getToastClass(toast)"
+    [attr.aria-live]="toast.type === 'error' ? 'assertive' : 'polite'"
+    role="alert">
+    
+    <div class="toast-content">
+      <div class="toast-icon">
+        <i [ngClass]="getIconClass(toast)" aria-hidden="true"></i>
+      </div>
+      
+      <div class="toast-body">
+        <div class="toast-title">{{ toast.title }}</div>
+        <div class="toast-message">{{ toast.message }}</div>
+      </div>
+      
+      <button 
+        type="button" 
+        class="toast-close" 
+        (click)="removeToast(toast.id)"
+        [attr.aria-label]="'Close notification'"
+        title="Close notification">
+        <i class="fas fa-times" aria-hidden="true"></i>
+      </button>
+    </div>
+    
+    <!-- Progress bar -->
+    <div class="toast-progress">
+      <div class="progress-bar" 
+           [style.animation-duration]="duration + 'ms'"
+           [attr.aria-hidden]="true"></div>
+    </div>
+  </div>
+</div>

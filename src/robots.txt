@@ -1,0 +1,19 @@
+# Alpha Vault - robots.txt
+# Production robots.txt for search engine crawlers
+
+User-agent: *
+Allow: /
+Allow: /home
+Allow: /auth/login
+Allow: /auth/signup
+
+# Disallow authenticated routes
+Disallow: /main/
+Disallow: /auth/
+
+# Disallow API endpoints
+Disallow: /api/
+
+# Sitemap location
+Sitemap: https://alphavault.com/sitemap.xml
+

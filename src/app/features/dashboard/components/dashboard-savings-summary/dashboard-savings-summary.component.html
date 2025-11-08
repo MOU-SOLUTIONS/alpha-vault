@@ -1,0 +1,67 @@
+<!--
+  Alpha Vault Financial System
+  
+  @author Mohamed Dhaoui
+  @component DashboardSavingsSummaryComponent
+  @description Savings summary template
+-->
+
+<article class="savings-card" role="article" aria-labelledby="savingsTitle">
+  <header class="savings-header">
+    <h2 id="savingsTitle" class="savings-title">
+      <i class="fas fa-piggy-bank" aria-hidden="true"></i>
+      Savings Goals
+    </h2>
+    <a 
+      routerLink="/main/body/saving" 
+      class="view-all-link" 
+      aria-label="View all savings goals"
+      (keydown.enter)="$event.preventDefault(); $event.stopPropagation();"
+      (keydown.space)="$event.preventDefault(); $event.stopPropagation();">
+      View All
+      <i class="fas fa-arrow-right" aria-hidden="true"></i>
+    </a>
+  </header>
+
+  <div *ngIf="isLoading" class="loading-state">
+    <div class="loading-spinner-small"></div>
+  </div>
+
+  <div *ngIf="!isLoading" class="savings-content">
+    <div class="savings-stats">
+      <div class="stat-item">
+        <span class="stat-label">Total Saved</span>
+        <span class="stat-value saved">{{ totalSaved | currency:'USD':'symbol':'1.0-0' }}</span>
+      </div>
+      <div class="stat-item">
+        <span class="stat-label">Target</span>
+        <span class="stat-value target">{{ totalTarget | currency:'USD':'symbol':'1.0-0' }}</span>
+      </div>
+      <div class="stat-item">
+        <span class="stat-label">Active Goals</span>
+        <span class="stat-value goals">{{ activeGoals }}</span>
+      </div>
+    </div>
+
+    <div class="progress-section">
+      <div class="progress-header">
+        <span class="progress-label">Overall Progress</span>
+        <span class="progress-percentage">{{ formattedPercentage }}%</span>
+      </div>
+      <div 
+        class="progress-bar-container" 
+        role="progressbar" 
+        [attr.aria-valuenow]="progressWidth" 
+        aria-valuemin="0" 
+        aria-valuemax="100" 
+        [attr.aria-label]="'Savings progress: ' + formattedPercentage + ' percent'">
+        <div 
+          class="progress-bar" 
+          [style.width.%]="progressWidth"
+          [style.background]="progressGradient">
+        </div>
+      </div>
+    </div>
+  </div>
+</article>
+

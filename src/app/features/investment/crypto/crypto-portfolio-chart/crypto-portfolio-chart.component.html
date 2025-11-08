@@ -1,0 +1,251 @@
+<!--
+  Alpha Vault Financial System
+  
+  @author Mohamed Dhaoui
+  @component CryptoPortfolioChartComponent
+  @description Crypto portfolio chart component for displaying crypto portfolio allocation
+-->
+
+<!-- Section: Portfolio Chart Container -->
+<section class="crypto-portfolio-container" [@fadeInUp] role="region" aria-labelledby="portfolioChartTitle">
+
+  <!-- Section: Header -->
+  <header class="header-section">
+    <div class="header-content">
+      <div class="header-left">
+        <div class="header-icon" role="img" aria-label="Portfolio allocation icon">
+          <mat-icon aria-hidden="true">pie_chart</mat-icon>
+          <div class="icon-glow"></div>
+        </div>
+        <div class="header-text">
+          <h2 id="portfolioChartTitle" class="header-title">Portfolio Allocation</h2>
+          <p class="header-subtitle">Visualize your crypto investment distribution</p>
+        </div>
+      </div>
+      
+      <div class="header-actions">
+        <button 
+          class="action-btn refresh-btn"
+          (click)="refreshData()"
+          (keydown.enter)="refreshData()"
+          (keydown.space)="refreshData(); $event.preventDefault()"
+          [disabled]="isLoading()"
+          [attr.aria-busy]="isLoading()"
+          aria-label="Refresh portfolio data"
+          matTooltip="Refresh data"
+          type="button"
+        >
+          <mat-icon [class.spinning]="isLoading()" aria-hidden="true">refresh</mat-icon>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Section: Portfolio Summary -->
+  <section class="stats-section" [@staggerItems] role="region" aria-labelledby="portfolioStatsTitle" aria-live="polite">
+    <h3 id="portfolioStatsTitle" class="sr-only">Portfolio Statistics</h3>
+    <article class="stat-card total-invested" [@slideIn]>
+      <div class="stat-icon" role="img" aria-label="Total invested icon">
+        <mat-icon aria-hidden="true">account_balance_wallet</mat-icon>
+      </div>
+      <div class="stat-content">
+        <span class="stat-label">Total Invested</span>
+        <span class="stat-value" [@scaleIn]="totalInvested()">{{ formattedTotalInvested() }}</span>
+      </div>
+    </article>
+
+    <article class="stat-card total-profit-loss" [class.positive]="totalProfitLoss() >= 0" [class.negative]="totalProfitLoss() < 0" [@slideIn]>
+      <div class="stat-icon" [style.color]="profitLossColor()" role="img" aria-label="Profit loss icon">
+        <mat-icon aria-hidden="true">{{ profitLossIcon() }}</mat-icon>
+      </div>
+      <div class="stat-content">
+        <span class="stat-label">Total P&L</span>
+        <span class="stat-value" [@scaleIn]="totalProfitLoss()" [style.color]="profitLossColor()">
+          {{ formattedTotalProfitLoss() }}
+        </span>
+      </div>
+    </article>
+
+    <article class="stat-card total-percentage" [class.positive]="totalProfitLossPercentage() >= 0" [class.negative]="totalProfitLossPercentage() < 0" [@slideIn]>
+      <div class="stat-icon" [style.color]="profitLossPercentageColor()" role="img" aria-label="Percentage icon">
+        <mat-icon aria-hidden="true">trending_up</mat-icon>
+      </div>
+      <div class="stat-content">
+        <span class="stat-label">Total Return</span>
+        <span class="stat-value" [@scaleIn]="totalProfitLossPercentage()" [style.color]="profitLossPercentageColor()">
+          {{ formattedTotalProfitLossPercentage() }}
+        </span>
+      </div>
+    </article>
+  </section>
+
+  <!-- Section: Integrated Side-by-Side Layout -->
+  <section class="portfolio-dashboard" [@slideIn] *ngIf="legendItems().length > 0">
+    <!-- Left Panel: Chart -->
+    <div class="chart-panel">
+      <header class="panel-header">
+        <div class="header-content">
+          <mat-icon class="header-icon" aria-hidden="true">pie_chart</mat-icon>
+          <div>
+            <h3 class="panel-title">Portfolio Distribution</h3>
+            <p class="panel-subtitle">{{ legendItems().length }} assets</p>
+          </div>
+        </div>
+        <button 
+          class="toggle-btn"
+          (click)="toggleChartType()"
+          (keydown.enter)="toggleChartType()"
+          (keydown.space)="toggleChartType(); $event.preventDefault()"
+          [attr.aria-label]="chartTypeLabel()"
+          matTooltip="Switch chart view"
+          type="button"
+        >
+          <mat-icon aria-hidden="true">{{ chartTypeIcon() }}</mat-icon>
+        </button>
+      </header>
+      
+      <div class="chart-area" role="region" aria-label="Portfolio allocation chart">
+        <canvas
+          baseChart
+          [data]="pieData()"
+          [options]="pieOptions"
+          [type]="selectedChartType()"
+          class="chart-canvas"
+          aria-label="Portfolio allocation pie chart showing investment distribution"
+        ></canvas>
+        
+        <div *ngIf="isLoading()" class="loading-overlay" role="status" aria-label="Loading chart data">
+          <div class="loading-content">
+            <mat-icon class="loading-spinner spinning" aria-hidden="true">sync</mat-icon>
+            <span class="loading-text">Updating portfolio...</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right Panel: Compact Asset List -->
+    <div class="breakdown-panel" *ngIf="legendItems().length > 0">
+      <header class="panel-header">
+        <div class="header-content">
+          <mat-icon class="header-icon" aria-hidden="true">account_tree</mat-icon>
+          <div>
+            <h3 class="panel-title">Asset Breakdown</h3>
+            <p class="panel-subtitle">Click for details</p>
+          </div>
+        </div>
+      </header>
+      
+      <div class="assets-list">
+        <div 
+          *ngFor="let item of computedLegendItems(); trackBy: trackByLegendItem; let i = index"
+          class="asset-item"
+          [@slideIn]
+          (click)="selectItem(item)"
+          (keydown)="onItemKeyDown($event, item)"
+          role="button"
+          tabindex="0"
+          [attr.aria-label]="'View details for ' + item.name + ' investment'"
+          [class.active]="selectedItemFormatted()?.name === item.name"
+        >
+          <div class="asset-indicator" [style.background-color]="item.color"></div>
+          
+          <div class="asset-main">
+            <div class="asset-header-row">
+              <h4 class="asset-name">{{ item.name }}</h4>
+              <span class="asset-percentage">{{ item.formattedPercentage }}</span>
+            </div>
+            
+            <div class="asset-metrics">
+              <div class="metric-item">
+                <span class="metric-label">Invested</span>
+                <span class="metric-value">{{ item.formattedInvested }}</span>
+              </div>
+              <div class="metric-item" [class.profit]="item.isPositive" [class.loss]="!item.isPositive">
+                <span class="metric-label">P&L</span>
+                <span class="metric-value" [style.color]="item.profitLossColor">
+                  {{ item.formattedProfitLoss }}
+                </span>
+              </div>
+              <div class="metric-item return-metric" [class.profit]="item.isPositive" [class.loss]="!item.isPositive">
+                <mat-icon class="trend-icon" aria-hidden="true">
+                  {{ item.isPositive ? 'trending_up' : 'trending_down' }}
+                </mat-icon>
+                <span class="metric-value" [style.color]="item.profitLossColor">
+                  {{ item.formattedProfitLossPercentage }}
+                </span>
+              </div>
+            </div>
+          </div>
+          
+          <mat-icon class="expand-icon" aria-hidden="true">chevron_right</mat-icon>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Section: Details Modal -->
+  <section 
+    *ngIf="showDetails() && selectedItemFormatted(); else noModal"
+    class="details-overlay" 
+    (click)="closeDetails()"
+    (keydown.escape)="closeDetails()"
+    (keydown.enter)="closeDetails()"
+    role="dialog" 
+    aria-modal="true"
+    [attr.aria-labelledby]="'modal-title-' + selectedItemFormatted()!.name"
+    tabindex="0"
+    aria-label="Investment details modal. Press Escape or Enter to close."
+  >
+    <article 
+      #modalRef
+      class="details-modal" 
+      (click)="$event.stopPropagation()"
+      (keydown.enter)="$event.stopPropagation()"
+      (keydown.space)="$event.stopPropagation(); $event.preventDefault()"
+      tabindex="0"
+      [@fadeInUp]
+    >
+      <header class="modal-header">
+        <div class="modal-title">
+          <div class="title-color" [style.background-color]="selectedItemFormatted()!.color"></div>
+          <div class="title-text">
+            <h3 id="modal-title-{{ selectedItemFormatted()!.name }}">{{ selectedItemFormatted()!.name }}</h3>
+            <span class="title-subtitle">{{ selectedItemFormatted()!.formattedPercentage }} of portfolio</span>
+          </div>
+        </div>
+        <button 
+          class="close-btn" 
+          (click)="closeDetails()"
+          (keydown.enter)="closeDetails()"
+          (keydown.space)="closeDetails(); $event.preventDefault()"
+          aria-label="Close details" 
+          type="button"
+        >
+          <mat-icon aria-hidden="true">close</mat-icon>
+        </button>
+      </header>
+      
+      <div class="modal-content">
+        <div class="investment-stats">
+          <div class="stat-item">
+            <span class="stat-label">Amount Invested</span>
+            <span class="stat-value">{{ selectedItemFormatted()!.formattedInvested }}</span>
+          </div>
+          <div class="stat-item" [class.positive]="selectedItemFormatted()!.isPositive" [class.negative]="!selectedItemFormatted()!.isPositive">
+            <span class="stat-label">Profit & Loss</span>
+            <span class="stat-value" [style.color]="selectedItemFormatted()!.profitLossColor">
+              {{ selectedItemFormatted()!.formattedProfitLoss }}
+            </span>
+          </div>
+          <div class="stat-item" [class.positive]="selectedItemFormatted()!.isPositive" [class.negative]="!selectedItemFormatted()!.isPositive">
+            <span class="stat-label">Return Percentage</span>
+            <span class="stat-value" [style.color]="selectedItemFormatted()!.profitLossColor">
+              {{ selectedItemFormatted()!.formattedProfitLossPercentage }}
+            </span>
+          </div>
+        </div>
+      </div>
+    </article>
+  </section>
+  <ng-template #noModal></ng-template>
+</section>

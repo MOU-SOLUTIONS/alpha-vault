@@ -1,0 +1,580 @@
+/*
+  Alpha Vault Financial System
+  
+  @author Mohamed Dhaoui
+  @component AuthLayoutComponent
+  @description Comprehensive styling for authentication layout with responsive design
+*/
+
+/* ================================================================
+   ROOT CONTAINER
+   ================================================================ */
+.auth-container {
+  /* Layout */
+  height: 100vh;
+  min-height: 100vh;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  /* Spacing */
+  padding-top: 2rem;
+  padding-bottom: 4rem;
+  /* Visual */
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  /* Behavior */
+  overflow: hidden;
+  /* Box Model */
+  box-sizing: border-box;
+}
+
+/* ================================================================
+   BACKGROUND PATTERN
+   ================================================================ */
+.auth-background {
+  /* Position */
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  /* Layering */
+  z-index: 1;
+}
+
+.pattern-overlay {
+  /* Layout */
+  width: 100%;
+  height: 100%;
+  /* Visual */
+  background-image: 
+    radial-gradient(circle at 25% 25%, rgba(255, 255, 255, 0.1) 0%, transparent 50%),
+    radial-gradient(circle at 75% 75%, rgba(255, 255, 255, 0.1) 0%, transparent 50%),
+    radial-gradient(circle at 50% 50%, rgba(255, 255, 255, 0.05) 0%, transparent 50%);
+  /* Animation */
+  animation: float 20s ease-in-out infinite;
+}
+
+@keyframes float {
+  0%, 100% { 
+    /* Transform */
+    transform: translateY(0px) rotate(0deg); 
+  }
+  50% { 
+    /* Transform */
+    transform: translateY(-20px) rotate(180deg); 
+  }
+}
+
+/* ================================================================
+   MAIN CONTENT
+   ================================================================ */
+.auth-content {
+  /* Layout */
+  width: 100%;
+  max-width: 1200px;
+  height: 100%;
+  min-height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  /* Spacing */
+  padding: 1.5rem;
+  /* Layering */
+  z-index: 10;
+  /* Box Model */
+  box-sizing: border-box;
+  flex: 1;
+}
+
+/* ================================================================
+   UNIFIED WHITE CARD
+   ================================================================ */
+.auth-card {
+  /* Layout */
+  display: flex;
+  width: 100%;
+  max-width: 900px;
+  min-height: 620px;
+  height: 100%;
+  /* Visual */
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(20px);
+  border-radius: 20px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  box-shadow: 
+    0 20px 40px rgba(0, 0, 0, 0.1),
+    0 8px 16px rgba(0, 0, 0, 0.05),
+    inset 0 1px 0 rgba(255, 255, 255, 0.8);
+  /* Behavior */
+  overflow: hidden;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  /* Position */
+  position: relative;
+}
+
+.auth-card:hover {
+  /* Visual */
+  box-shadow: 
+    0 25px 50px rgba(0, 0, 0, 0.15),
+    0 12px 24px rgba(0, 0, 0, 0.1);
+}
+
+/* ================================================================
+   RETURN TO HOME BUTTON
+   ================================================================ */
+.return-home-btn {
+  /* Position */
+  position: absolute;
+  top: 1rem;
+  left: 1rem;
+  z-index: 25;
+  /* Layout */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  /* Visual */
+  background: rgba(255, 255, 255, 0.9);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 50%;
+  color: #667eea;
+  /* Typography */
+  font-size: 1rem;
+  /* Behavior */
+  cursor: pointer;
+  transition: all 0.2s ease;
+  /* Box Model */
+  box-sizing: border-box;
+}
+
+.return-home-btn:hover {
+  /* Visual */
+  background: white;
+  border-color: #667eea;
+  color: #667eea;
+  /* Transform */
+  transform: translateX(-2px);
+  /* Box Shadow */
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+}
+
+.return-home-btn:active {
+  /* Transform */
+  transform: translateX(-1px);
+  /* Box Shadow */
+  box-shadow: 0 2px 8px rgba(102, 126, 234, 0.2);
+}
+
+.return-home-btn:focus {
+  /* Visual */
+  outline: none;
+  /* Box Shadow */
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.3);
+}
+
+/* ================================================================
+   LEFT SIDE - HEADER & BRANDING
+   ================================================================ */
+.auth-header {
+  /* Layout */
+  flex: 0 0 42%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  /* Spacing */
+  padding: 2.5rem 1.5rem;
+  /* Position */
+  position: relative;
+  /* Behavior */
+  overflow: hidden;
+  /* Typography */
+  text-align: center;
+}
+
+.header-image {
+  /* Position */
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  /* Layering */
+  z-index: 1;
+}
+
+.header-bg-image {
+  /* Layout */
+  width: 100%;
+  height: 100%;
+  /* Visual */
+  object-fit: cover;
+  object-position: center;
+}
+
+.image-overlay {
+  /* Position */
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  /* Visual */
+  background: linear-gradient(
+    135deg, 
+    rgba(102, 126, 234, 0.3) 0%, 
+    rgba(118, 75, 162, 0.4) 100%
+  );
+  /* Layering */
+  z-index: 2;
+}
+
+.brand-logo {
+  /* Layout */
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 0.75rem;
+  /* Position */
+  position: absolute;
+  bottom: 1.5rem;
+  left: 50%;
+  transform: translateX(-50%);
+  /* Layering */
+  z-index: 3;
+}
+
+.logo-image {
+  /* Layout */
+  width: 35px;
+  height: 35px;
+  flex-shrink: 0;
+  /* Visual */
+  object-fit: contain;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.4));
+}
+
+.brand-text {
+  /* Layout */
+  display: flex;
+  flex-direction: column;
+  gap: 0.125rem;
+}
+
+.brand-title {
+  /* Typography */
+  font-size: 1rem;
+  font-weight: 700;
+  color: white;
+  margin: 0;
+  letter-spacing: -0.01em;
+  line-height: 1.1;
+  /* Visual */
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.6);
+}
+
+.brand-subtitle {
+  /* Typography */
+  font-size: 0.4rem;
+  color: rgba(255, 255, 255, 0.9);
+  margin: 0;
+  font-weight: 400;
+  letter-spacing: 0.03em;
+  line-height: 1.2;
+  /* Visual */
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
+}
+
+/* ================================================================
+   RIGHT SIDE - FORMS CONTAINER
+   ================================================================ */
+.auth-forms-container {
+  /* Layout */
+  flex: 58%;
+  display: flex;
+  flex-direction: column;
+  /* Spacing */
+  padding: 20px;
+  /* Visual */
+  background: white;
+  /* Position */
+  position: relative;
+  /* Box Model */
+  height: 100%;
+  min-height: 100%;
+  flex: 1;
+  /* Behavior */
+  overflow: hidden;
+}
+
+/* ================================================================
+   ROUTER OUTLET STYLING
+   ================================================================ */
+.auth-forms-container router-outlet {
+  /* Layout */
+  display: none;
+}
+
+.auth-forms-container > * {
+  /* Layout */
+  height: 100%;
+  min-height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ================================================================
+   SPECIFIC COMPONENT HEIGHT FIXES
+   ================================================================ */
+.auth-forms-container app-login,
+.auth-forms-container app-signup {
+  /* Layout */
+  height: 100% !important;
+  min-height: 100% !important;
+  display: flex !important;
+  flex-direction: column !important;
+}
+
+/* ================================================================
+   FOOTER
+   ================================================================ */
+.auth-footer {
+  /* Position */
+  position: absolute;
+  bottom: 1rem;
+  left: 50%;
+  transform: translateX(-50%);
+  /* Layout */
+  text-align: center;
+  /* Spacing */
+  padding: 0.75rem 1.5rem 0rem 1.5rem;
+  /* Typography */
+  color: rgba(255, 255, 255, 0.85);
+  font-size: 0.8rem;
+  /* Layering */
+  z-index: 20;
+}
+
+.auth-footer p {
+  /* Spacing */
+  margin: 0 0 0.5rem 0;
+  /* Typography */
+  font-weight: 500;
+}
+
+.footer-links {
+  /* Layout */
+  display: flex;
+  justify-content: center;
+  gap: 1.5rem;
+  /* Spacing */
+  margin-top: 0.5rem;
+}
+
+.footer-link {
+  /* Layout */
+  padding: 0.25rem 0.5rem;
+  border-radius: 8px;
+  /* Typography */
+  color: rgba(255, 255, 255, 0.8);
+  text-decoration: none;
+  font-weight: 500;
+  font-size: 0.75rem;
+  /* Behavior */
+  transition: all 0.2s ease;
+}
+
+.footer-link:hover {
+  /* Typography */
+  color: white;
+  text-decoration: none;
+  /* Visual */
+  background: rgba(255, 255, 255, 0.1);
+}
+
+/* ================================================================
+   MOBILE RESPONSIVE DESIGN
+   ================================================================ */
+@media (max-width: 700px) {
+  .auth-container {
+    /* Spacing */
+    padding-top: 0.5rem;
+    padding-bottom: 2.5rem;
+    /* Layout */
+    height: 100vh;
+    min-height: 100vh;
+  }
+
+  .auth-content {
+    /* Spacing */
+    padding: 0.5rem;
+    /* Layout */
+    height: 100%;
+    align-items: stretch;
+  }
+  
+  .auth-card {
+    /* Layout */
+    flex-direction: column;
+    max-width: 100%;
+    min-height: calc(100vh - 6rem);
+    height: auto;
+    max-height: calc(100vh - 5rem);
+    /* Spacing */
+    margin: 0;
+  }
+  
+  .return-home-btn {
+    /* Position */
+    top: 0.75rem;
+    left: 0.75rem;
+    /* Layout */
+    width: 36px;
+    height: 36px;
+    /* Typography */
+    font-size: 0.9rem;
+  }
+  
+  .auth-header {
+    /* Layout */
+    flex: 0 0 25%;
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    min-height: 70px;
+    /* Position */
+    position: relative;
+    /* Spacing */
+    padding: 0.5rem 1.25rem;
+    /* Visual */
+    background: linear-gradient(135deg, rgba(99, 102, 241, 0.9) 0%, rgba(139, 92, 246, 0.9) 100%);
+  }
+  
+  .header-image {
+    /* Visual */
+    opacity: 0.8;
+  }
+  
+  .image-overlay {
+    /* Visual */
+    background: linear-gradient(135deg, rgba(0, 0, 0, 0.3) 0%, rgba(0, 0, 0, 0.1) 100%);
+  }
+  
+  .brand-title,
+  .brand-subtitle {
+    /* Visual */
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+    /* Position */
+    z-index: 10;
+    position: relative;
+  }
+  
+  .auth-forms-container {
+    /* Layout */
+    flex: 1;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    /* Spacing */
+    padding: 0.5rem 0.5rem;
+    min-height: 0;
+    /* Behavior */
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    max-height: calc(100vh - 8rem);
+    /* Mobile Overrides */
+    width: 100% !important;
+    max-width: 100% !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    flex: 1 !important;
+  }
+  
+  .footer-links {
+    /* Layout */
+    flex-direction: row;
+    gap: 1rem;
+  }
+  
+  .auth-footer {
+    /* Position */
+    bottom: 0.75rem;
+    left: 0;
+    right: 0;
+    transform: none;
+    /* Layout */
+    width: 100%;
+    /* Spacing */
+    padding: 0.5rem 1rem;
+    /* Layering */
+    z-index: 25;
+    /* Box Model */
+    box-sizing: border-box;
+  }
+  
+  /* Force login/signup components to use full width */
+  .auth-forms-container app-login,
+  .auth-forms-container app-signup {
+    /* Layout */
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 100% !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    display: flex !important;
+    flex: 1 !important;
+  }
+  
+  /* Force the actual component content to use full width */
+  .auth-forms-container app-login .login-container,
+  .auth-forms-container app-signup .signup-container {
+    /* Layout */
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 100% !important;
+    padding: 1rem !important;
+    margin: 0 !important;
+    flex: 1 !important;
+  }
+  
+  /* Ensure all form elements use full width */
+  .auth-forms-container app-login .login-form,
+  .auth-forms-container app-signup .signup-form {
+    /* Layout */
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 100% !important;
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+  
+  /* Force form groups to use full width */
+  .auth-forms-container .form-group {
+    /* Layout */
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 100% !important;
+  }
+  
+  /* Force inputs to use full width */
+  .auth-forms-container .form-input {
+    /* Layout */
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 100% !important;
+    /* Box Model */
+    box-sizing: border-box !important;
+  }
+  
+  /* Force submit button to use full width */
+  .auth-forms-container .submit-button {
+    /* Layout */
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 100% !important;
+    /* Box Model */
+    box-sizing: border-box !important;
+  }
+}

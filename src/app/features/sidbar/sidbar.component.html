@@ -1,0 +1,128 @@
+<!--
+  Alpha Vault Financial System
+  
+  @author Mohamed Dhaoui
+  @component SidbarComponent
+  @description Navigation sidebar template with enhanced accessibility and proper routing
+-->
+
+<nav class="nav-container" 
+     [style.background]="getCurrentColors().background"
+     role="navigation" 
+     aria-label="Main application navigation">
+
+  <div class="image-container" role="banner" aria-label="Alpha Vault Logo">
+    <img
+      ngOptimizedImage
+      src="../../../assets/logos/white-alpha.png"
+      class="logo"
+      alt="Alpha Vault Financial System Logo"
+      width="40"
+      height="40"
+      loading="eager"
+      decoding="async"
+      aria-hidden="true"
+    />
+  </div>
+
+  <div class="button-container" role="group" aria-label="Navigation menu">
+    
+    <button
+      [ngClass]="{ active: isRouteActive('main/body/dashboard') }"
+      (click)="navigateToDashboard()"
+      (keydown.enter)="navigateToDashboard()"
+      (keydown.space)="navigateToDashboard(); $event.preventDefault()"
+      aria-label="Navigate to Dashboard section"
+      type="button"
+      role="menuitem"
+      [attr.aria-current]="isRouteActive('main/body/dashboard') ? 'page' : null">
+      <i class="fas fa-desktop nav-icon" aria-hidden="true"></i>
+      <span class="sr-only">Dashboard</span>
+    </button>
+
+    <button
+      [ngClass]="{ active: isRouteActive('main/body/income') }"
+      (click)="navigateToIncome()"
+      (keydown.enter)="navigateToIncome()"
+      (keydown.space)="navigateToIncome(); $event.preventDefault()"
+      aria-label="Navigate to Income section"
+      type="button"
+      role="menuitem"
+      [attr.aria-current]="isRouteActive('main/body/income') ? 'page' : null">
+      <i class="fas fa-dollar-sign nav-icon" aria-hidden="true"></i>
+      <span class="sr-only">Income</span>
+    </button>
+
+    <button
+      [ngClass]="{ active: isRouteActive('main/body/expense') }"
+      (click)="navigateToExpense()"
+      (keydown.enter)="navigateToExpense()"
+      (keydown.space)="navigateToExpense(); $event.preventDefault()"
+      aria-label="Navigate to Expense management section"
+      type="button"
+      role="menuitem"
+      [attr.aria-current]="isRouteActive('main/body/expense') ? 'page' : null">
+      <i class="fas fa-receipt nav-icon" aria-hidden="true"></i>
+      <span class="sr-only">Expense Management</span>
+    </button>
+
+    <button
+      [ngClass]="{ active: isRouteActive('main/body/budget') }"
+      (click)="navigateToBudget()"
+      (keydown.enter)="navigateToBudget()"
+      (keydown.space)="navigateToBudget(); $event.preventDefault()"
+      aria-label="Navigate to Budget planning section"
+      type="button"
+      role="menuitem"
+      [attr.aria-current]="isRouteActive('main/body/budget') ? 'page' : null">
+      <i class="fas fa-calculator nav-icon" aria-hidden="true"></i>
+      <span class="sr-only">Budget Planning</span>
+    </button>
+
+    <button
+      [ngClass]="{ active: isRouteActive('main/body/saving') }"
+      (click)="navigateToSaving()"
+      (keydown.enter)="navigateToSaving()"
+      (keydown.space)="navigateToSaving(); $event.preventDefault()"
+      aria-label="Navigate to Saving goals section"
+      type="button"
+      role="menuitem"
+      [attr.aria-current]="isRouteActive('main/body/saving') ? 'page' : null">
+      <i class="fas fa-piggy-bank nav-icon" aria-hidden="true"></i>
+      <span class="sr-only">Saving Goals</span>
+    </button>
+
+    <button
+      [ngClass]="{ active: isRouteActive('main/body/investment') }"
+      (click)="navigateToInvestment()"
+      (keydown.enter)="navigateToInvestment()"
+      (keydown.space)="navigateToInvestment(); $event.preventDefault()"
+      aria-label="Navigate to Investment portfolio section"
+      type="button"
+      role="menuitem"
+      [attr.aria-current]="isRouteActive('main/body/investment') ? 'page' : null">
+      <i class="fas fa-coins nav-icon" aria-hidden="true"></i>
+      <span class="sr-only">Investment Portfolio</span>
+    </button>
+
+    <button
+      [ngClass]="{ active: isRouteActive('main/body/debt') }"
+      (click)="navigateToDebt()"
+      (keydown.enter)="navigateToDebt()"
+      (keydown.space)="navigateToDebt(); $event.preventDefault()"
+      aria-label="Navigate to Debt management section"
+      type="button"
+      role="menuitem"
+      [attr.aria-current]="isRouteActive('main/body/debt') ? 'page' : null">
+      <i class="fas fa-credit-card nav-icon" aria-hidden="true"></i>
+      <span class="sr-only">Debt Management</span>
+    </button>
+  </div>
+
+  <div class="sr-only" 
+       aria-live="polite" 
+       aria-atomic="true">
+    {{ currentSection === 'default' ? 'Dashboard section' : currentSection + ' section' }} loaded
+  </div>
+
+</nav>

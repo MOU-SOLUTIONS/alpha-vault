@@ -1,0 +1,237 @@
+<!--
+  Alpha Vault Financial System
+  
+  @author Mohamed Dhaoui
+  @component BudgetProgressComponent
+  @description Budget progress component template for displaying budget data visualization
+-->
+
+<div 
+  class="premium-budget-dashboard"
+  [class.visible]="isVisible()"
+  [class.interactive]="isInteractive()"
+  [class.over-budget]="isOverBudget()"
+  [class.near-limit]="isNearLimit()"
+  [class.healthy]="isHealthy()"
+  role="region"
+  aria-label="Premium Budget Progress Dashboard"
+  aria-live="polite"
+>
+  <header class="dashboard-header">
+    <div class="header-content">
+      <div class="title-section">
+        <div class="title-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                  d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+          </svg>
+        </div>
+        <div class="title-text">
+          <h2 class="main-title">Budget Progress</h2>
+          <p class="subtitle">{{ getMonthSignal() }}/{{ getYearSignal() }}</p>
+        </div>
+      </div>
+      
+      <div class="status-badge" [class]="budgetStatus().level">
+        <div class="status-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" [attr.d]="budgetStatus().icon"/>
+          </svg>
+        </div>
+        <div class="status-content">
+          <span class="status-message">{{ budgetStatus().message }}</span>
+          <span class="status-score">Score: {{ budgetStatus().score }}/100</span>
+        </div>
+        <div class="status-glow" [style.background]="budgetStatus().glowColor"></div>
+      </div>
+    </div>
+  </header>
+
+  <main class="dashboard-content">
+    <section class="progress-section" role="region" aria-label="Budget Progress Visualization">
+      <div class="hero-stats-bar">
+        <div class="hero-stat primary">
+          <div class="stat-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1"/>
+            </svg>
+          </div>
+          <div class="stat-content">
+            <div class="stat-value">{{ formattedCurrency().totalBudget }}</div>
+            <div class="stat-label">Total Budget</div>
+          </div>
+        </div>
+        
+        <div class="hero-stat secondary">
+          <div class="stat-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/>
+            </svg>
+          </div>
+          <div class="stat-content">
+            <div class="stat-value">{{ formattedCurrency().totalSpent }}</div>
+            <div class="stat-label">Spent</div>
+          </div>
+        </div>
+        
+        <div class="hero-stat accent">
+          <div class="stat-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+          </div>
+          <div class="stat-content">
+            <div class="stat-value">{{ formattedCurrency().totalRemaining }}</div>
+            <div class="stat-label">Remaining</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="progress-visualization-new">
+        <div class="circular-progress-container">
+          <div class="progress-circle">
+            <svg class="progress-svg" viewBox="0 0 120 120">
+              <circle class="progress-bg" cx="60" cy="60" r="50" fill="none" stroke="rgba(6, 95, 70, 0.1)" stroke-width="8"/>
+              <circle class="progress-fill" cx="60" cy="60" r="50" fill="none" stroke="url(#progressGradient)" stroke-width="8" 
+                      stroke-linecap="round" [style.stroke-dasharray]="314" [style.stroke-dashoffset]="progressDashOffset()"/>
+              <defs>
+                <linearGradient id="progressGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                  <stop offset="0%" style="stop-color:#065f46;stop-opacity:1" />
+                  <stop offset="100%" style="stop-color:#06b6d4;stop-opacity:1" />
+                </linearGradient>
+              </defs>
+            </svg>
+            <div class="progress-center">
+              <div class="progress-percentage">{{ getFormattedPercentage(progressPercentage()) }}</div>
+              <div class="progress-text">Used</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="data-stack">
+          <div class="data-item">
+            <div class="data-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+              </svg>
+            </div>
+            <div class="data-content">
+              <div class="data-value">{{ budgetMetrics().daysRemaining }}</div>
+              <div class="data-label">Days Left</div>
+            </div>
+          </div>
+          
+          <div class="data-item">
+            <div class="data-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+              </svg>
+            </div>
+            <div class="data-content">
+              <div class="data-value">{{ formattedCurrency().dailyAverage }}</div>
+              <div class="data-label">Daily Avg</div>
+            </div>
+          </div>
+          
+          <div class="data-item">
+            <div class="data-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+              </svg>
+            </div>
+            <div class="data-content">
+              <div class="data-value">{{ formattedCurrency().dailyBudget }}</div>
+              <div class="data-label">Daily Budget</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="status-indicator" [class]="budgetStatus().level">
+        <div class="status-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" [attr.d]="budgetStatus().icon"/>
+          </svg>
+        </div>
+        <div class="status-content">
+          <div class="status-title">{{ budgetStatus().message }}</div>
+          <div class="status-subtitle">{{ budgetStatus().recommendation }}</div>
+        </div>
+        <div class="status-score">{{ budgetStatus().score }}/100</div>
+      </div>
+    </section>
+
+    <section class="metrics-section" role="region" aria-label="Budget Metrics">
+      <div class="metrics-grid">
+        <app-metric-card 
+          *ngFor="let cardData of metricCardsData(); trackBy: trackByCardId"
+          [data]="cardData"
+          [isHovered]="hoveredCard() === cardData.id"
+          (hoverChange)="onCardHover($event || null)"
+          role="button"
+          tabindex="0"
+          [attr.aria-label]="'Budget metric: ' + cardData.title"
+          [attr.aria-describedby]="'metric-' + cardData.id"
+          (keydown.enter)="onCardKeydown($event, cardData.id)"
+          (keydown.space)="onCardKeydown($event, cardData.id)"
+        ></app-metric-card>
+      </div>
+    </section>
+
+    <section class="insights-section" role="region" aria-label="Budget Insights">
+      <div class="insights-container">
+        <div class="section-header">
+          <h2 class="section-title">
+            <span class="title-icon">💡</span>
+            Smart Insights
+          </h2>
+        </div>
+        <div class="insights-content">
+          <div class="insight-card">
+            <div class="insight-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                      d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/>
+              </svg>
+            </div>
+            <div class="insight-content">
+              <h3 class="insight-title">{{ budgetStatus().message }}</h3>
+              <p class="insight-text">{{ budgetStatus().recommendation }}</p>
+            </div>
+          </div>
+          
+          <div class="insight-card" *ngIf="budgetMetrics().projectedOverspend > 0">
+            <div class="insight-icon warning">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                      d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"/>
+              </svg>
+            </div>
+            <div class="insight-content">
+              <h3 class="insight-title">Projected Overspend</h3>
+              <p class="insight-text">
+                At current spending rate, you may exceed budget by {{ getFormattedCurrency(budgetMetrics().projectedOverspend) }} this month.
+              </p>
+            </div>
+          </div>
+          
+          <div class="insight-card" *ngIf="budgetMetrics().daysRemaining > 0">
+            <div class="insight-icon info">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                      d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+              </svg>
+            </div>
+            <div class="insight-content">
+              <h3 class="insight-title">Time Remaining</h3>
+              <p class="insight-text">
+                {{ budgetMetrics().daysRemaining }} days left in {{ getMonthSignal() }}/{{ getYearSignal() }}. 
+                Budget {{ formattedCurrency().dailyBudget }} per day to stay on track.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+</div>

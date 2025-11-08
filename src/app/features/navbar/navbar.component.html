@@ -1,0 +1,192 @@
+<!--
+  Alpha Vault Financial System
+  
+  @author Mohamed Dhaoui
+  @component NavbarComponent
+  @description Top navigation bar template with enhanced accessibility and user experience
+-->
+
+<nav class="head-content" 
+     role="navigation" 
+     aria-label="Main navigation bar"
+     [attr.aria-busy]="isLoadingUser">
+
+  <div class="head-content-left" role="group" aria-label="Future navigation items">
+  </div>
+
+  <div class="head-content-right" role="group" aria-label="User controls and settings">
+
+    <div class="head-menu" role="group" aria-label="Application controls">
+      
+      <div class="head-menu-item" role="menuitem">
+        <button 
+          class="head-menu-item-btn ripple" 
+          aria-label="Go to Home page"
+          (click)="goToHome()"
+          type="button"
+          [attr.aria-describedby]="'home-btn-desc'">
+          <i class="fa fa-home menu-icon" aria-hidden="true"></i>
+          <span id="home-btn-desc" class="sr-only">Navigate to the home page</span>
+        </button>
+      </div>
+
+      <div class="head-menu-item" role="menuitem">
+        <button 
+          class="head-menu-item-btn ripple" 
+          aria-label="Select language (currently English)"
+          (click)="selectLanguage('en')"
+          type="button"
+          [attr.aria-expanded]="false"
+          [attr.aria-haspopup]="true">
+          <img 
+            src="../../../assets/flags/us.jpg" 
+            class="flag" 
+            alt="US flag representing English language" 
+            aria-hidden="true" />
+          <span class="sr-only">English</span>
+        </button>
+      </div>
+
+      <div class="head-menu-item" role="menuitem">
+        <app-notification-container></app-notification-container>
+      </div>
+
+      <div class="head-menu-item" role="menuitem">
+        <button 
+          class="head-menu-item-btn ripple" 
+          aria-label="Open messages"
+          (click)="openMessages()"
+          type="button"
+          [attr.aria-describedby]="'messages-desc'">
+          <i class="fas fa-comments menu-icon" aria-hidden="true"></i>
+          <span id="messages-desc" class="sr-only">Click to view your messages</span>
+        </button>
+      </div>
+    </div>
+
+    <div class="head-user-avatar-container" role="group" aria-label="User account controls">
+      
+      <button
+        class="head-user-avatar"
+        (click)="toggleUserMenu()"
+        (keydown)="onUserMenuKeydown($event)"
+        [attr.aria-expanded]="showUserMenu"
+        [attr.aria-haspopup]="true"
+        [attr.aria-controls]="'user-dropdown-menu'"
+        aria-label="User account menu"
+        type="button"
+        [disabled]="isLoadingUser || hasUserError">
+        
+        <div *ngIf="isLoadingUser" class="user-avatar-loading" role="status" aria-label="Loading user data">
+          <div class="loading-spinner" aria-hidden="true"></div>
+        </div>
+
+        <div *ngIf="hasUserError && !isLoadingUser" class="user-avatar-error" role="status" aria-label="Error loading user data">
+          <i class="fas fa-exclamation-triangle" aria-hidden="true"></i>
+        </div>
+
+        <img
+          *ngIf="currentUser && !isLoadingUser && !hasUserError"
+          [src]="currentUser.profileImageUrl || '../../../assets/images/user3.jpg'"
+          [alt]="'Profile picture for ' + currentUser.firstName + ' ' + currentUser.lastName"
+          class="user-avatar"
+          [class.loaded]="currentUser" />
+
+        <div *ngIf="!currentUser && !isLoadingUser && !hasUserError" class="user-avatar-fallback" aria-hidden="true">
+          <i class="fas fa-user"></i>
+        </div>
+
+        <div class="circle-indicator pulse" 
+             [class.online]="currentUser?.isActive"
+             [class.offline]="!currentUser?.isActive"
+             [attr.aria-label]="currentUser?.isActive ? 'User is online' : 'User is offline'"
+             aria-hidden="true">
+        </div>
+      </button>
+      
+      <div 
+        #userMenu
+        id="user-dropdown-menu"
+        class="user-dropdown-menu" 
+        *ngIf="showUserMenu"
+        role="menu"
+        aria-label="User account options">
+        
+        <div class="user-info" role="group" aria-label="User account information">
+          
+          <div *ngIf="isLoadingUser" class="user-info-loading" role="status" aria-label="Loading user information">
+            <div class="loading-spinner" aria-hidden="true"></div>
+            <span>Loading user information...</span>
+          </div>
+
+          <div *ngIf="hasUserError && !isLoadingUser" class="user-info-error" role="alert" aria-label="Error loading user information">
+            <i class="fas fa-exclamation-triangle" aria-hidden="true"></i>
+            <span class="error-message">{{ userErrorMessage }}</span>
+            <button 
+              class="retry-button"
+              (click)="retryUserDataLoad()"
+              aria-label="Retry loading user information"
+              type="button">
+              <i class="fas fa-redo" aria-hidden="true"></i>
+              Retry
+            </button>
+          </div>
+
+          <div *ngIf="currentUser && !isLoadingUser && !hasUserError" class="user-data">
+            <span class="user-name" role="text">{{ currentUser.firstName }} {{ currentUser.lastName }}</span>
+            <span class="user-email" role="text">{{ currentUser.email }}</span>
+            <span class="user-status" role="text">
+              <i class="fas fa-circle" aria-hidden="true"></i>
+              {{ currentUser.isActive ? 'Active' : 'Inactive' }}
+            </span>
+          </div>
+
+          <div *ngIf="!currentUser && !isLoadingUser && !hasUserError" class="user-data-placeholder">
+            <span class="placeholder-text">No user data available</span>
+          </div>
+        </div>
+
+        <div class="menu-divider" role="separator" aria-hidden="true"></div>
+
+        <div class="menu-actions" role="group" aria-label="User account actions">
+          
+          <button 
+            class="dropdown-item"
+            role="menuitem"
+            (click)="openProfile()"
+            (keydown)="onDropdownItemKeydown($event, 'profile')"
+            aria-label="Open user profile"
+            type="button"
+            [disabled]="!currentUser">
+            <i class="fas fa-user-circle" aria-hidden="true"></i>
+            <span>Profile</span>
+          </button>
+
+          <button 
+            class="dropdown-item logout-item"
+            role="menuitem"
+            (click)="logout()"
+            (keydown)="onDropdownItemKeydown($event, 'logout')"
+            aria-label="Logout from application"
+            type="button">
+            <i class="fas fa-sign-out-alt" aria-hidden="true"></i>
+            <span>Logout</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="sr-only" 
+       aria-live="polite" 
+       aria-atomic="true">
+    {{ showUserMenu ? 'User menu opened' : 'User menu closed' }}
+  </div>
+
+  <div *ngIf="isLoadingUser" 
+       class="loading-overlay" 
+       role="status" 
+       aria-label="Loading navigation data">
+    <div class="loading-spinner" aria-hidden="true"></div>
+  </div>
+</nav>

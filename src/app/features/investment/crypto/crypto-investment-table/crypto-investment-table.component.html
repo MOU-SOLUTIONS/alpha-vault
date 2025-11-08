@@ -1,0 +1,418 @@
+<!--
+  Alpha Vault Financial System
+  
+  @author Mohamed Dhaoui
+  @component CryptoInvestmentTableComponent
+  @description Crypto investment table component for displaying crypto investments
+-->
+
+<section class="crypto-investment-table-section">
+  <div class="container">
+    <div class="row justify-content-center g-2">
+      <div class="col-12">
+        <div class="table-card" role="region" aria-labelledby="cryptoInvestmentTitle">
+
+          <header class="table-header">
+            <h2 id="cryptoInvestmentTitle" class="table-title">
+              <mat-icon aria-hidden="true">currency_bitcoin</mat-icon>
+              Crypto Investment Portfolio
+            </h2>
+            <div class="header-actions">
+              <button 
+                class="filter-toggle-button" 
+                mat-flat-button 
+                [class.active]="hasActiveFilters()"
+                type="button" 
+                (click)="toggleFilterSection()"
+                (keydown.enter)="toggleFilterSection()"
+                (keydown.space)="toggleFilterSection(); $event.preventDefault()"
+                [matBadge]="hasActiveFilters() ? '!' : null"
+                matBadgeColor="warn"
+                matTooltip="Toggle filter panel"
+                aria-label="Toggle filter panel"
+                [attr.aria-expanded]="isFilterExpanded"
+                aria-controls="filterPanel">
+                <mat-icon>filter_list</mat-icon>
+                <span class="button-text">Filters</span>
+              </button>
+              <button 
+                id="addInvestmentButton"
+                class="add-button" 
+                mat-flat-button 
+                type="button" 
+                (click)="onAddClicked()"
+                (keydown.enter)="onAddClicked()"
+                (keydown.space)="onAddClicked(); $event.preventDefault()"
+                matTooltip="Add new investment"
+                aria-label="Add new investment">
+                <mat-icon>add</mat-icon>
+                <span class="button-text">Add Investment</span>
+              </button>
+            </div>
+          </header>
+
+          <form
+            *ngIf="isFilterExpanded"
+            [formGroup]="filterForm"
+            class="filter-box"
+            role="search"
+            aria-labelledby="filterSectionLabel"
+            id="filterPanel">
+            <div class="filter-header">
+              <h3 id="filterSectionLabel" class="filter-title">
+                <mat-icon aria-hidden="true">filter_list</mat-icon>
+                Filters
+                <span class="filter-subtitle" *ngIf="filteredCount !== totalCount">
+                  (Showing {{ filteredCount }} of {{ totalCount }} entries)
+                </span>
+              </h3>
+              <button
+                class="reset-button"
+                mat-stroked-button
+                color="warn"
+                type="button"
+                (click)="resetFilters()"
+                (keydown.enter)="resetFilters()"
+                (keydown.space)="resetFilters()"
+                matTooltip="Reset all filters"
+                aria-label="Reset all filters"
+                [disabled]="!hasActiveFilters()">
+                <mat-icon>refresh</mat-icon>
+                <span class="button-text">Reset</span>
+              </button>
+            </div>
+            <div class="col-12 col-md-12">
+              <mat-form-field appearance="outline" class="w-100">
+                <mat-label for="searchInput">Search anything</mat-label>
+                <input
+                  matInput
+                  id="searchInput"
+                  formControlName="search"
+                  placeholder="e.g. Bitcoin, Ethereum, BTC, 1000"
+                  aria-label="Search investment records" />
+                <mat-icon matSuffix>search</mat-icon>
+              </mat-form-field>
+            </div>
+            <div class="row g-1">
+              <div class="col-12 col-md-3">
+                <div class="select-input-wrapper">
+                  <label class="select-label" for="soldStatus">Status</label>
+                  <mat-form-field appearance="outline" class="w-100 filter-select-field">
+                    <mat-select 
+                      id="soldStatus"
+                      formControlName="sold"
+                      aria-label="Filter by status">
+                      <mat-option value="all">All</mat-option>
+                      <mat-option value="unsold">Active</mat-option>
+                      <mat-option value="sold">Sold</mat-option>
+                    </mat-select>
+                  </mat-form-field>
+                </div>
+              </div>
+              <div class="col-12 col-md-3">
+                <div class="select-input-wrapper">
+                  <label class="select-label" for="riskLevel">Risk Level</label>
+                  <mat-form-field appearance="outline" class="w-100 filter-select-field">
+                    <mat-select 
+                      id="riskLevel"
+                      formControlName="risk"
+                      aria-label="Filter by risk level">
+                      <mat-option value="all">All</mat-option>
+                      <mat-option *ngFor="let risk of riskLevels" [value]="risk.value">
+                        {{ risk.label }}
+                      </mat-option>
+                    </mat-select>
+                  </mat-form-field>
+                </div>
+              </div>
+              <div class="col-12 col-md-3">
+                <div class="select-input-wrapper">
+                  <label class="select-label" for="sortBy">Sort By</label>
+                  <mat-form-field appearance="outline" class="w-100 filter-select-field">
+                    <mat-select 
+                      id="sortBy"
+                      formControlName="sortBy"
+                      aria-label="Sort by field">
+                      <mat-option value="name">Name</mat-option>
+                      <mat-option value="amountInvested">Amount Invested</mat-option>
+                      <mat-option value="currentValue">Current Value</mat-option>
+                      <mat-option value="profitLoss">Profit/Loss</mat-option>
+                      <mat-option value="startDate">Start Date</mat-option>
+                    </mat-select>
+                  </mat-form-field>
+                </div>
+              </div>
+              <div class="col-12 col-md-3">
+                <div class="select-input-wrapper">
+                  <label class="select-label" for="sortOrder">Sort Order</label>
+                  <mat-form-field appearance="outline" class="w-100 filter-select-field">
+                    <mat-select 
+                      id="sortOrder"
+                      formControlName="sortOrder"
+                      aria-label="Sort order">
+                      <mat-option value="asc">Ascending</mat-option>
+                      <mat-option value="desc">Descending</mat-option>
+                    </mat-select>
+                  </mat-form-field>
+                </div>
+              </div>
+            </div>
+          </form>
+
+          <div class="total-summary">
+            <div class="total-badge">
+              <span class="total-label">Total Invested:</span>
+              <span class="total-amount">{{ formatCurrency(totalInvested) }}</span>
+            </div>
+            <div class="total-badge">
+              <span class="total-label">Current Value:</span>
+              <span class="total-amount" [class.profit]="totalProfitLoss >= 0" [class.loss]="totalProfitLoss < 0">
+                {{ formatCurrency(totalCurrentValue) }}
+              </span>
+            </div>
+            <div class="total-badge">
+              <span class="total-label">Profit/Loss:</span>
+              <span class="total-amount" [class.profit]="totalProfitLoss >= 0" [class.loss]="totalProfitLoss < 0">
+                {{ formatCurrency(totalProfitLoss) }} ({{ formatPercentage(totalProfitLossPercentage) }})
+              </span>
+            </div>
+            <div class="entries-info" *ngIf="filteredCount !== totalCount">
+              <mat-icon>filter_alt</mat-icon>
+              <span>Filtered: {{ filteredCount }} of {{ totalCount }}</span>
+            </div>
+          </div>
+
+          <div *ngIf="isLoading" class="loading-container">
+            <mat-spinner diameter="40"></mat-spinner>
+            <h3>Loading investment data...</h3>
+          </div>
+
+          <div *ngIf="!isLoading && filteredCount === 0" class="empty-state">
+            <mat-icon class="empty-icon">search_off</mat-icon>
+            <h3>No investment records found</h3>
+            <p>Try adjusting your filters or add a new investment record.</p>
+          </div>
+
+          <div *ngIf="!isLoading && filteredCount > 0" class="table-content">
+            <cdk-virtual-scroll-viewport 
+              [itemSize]="itemSize" 
+              [style.height.px]="viewportHeight"
+              class="virtual-scroll-viewport"
+              *ngIf="!isMobile">
+              <table mat-table [dataSource]="dataSource" class="w-100">
+                <ng-container matColumnDef="name">
+                  <th mat-header-cell *matHeaderCellDef style="text-align: center !important;">Investment</th>
+                  <td mat-cell *matCellDef="let element">
+                    <div class="investment-elite">
+                      <div class="investment-icon">
+                        <mat-icon>currency_bitcoin</mat-icon>
+                      </div>
+                      <div class="investment-content">
+                        <div class="investment-name">{{ element.name }}</div>
+                        <div class="investment-date">{{ getTimeAgo(element.startDate) }}</div>
+                      </div>
+                    </div>
+                  </td>
+                </ng-container>
+                <ng-container matColumnDef="amountInvested">
+                  <th mat-header-cell *matHeaderCellDef style="text-align: center !important;">Invested</th>
+                  <td mat-cell *matCellDef="let element">
+                    <div class="amount-elite">
+                      <div class="amount-content">
+                        <div class="amount-value">{{ formatCurrency(element.amountInvested) }}</div>
+                        <div class="amount-label">Initial Investment</div>
+                      </div>
+                    </div>
+                  </td>
+                </ng-container>
+                <ng-container matColumnDef="currentValue">
+                  <th mat-header-cell *matHeaderCellDef style="text-align: center !important;">Current Value</th>
+                  <td mat-cell *matCellDef="let element">
+                    <div class="current-elite">
+                      <div class="current-content">
+                        <div class="current-value">{{ formatCurrency(element.currentValue) }}</div>
+                        <div class="current-label">Market Value</div>
+                      </div>
+                    </div>
+                  </td>
+                </ng-container>
+                <ng-container matColumnDef="profitLoss">
+                  <th mat-header-cell *matHeaderCellDef style="text-align: center !important;">Profit/Loss</th>
+                  <td mat-cell *matCellDef="let element">
+                    <div class="profit-elite" [ngClass]="getProfitLossClass(element)">
+                      <div class="profit-header">
+                        <mat-icon class="profit-icon">{{ getProfitLossIcon(element) }}</mat-icon>
+                        <div class="profit-content">
+                          <div class="profit-value">{{ formatCurrency(getProfitLoss(element)) }}</div>
+                          <div class="profit-percentage">{{ formatPercentage(getProfitLossPercentage(element)) }}</div>
+                        </div>
+                      </div>
+                    </div>
+                  </td>
+                </ng-container>
+                <ng-container matColumnDef="startDate">
+                  <th mat-header-cell *matHeaderCellDef style="text-align: center !important;">Started</th>
+                  <td mat-cell *matCellDef="let element">
+                    <span class="date-text">{{ element.startDate | date:'MMM dd, yyyy' }}</span>
+                  </td>
+                </ng-container>
+                <ng-container matColumnDef="riskLevel">
+                  <th mat-header-cell *matHeaderCellDef style="text-align: center !important;">Risk</th>
+                  <td mat-cell *matCellDef="let element">
+                    <span class="risk-badge" [ngClass]="getRiskLevelClass(element.riskLevel)">
+                      {{ getRiskLevelLabel(element.riskLevel) }}
+                    </span>
+                  </td>
+                </ng-container>
+                <ng-container matColumnDef="status">
+                  <th mat-header-cell *matHeaderCellDef style="text-align: center !important;">Status</th>
+                  <td mat-cell *matCellDef="let element">
+                    <span class="status-text" [class.sold]="element.status === InvestmentStatus.CLOSED" [class.active]="element.status === InvestmentStatus.OPEN">
+                      <mat-icon class="status-icon">{{ element.status === InvestmentStatus.CLOSED ? 'check_circle' : 'pending' }}</mat-icon>
+                      {{ element.status === InvestmentStatus.CLOSED ? 'Sold' : 'Active' }}
+                    </span>
+                  </td>
+                </ng-container>
+                <ng-container matColumnDef="actions">
+                  <th mat-header-cell *matHeaderCellDef style="text-align: center !important;">Actions</th>
+                  <td mat-cell *matCellDef="let element">
+                    <div class="actions-wrapper">
+                      <button
+                        class="edit-button"
+                        mat-icon-button
+                        color="primary"
+                        (click)="onModifyClicked(element)"
+                        matTooltip="Edit investment"
+                        aria-label="Edit investment">
+                        <mat-icon>edit</mat-icon>
+                      </button>
+                      <button
+                        class="delete-button"
+                        mat-icon-button
+                        color="warn"
+                        (click)="onRemoveClicked(element)"
+                        matTooltip="Delete investment"
+                        aria-label="Delete investment">
+                        <mat-icon>delete</mat-icon>
+                      </button>
+                    </div>
+                  </td>
+                </ng-container>
+                <tr mat-header-row *matHeaderRowDef="activeColumns"></tr>
+                <tr 
+                  mat-row 
+                  *matRowDef="let row; columns: activeColumns"
+                  [class.highlight-row]="expandedElement === row">
+                </tr>
+              </table>
+            </cdk-virtual-scroll-viewport>
+
+            <div 
+              class="mobile-scroll-container"
+              *ngIf="isMobile">
+              <div class="mobile-table-view">
+                <div 
+                  *ngFor="let element of dataSource.data; trackBy: trackByInvestment" 
+                  class="mobile-row"
+                  [class.expanded]="expandedElement === element"
+                  (click)="toggleRowExpand(element)"
+                  (keydown.enter)="toggleRowExpand(element)"
+                  (keydown.space)="toggleRowExpand(element); $event.preventDefault()"
+                  tabindex="0"
+                  role="button"
+                  [attr.aria-expanded]="expandedElement === element"
+                  [attr.aria-label]="'Expand investment details for ' + element.name">
+                  <div class="mobile-row-header">
+                    <div class="mobile-header-main">
+                      <div class="mobile-investment">
+                        <mat-icon class="mobile-icon">currency_bitcoin</mat-icon>
+                        <span class="investment-text">{{ element.name }}</span>
+                      </div>
+                      <div class="mobile-profit">
+                        <mat-icon class="mobile-icon">trending_up</mat-icon>
+                        <span class="profit-text" [ngClass]="getProfitLossClass(element)">
+                          {{ formatCurrency(getProfitLoss(element)) }}
+                        </span>
+                        <span class="profit-percentage" [ngClass]="getProfitLossClass(element)">
+                          {{ formatPercentage(getProfitLossPercentage(element)) }}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="mobile-divider" *ngIf="expandedElement === element"></div>
+                  <div 
+                    class="mobile-row-detail"
+                    *ngIf="expandedElement === element">
+                    <div class="detail-item">
+                      <mat-icon class="detail-icon">account_balance_wallet</mat-icon>
+                      <span class="detail-label">Invested:</span>
+                      <span class="detail-value">{{ formatCurrency(element.amountInvested) }}</span>
+                    </div>
+                    <div class="detail-item">
+                      <mat-icon class="detail-icon">trending_up</mat-icon>
+                      <span class="detail-label">Current Value:</span>
+                        <span class="detail-value">{{ formatCurrency(element.currentValue || 0) }}</span>
+                    </div>
+                    <div class="detail-item">
+                      <mat-icon class="detail-icon">event</mat-icon>
+                      <span class="detail-label">Started:</span>
+                      <span class="detail-value">{{ element.startDate | date:'MMM dd, yyyy' }}</span>
+                    </div>
+                    <div class="detail-item">
+                      <mat-icon class="detail-icon">warning</mat-icon>
+                      <span class="detail-label">Risk:</span>
+                      <span class="detail-value">
+                        <span class="risk-badge" [ngClass]="getRiskLevelClass(element.riskLevel)">
+                          {{ getRiskLevelLabel(element.riskLevel) }}
+                        </span>
+                      </span>
+                    </div>
+                    <div class="detail-item">
+                      <mat-icon class="detail-icon">check_circle</mat-icon>
+                      <span class="detail-label">Status:</span>
+                      <span class="detail-value">
+                        <span class="status-text" [class.sold]="element.status === InvestmentStatus.CLOSED" [class.active]="element.status === InvestmentStatus.OPEN">
+                          {{ element.status === InvestmentStatus.CLOSED ? 'Sold' : 'Active' }}
+                        </span>
+                      </span>
+                    </div>
+                  </div>
+                  <div class="mobile-actions" *ngIf="expandedElement === element" (click)="$event.stopPropagation()">
+                    <button
+                      class="edit-button"
+                      mat-icon-button
+                      color="primary"
+                      (click)="onModifyClicked(element); $event.stopPropagation()"
+                      matTooltip="Edit investment"
+                      aria-label="Edit investment">
+                      <mat-icon>edit</mat-icon>
+                    </button>
+                    <button
+                      class="delete-button"
+                      mat-icon-button
+                      color="warn"
+                      (click)="onRemoveClicked(element); $event.stopPropagation()"
+                      matTooltip="Delete investment"
+                      aria-label="Delete investment">
+                      <mat-icon>delete</mat-icon>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="paginator-container">
+              <mat-paginator
+                [length]="totalCount"
+                [pageSize]="pageSize"
+                [pageSizeOptions]="pageSizeOptions"
+                (page)="onPageChange($event)"
+                aria-label="Investment table pagination">
+              </mat-paginator>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>

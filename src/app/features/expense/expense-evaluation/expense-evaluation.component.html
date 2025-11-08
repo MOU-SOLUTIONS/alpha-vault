@@ -1,0 +1,58 @@
+<!--
+  Alpha Vault Financial System
+  
+  @author Mohamed Dhaoui
+  @component ExpenseEvaluationComponent
+  @description Comprehensive tests for expense evaluation component
+-->
+
+<div class="expense-evaluation-container">
+  <main class="main-content" role="main">
+    <app-expense-evaluation-header
+      [totalExpense]="totalExpense()"
+      [growthRate]="growthRate()"
+      [achievementRate]="achievementRate()">
+    </app-expense-evaluation-header>
+
+    <div *ngIf="!hasData()" class="no-data-overlay" role="region" aria-labelledby="no-data-title">
+      <div class="no-data-content">
+        <div class="no-data-icon" aria-hidden="true">📊</div>
+        <h3 id="no-data-title">No Expense Data Available</h3>
+        <p>Start tracking your expenses to see detailed evaluation and insights.</p>
+        <div class="no-data-actions">  
+          <button 
+            class="btn-secondary" 
+            type="button"
+            (click)="onAddExpense()"
+            (keydown.enter)="onAddExpense()"
+            (keydown.space)="onAddExpense()"
+            aria-label="Add new expense entry">
+            Add Expense
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div *ngIf="hasData()" class="content-grid" role="region" aria-label="Expense analysis dashboard">
+      <div class="row-split">
+        <app-expense-evaluation-trends
+          [trend]="trend()"
+          [monthlyGrowth]="monthlyGrowth()"
+          [consistencyScore]="consistencyScore()"
+          [diversificationScore]="diversificationScore()">
+        </app-expense-evaluation-trends>
+
+        <app-expense-evaluation-metrics
+          [efficiency]="efficiency()"
+          [growthPotential]="growthPotential()"
+          [goalAlignment]="goalAlignment()"
+          [stabilityIndex]="stabilityIndex()">
+        </app-expense-evaluation-metrics>
+      </div>
+
+      <app-expense-evaluation-insights
+        [insights]="insightsList()">
+      </app-expense-evaluation-insights>
+    </div>
+  </main>
+</div>

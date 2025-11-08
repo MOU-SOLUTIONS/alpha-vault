@@ -1,0 +1,66 @@
+<!--
+  Alpha Vault Financial System
+  
+  @author Mohamed Dhaoui
+  @component IncomeWeekChartComponent
+  @description Income week chart template for displaying income data
+-->
+
+<section class="row" role="region" aria-labelledby="weekChartTitle">
+  <div class="col-12">
+    <div class="chart-box">
+      <header class="chart-header">
+        <h3 id="weekChartTitle" class="chart-title">Weekly Income Overview</h3>
+        <nav class="chart-actions">
+          <button 
+            class="toggle-btn" 
+            (click)="toggleChartType()" 
+            (keydown)="onToggleKeydown($event)"
+            [attr.aria-label]="'Switch to ' + (isLineChart() ? 'bar' : 'line') + ' chart'"
+            [attr.aria-pressed]="isLineChart()">
+            <span class="toggle-icon">{{ isLineChart() ? 'Bar' : 'Line' }}</span>
+          </button>
+        </nav>
+      </header>
+
+      <div class="chart-container">
+        <canvas
+          baseChart
+          [data]="chartData()"
+          [options]="chartOptions"
+          [type]="chartType()"
+          class="chart-canvas"
+          role="img"
+          [attr.aria-label]="'Chart showing weekly income data: ' + weeklyTotal() + ' total, ' + weeklyAverage() + ' average'"
+        ></canvas>
+        <p class="no-data-message" *ngIf="weeklyTotal() <= 0">
+          No data available for this period
+        </p>
+      </div>
+
+      <footer class="chart-summary">
+        <ng-container *ngIf="weeklyTotal() > 0">
+          <div class="summary-item">
+            <span class="summary-label">Total</span>
+            <span class="summary-value">{{ weeklyTotal() | currency }}</span>
+          </div>
+          <div class="summary-item">
+            <span class="summary-label">Average</span>
+            <span class="summary-value">{{ weeklyAverage() | currency }}</span>
+          </div>
+        </ng-container>
+
+        <ng-container *ngIf="weeklyTotal() <= 0">
+          <div class="summary-item">
+            <span class="summary-label">Total</span>
+            <span class="summary-value">--</span>
+          </div>
+          <div class="summary-item">
+            <span class="summary-label">Average</span>
+            <span class="summary-value">--</span>
+          </div>
+        </ng-container>
+      </footer>
+    </div>
+  </div>
+</section>

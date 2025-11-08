@@ -1,0 +1,819 @@
+/*
+  Alpha Vault Financial System
+  
+  @author Mohamed Dhaoui
+  @component SignupComponent
+  @description Comprehensive styling for multi-phase signup interface
+*/
+
+/* ================================================================
+   ROOT CONTAINER
+   ================================================================ */
+
+   .signup-container {
+    /* Layout */
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    max-width: 100%;
+    height: 100%;
+    max-height: 100%;
+    min-height: 100%;
+    
+    /* Spacing */
+    padding: 1.5rem 0.75rem;
+    
+    /* Visual */
+    background: white;
+    border-radius: 12px;
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.8);
+    
+    /* Behavior */
+    overflow: hidden;
+    box-sizing: border-box;
+    flex: 1;
+    position: relative;
+   }
+  
+  /* ================================================================
+     HEADER SECTION
+     ================================================================ */
+  
+  .signup-header {
+    /* Layout */
+    text-align: center;
+    flex-shrink: 0;
+    flex: 0 0 auto;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    
+    /* Spacing */
+    margin-bottom: 0.5rem;
+    padding-bottom: 0.375rem;
+    
+    /* Visual */
+    background: white;
+    
+    /* Mobile height adjustment */
+    @media (max-width: 768px) {
+      padding-bottom: 0.25rem;
+      margin-bottom: 0.375rem;
+    }
+   }
+  
+  .signup-title {
+    /* Typography */
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #374151;
+    letter-spacing: -0.02em;
+    line-height: 1.2;
+    
+    /* Spacing */
+    margin: 0 0 0.125rem 0;
+    
+    /* Mobile height adjustment */
+    @media (max-width: 768px) {
+      font-size: 1.125rem;
+      margin: 0 0 0.1rem 0;
+    }
+   }
+  
+  .signup-subtitle {
+    /* Typography */
+    font-size: 0.7rem;
+    color: #6b7280;
+    font-weight: 400;
+    line-height: 1.2;
+    
+    /* Spacing */
+    margin: 0;
+    
+    /* Mobile height adjustment */
+    @media (max-width: 768px) {
+      font-size: 0.65rem;
+    }
+   }
+  
+  /* ================================================================
+     PROGRESS INDICATOR
+     ================================================================ */
+  
+  .progress-indicator {
+    /* Layout */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    width: fit-content;
+    margin: 0 auto;
+    
+    /* Spacing */
+    margin-bottom: 0.75rem;
+    padding: 0.5rem 1.25rem;
+    gap: 2rem;
+    
+    /* Visual */
+    background: white;
+   }
+  
+  .progress-step {
+    /* Layout */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    position: relative;
+    z-index: 2;
+    flex-shrink: 0;
+    
+    .step-number {
+      /* Layout */
+      width: 1.75rem;
+      height: 1.75rem;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      
+      /* Typography */
+      font-weight: 600;
+      font-size: 0.625rem;
+      
+      /* Visual */
+      background: #e5e7eb;
+      color: #6b7280;
+      border: 2px solid #f3f4f6;
+      
+      /* Spacing */
+      margin-bottom: 0.375rem;
+      
+      /* Behavior */
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+     }
+    
+    .step-label {
+      /* Typography */
+      font-size: 0.55rem;
+      font-weight: 500;
+      color: #9ca3af;
+      text-align: center;
+      
+      /* Behavior */
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+     }
+   }
+  
+  /* Active step styling */
+  .progress-step.active .step-number {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+    color: white !important;
+    border-color: #667eea !important;
+    transform: scale(1.05) !important;
+    box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3) !important;
+  }
+  
+  .progress-step.active .step-label {
+    color: #374151 !important;
+    font-weight: 600 !important;
+  }
+  
+  /* Completed step styling */
+  .progress-step.completed .step-number {
+    background: #10b981 !important;
+    color: white !important;
+    border-color: #10b981 !important;
+    transform: scale(1.02) !important;
+  }
+  
+  .progress-line {
+    /* Layout */
+    position: absolute;
+    top: 0.875rem;
+    left: 2.5rem;
+    right: 2.5rem;
+    height: 1px;
+    z-index: 1;
+    
+    /* Visual */
+    background: #e5e7eb;
+    transition: background 0.3s ease;
+  }
+  
+  .progress-line.completed {
+    background: #10b981 !important;
+  }
+  
+  /* ================================================================
+     PHASE FORM STYLES
+     ================================================================ */
+  
+  .phase-form {
+    /* Layout */
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    
+    /* Spacing */
+    gap: 0.5rem;
+    padding: 0.5rem 0 0.75rem 0;
+    
+    /* Behavior */
+    flex: 1;
+    overflow-y: auto;
+    width: 100%;
+    
+    /* Animation */
+    animation: slideIn 0.3s ease-in-out;
+   }
+  
+  @keyframes slideIn {
+    from { 
+      opacity: 0; 
+      transform: translateX(20px); 
+    }
+    to { 
+      opacity: 1; 
+      transform: translateX(0); 
+    }
+  }
+  
+  .phase-header {
+    /* Layout */
+    text-align: center;
+    
+    /* Spacing */
+    margin-bottom: 0.75rem;
+    
+    .phase-title {
+      /* Typography */
+      font-size: 1rem;
+      font-weight: 600;
+      color: #374151;
+      letter-spacing: -0.01em;
+      
+      /* Spacing */
+      margin: 0 0 0.125rem 0;
+     }
+    
+    .phase-description {
+      /* Typography */
+      font-size: 0.7rem;
+      color: #6b7280;
+      font-weight: 400;
+      
+      /* Spacing */
+      margin: 0;
+     }
+   }
+  
+  /* ================================================================
+     FORM LAYOUT & STRUCTURE
+     ================================================================ */
+  
+  .form-row {
+    /* Layout */
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    
+    /* Spacing */
+    gap: 0.75rem;
+    width: 100%;
+    
+    @media (max-width: 768px) {
+      grid-template-columns: 1fr;
+      gap: 0.5rem;
+    }
+   }
+  
+  .form-group {
+    /* Layout */
+    display: flex;
+    flex-direction: column;
+    
+    /* Spacing */
+    gap: 0.25rem;
+    width: 100%;
+   }
+  
+  .form-label {
+    /* Typography */
+    font-size: 0.7rem;
+    font-weight: 600;
+    color: #374151;
+    letter-spacing: 0.01em;
+    
+    /* Spacing */
+    margin: 0;
+   }
+  
+  /* ================================================================
+     INPUT WRAPPER & ICONS
+     ================================================================ */
+  
+  .input-wrapper {
+    /* Layout */
+    position: relative;
+    display: flex;
+    align-items: center;
+   }
+  
+  .input-icon {
+    /* Layout */
+    position: absolute;
+    left: 0.5rem;
+    z-index: 2;
+    
+    /* Typography */
+    color: #9ca3af;
+    font-size: 0.7rem;
+    
+    /* Animation */
+    transition: color 0.2s ease;
+   }
+  
+  /* ================================================================
+     FORM INPUTS
+     ================================================================ */
+  
+  .form-input {
+    /* Layout */
+    width: 100%;
+    padding: 0.5rem 0.5rem 0.5rem 2rem;
+    
+    /* Typography */
+    font-size: 0.75rem;
+    color: #374151;
+    
+    /* Visual */
+    background: white;
+    border: 1.5px solid #d1d5db;
+    border-radius: 8px;
+    
+    /* Behavior */
+    box-sizing: border-box;
+    transition: all 0.2s ease;
+   }
+  
+  .form-input:focus {
+    /* Visual */
+    outline: none;
+    border-color: #667eea;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    
+    /* Animation */
+    transform: translateY(-1px);
+   }
+  
+  /* Fix icon focus selector for better accessibility */
+  .input-wrapper:focus-within .input-icon {
+    color: #667eea;
+   }
+  
+  .form-input.error {
+    /* Visual */
+    border-color: #ef4444;
+    box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1);
+   }
+  
+  .form-input::placeholder {
+    color: #9ca3af;
+   }
+  
+  /* ================================================================
+     SELECT STYLES
+     ================================================================ */
+  
+  .form-select {
+    /* Layout */
+    width: 100%;
+    padding: 0.5rem;
+    
+    /* Typography */
+    font-size: 0.75rem;
+    color: #374151;
+    
+    /* Visual */
+    background: white;
+    border: 1.5px solid #d1d5db;
+    border-radius: 8px;
+    
+    /* Behavior */
+    cursor: pointer;
+    box-sizing: border-box;
+    transition: all 0.2s ease;
+    
+    &:focus {
+      outline: none;
+      border-color: #667eea;
+      box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+      transform: translateY(-1px);
+    }
+    
+    &.error {
+      border-color: #ef4444;
+      box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1);
+    }
+    
+    &:disabled {
+      background: #f9fafb;
+      cursor: not-allowed;
+      opacity: 0.6;
+    }
+    
+    option {
+      padding: 0.25rem;
+    }
+  }
+  
+  /* ================================================================
+     PASSWORD TOGGLE
+     ================================================================ */
+  
+  .password-toggle {
+    /* Layout */
+    position: absolute;
+    right: 0.625rem;
+    z-index: 2;
+    
+    /* Spacing */
+    padding: 0.25rem;
+    
+    /* Typography */
+    color: #a0aec0;
+    
+    /* Visual */
+    background: none;
+    border: none;
+    border-radius: 4px;
+    
+    /* Behavior */
+    cursor: pointer;
+    transition: all 0.2s ease;
+   }
+  
+  .password-toggle:hover {
+    /* Visual */
+    color: #667eea;
+    background: rgba(102, 126, 234, 0.1);
+   }
+  
+  .password-toggle:focus {
+    /* Visual */
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.2);
+   }
+  
+  /* ================================================================
+     CHECKBOX STYLING
+     ================================================================ */
+  
+  .checkbox-wrapper {
+    /* Layout */
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    
+    /* Behavior */
+    cursor: pointer;
+    user-select: none;
+    position: relative;
+   }
+  
+  .sr-only-checkbox {
+    /* Layout */
+    position: absolute;
+    left: 0;
+    top: 0;
+    height: 16px;
+    width: 16px;
+    
+    /* Visual */
+    opacity: 0;
+    
+    /* Spacing */
+    margin: 0;
+   }
+  
+  .checkbox-custom {
+    /* Layout */
+    height: 16px;
+    width: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    
+    /* Visual */
+    background-color: white;
+    border: 2px solid #d1d5db;
+    border-radius: 4px;
+    
+    /* Animation */
+    transition: all 0.2s ease;
+   }
+  
+  .sr-only-checkbox:checked + .checkbox-custom {
+    /* Visual */
+    background-color: #667eea;
+    border-color: #667eea;
+   }
+  
+  .sr-only-checkbox:checked + .checkbox-custom::after {
+    /* Typography */
+    content: '✓';
+    color: white;
+    font-size: 12px;
+    font-weight: bold;
+   }
+  
+  .sr-only-checkbox:focus + .checkbox-custom {
+    /* Visual */
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+   }
+  
+  .checkbox-label {
+    /* Typography */
+    font-size: 0.8rem;
+    color: #6b7280;
+    font-weight: 500;
+    
+    .terms-link {
+      /* Typography */
+      color: #667eea;
+      text-decoration: none;
+      font-weight: 500;
+      
+      &:hover {
+        text-decoration: underline;
+       }
+      
+      &:focus {
+        outline: none;
+        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        border-radius: 4px;
+       }
+     }
+   }
+  
+  /* ================================================================
+     ERROR MESSAGES
+     ================================================================ */
+  
+  .error-message {
+    /* Layout */
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    
+    /* Typography */
+    font-size: 0.6rem;
+    color: #e53e3e;
+    
+    /* Spacing */
+    margin: 0;
+   }
+  
+  .error-message::before {
+    /* Typography */
+    content: '⚠';
+    font-size: 0.45rem;
+  }
+  
+  /* ================================================================
+     ERROR BANNER
+     ================================================================ */
+  
+  .error-banner {
+    /* Layout */
+    display: flex;
+    align-items: center;
+    gap: 0.375rem;
+    
+    /* Typography */
+    font-size: 0.7rem;
+    font-weight: 500;
+    
+    /* Visual */
+    background: #fed7d7;
+    border: 1px solid #feb2b2;
+    color: #c53030;
+    border-radius: 8px;
+    
+    /* Spacing */
+    padding: 0.625rem;
+    margin-top: 0.5rem;
+    margin-bottom: 0.75rem;
+   }
+  
+  .error-banner i {
+    font-size: 0.75rem;
+   }
+  
+  /* ================================================================
+     BUTTON STYLES
+     ================================================================ */
+  
+  .form-actions {
+    /* Layout */
+    display: flex;
+    gap: 0.75rem;
+    
+    /* Spacing */
+    margin-top: 0.75rem;
+    width: 100%;
+    
+    @media (max-width: 768px) {
+      flex-direction: row;
+      gap: 0.5rem;
+    }
+    
+    button {
+      /* Layout */
+      flex: 1;
+      padding: 0.625rem;
+      position: relative;
+      overflow: hidden;
+      
+      /* Typography */
+      color: white;
+      font-size: 0.8rem;
+      font-weight: 600;
+      
+      /* Visual */
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      border: none;
+      border-radius: 8px;
+      
+      /* Behavior */
+      cursor: pointer;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      
+      &:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+        transform: none;
+       }
+     }
+   }
+  
+  // Primary Action Buttons
+  .step1-next,
+  .step2-next,
+  .step3-next,
+  .step4-submit {
+    &:hover:not(:disabled) {
+      /* Animation */
+      transform: translateY(-1px);
+      box-shadow: 0 8px 20px rgba(102, 126, 234, 0.3);
+     }
+    
+    &:active:not(:disabled) {
+      /* Animation */
+      transform: translateY(0);
+     }
+   }
+  
+  // Back Buttons
+  .step2-back,
+  .step3-back,
+  .step4-back {
+    /* Visual */
+    background: #e5e7eb !important;
+    border: 2px solid #d1d5db !important;
+    color: #6b7280 !important;
+    
+    &:hover:not(:disabled) {
+      background: #d1d5db !important;
+      color: #374151 !important;
+      transform: translateY(-1px);
+     }
+   }
+  
+  // Submit Button with Loading State
+  .step4-submit {
+    &.loading {
+      .button-text {
+        opacity: 0;
+       }
+      
+      .spinner {
+        opacity: 1;
+       }
+     }
+    
+    .button-text {
+      /* Layout */
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.25rem;
+     }
+   }
+  
+  /* ================================================================
+     SPINNER
+     ================================================================ */
+  
+  .spinner {
+    /* Layout */
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 14px;
+    height: 14px;
+    
+    /* Visual */
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-top: 2px solid white;
+    border-radius: 50%;
+    
+    /* Animation */
+    animation: spin 1s linear infinite;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+   }
+  
+  @keyframes spin {
+    0% { transform: translate(-50%, -50%) rotate(0deg); }
+    100% { transform: translate(-50%, -50%) rotate(360deg); }
+  }
+  
+  /* ================================================================
+     LOGIN SECTION
+     ================================================================ */
+  
+  .login-section {
+    /* Layout */
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    text-align: center;
+    
+    /* Spacing */
+    padding: 0.75rem 1rem 0.5rem 1rem;
+    height: 4rem;
+    margin-top: 1rem;
+    
+    /* Visual */
+    background: white;
+    border-top: 1px solid #e2e8f0;
+    z-index: 10;
+   }
+  
+  .login-text {
+    /* Typography */
+    color: #718096;
+    font-size: 0.7rem;
+    
+    /* Spacing */
+    margin: 0 0 0.5rem 0;
+    margin-top: 1rem;
+   }
+  
+  .login-button {
+    /* Layout */
+    background: none;
+    border: 2px solid #667eea;
+    
+    /* Typography */
+    color: #667eea;
+    font-size: 0.7rem;
+    font-weight: 600;
+    
+    /* Spacing */
+    padding: 0.375rem 0.75rem;
+    
+    /* Visual */
+    border-radius: 8px;
+    
+    /* Behavior */
+    cursor: pointer;
+    transition: all 0.2s ease;
+   }
+  
+  .login-button:hover {
+    /* Visual */
+    background: #667eea;
+    color: white;
+    
+    /* Animation */
+    transform: translateY(-1px);
+   }
+  
+  /* ================================================================ */
+  
+  .sr-only {
+    /* Layout */
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+   }

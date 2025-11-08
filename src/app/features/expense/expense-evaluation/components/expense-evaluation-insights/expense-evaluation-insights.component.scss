@@ -1,0 +1,269 @@
+/*
+  Alpha Vault Financial System
+  
+  @author Mohamed Dhaoui
+  @component ExpenseEvaluationInsightsComponent
+  @description Comprehensive styling for expense evaluation insights component with responsive design
+*/
+
+/* CSS Variables */
+:host {
+  --insights-primary-color: #667eea;
+  --insights-secondary-color: #764ba2;
+  --insights-success-color: #48bb78;
+  --insights-warning-color: #ed8936;
+  --insights-error-color: #f56565;
+  --insights-info-color: #9f7aea;
+  --insights-accent-color: #38b2ac;
+  
+  --insights-bg-primary: #ffffff;
+  --insights-bg-secondary: #f7fafc;
+  --insights-bg-tertiary: #edf2f7;
+  
+  --insights-text-primary: #2d3748;
+  --insights-text-secondary: #4a5568;
+  
+  --insights-border-color: #e2e8f0;
+  --insights-shadow-light: 0 10px 30px rgba(0, 0, 0, 0.1);
+  --insights-shadow-hover: 0 15px 35px rgba(0, 0, 0, 0.1);
+  
+  --insights-border-radius-sm: 15px;
+  --insights-border-radius-lg: 20px;
+  
+  --insights-spacing-xs: 1rem;
+  --insights-spacing-sm: 1.5rem;
+  --insights-spacing-md: 2.5rem;
+  --insights-spacing-lg: 3rem;
+
+  display: block;
+}
+
+/* Insights Section */
+.insights-section {
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 20px;
+  padding: 2rem;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+  margin-bottom: var(--insights-spacing-lg);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(20px);
+
+  /* Section Header */
+  
+  .section-header {
+    margin-bottom: 2rem;
+
+    /* Section Title */
+    .section-title {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      margin: 0;
+      font-size: 1.5rem;
+      font-weight: 600;
+      color: #ffffff;
+
+      /* Title Icon */
+      .title-icon {
+        font-size: 1.75rem;
+      }
+    }
+  }
+
+  /* Insights Grid Layout */
+  .insights-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 2rem;
+
+    /* Mobile responsive breakpoint */
+    @media (max-width: 768px) {
+      grid-template-columns: 1fr;
+      gap: 2rem;
+    }
+  }
+
+  /* Insight Card Styles */
+  .insight-card {
+    background: rgba(255, 255, 255, 0.03);
+    border-radius: 20px;
+    padding: 2rem;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    transition: all 0.3s ease;
+    display: flex;
+    gap: 2rem;
+    position: relative;
+    overflow: hidden;
+    backdrop-filter: blur(10px);
+    cursor: pointer;
+
+    /* Hover effects */
+    &:hover {
+      transform: translateY(-5px);
+      box-shadow: var(--insights-shadow-hover);
+    }
+
+    /* Focus states for keyboard navigation */
+    &:focus {
+      outline: 2px solid var(--insights-primary-color);
+      outline-offset: 2px;
+    }
+
+    /* Focus Visible */
+    &:focus-visible {
+      outline: 2px solid var(--insights-primary-color);
+      outline-offset: 2px;
+    }
+
+    /* Top accent bar */
+    &::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 4px;
+      background: linear-gradient(90deg, var(--insights-primary-color), var(--insights-secondary-color));
+      border-radius: var(--insights-border-radius-sm) var(--insights-border-radius-sm) 0 0;
+    }
+
+    /* Insight Icon Styles */   
+    .insight-icon {
+      font-size: 2.25rem;
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+      color: white;
+    }
+
+    /* Insight Content Styles */
+    .insight-content {
+      flex: 1;
+
+      h3 {
+        margin: 0 0 var(--insights-spacing-sm) 0;
+        font-size: 1.25rem;
+        font-weight: 600;
+        color: #ffffff;
+        line-height: 1.4;
+      }
+
+      p {
+        margin: 0;
+        font-size: 1rem;
+        color: #ffffff;
+        line-height: 1.6;
+        opacity: 0.9;
+      }
+    }
+  }
+}
+
+/* Color Variations for Different Insight Types */
+
+/* First insight card - Success theme (Green) */
+.insight-card:nth-child(1) {
+  &::before {
+    background: linear-gradient(90deg, #10b981, #059669);
+  }
+  .insight-icon {
+    background: linear-gradient(135deg, #10b981, #059669);
+    box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);
+  }
+}
+
+/* Second insight card - Warning theme (Orange) */
+.insight-card:nth-child(2) {
+  &::before {
+    background: linear-gradient(90deg, #f59e0b, #d97706);
+  }
+  .insight-icon {
+    background: linear-gradient(135deg, #f59e0b, #d97706);
+    box-shadow: 0 4px 15px rgba(245, 158, 11, 0.3);
+  }
+}
+
+/* Third insight card - Error theme (Red) */
+.insight-card:nth-child(3) {
+  &::before {
+    background: linear-gradient(90deg, #ef4444, #dc2626);
+  }
+  .insight-icon {
+    background: linear-gradient(135deg, #ef4444, #dc2626);
+    box-shadow: 0 4px 15px rgba(239, 68, 68, 0.3);
+  }
+}
+
+/* Fourth insight card - Info theme (Purple) */
+.insight-card:nth-child(4) {
+  &::before {
+    background: linear-gradient(90deg, #4f46e5, #7c3aed);
+  }
+  .insight-icon {
+    background: linear-gradient(135deg, #4f46e5, #7c3aed);
+    box-shadow: 0 4px 15px rgba(79, 70, 229, 0.3);
+  }
+}
+
+/* Fifth insight card - Accent theme (Teal) */
+.insight-card:nth-child(5) {
+  &::before {
+    background: linear-gradient(90deg, #14b8a6, #0d9488);
+  }
+  .insight-icon {
+    background: linear-gradient(135deg, #14b8a6, #0d9488);
+    box-shadow: 0 4px 15px rgba(20, 184, 166, 0.3);
+  }
+}
+
+/* Sixth insight card - Primary theme (Blue) */
+.insight-card:nth-child(6) {
+  &::before {
+    background: linear-gradient(90deg, #3b82f6, #1d4ed8);
+  }
+  .insight-icon {
+    background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+    box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3);
+  }
+}
+
+/* Accessibility & Reduced Motion Support */
+@media (prefers-reduced-motion: reduce) {
+  .insights-section {
+    .insight-card {
+      transition: none;
+      
+      &:hover {
+        transform: none;
+        box-shadow: var(--insights-shadow-light);
+      }
+    }
+  }
+}
+
+/* Focus States for Keyboard Navigation */
+.insight-card:focus-within {
+  outline: 2px solid var(--insights-primary-color);
+  outline-offset: 2px;
+}
+
+/* Print Styles */
+@media print {
+  .insights-section {
+    box-shadow: none;
+    border: 1px solid #ccc;
+    
+    .insight-card {
+      break-inside: avoid;
+      box-shadow: none;
+      
+      &:hover {
+        transform: none;
+      }
+    }
+  }
+}

@@ -1,0 +1,85 @@
+<!--
+  Alpha Vault Financial System
+  
+  @author Mohamed Dhaoui
+  @component AuthLayoutComponent
+  @description Main layout template for authentication pages with responsive design
+-->
+
+<div class="auth-container">
+  <!-- ================================================================
+       BACKGROUND PATTERN
+       ================================================================ -->
+  <div class="auth-background">
+    <div class="pattern-overlay"></div>
+  </div>
+  
+  <!-- ================================================================
+       MAIN CONTENT
+       ================================================================ -->
+  <div class="auth-content">
+    <!-- ================================================================
+         UNIFIED WHITE CARD
+         ================================================================ -->
+    <div class="auth-card">
+      <!-- ================================================================
+           RETURN TO HOME BUTTON
+           ================================================================ -->
+      <button class="return-home-btn" (click)="goHome()" aria-label="Return to home page">
+        <i class="fas fa-arrow-left" aria-hidden="true"></i>
+      </button>
+      
+      <!-- ================================================================
+           LOGO & BRAND WITH IMAGE BACKGROUND
+           ================================================================ -->
+      <div class="auth-header">
+        <div class="header-image">
+          <img 
+            ngOptimizedImage
+            ngSrc="assets/background/alpha-vault-login-8k.jpg" 
+            alt="Alpha Vault" 
+            class="header-bg-image"
+            width="1920"
+            height="1080"
+            loading="lazy"
+            decoding="async"
+            [attr.sizes]="'(max-width: 768px) 100vw, 1920px'">
+          <div class="image-overlay"></div>
+        </div>
+        <div class="brand-logo">
+          <img 
+            ngOptimizedImage
+            ngSrc="assets/logos/white-alpha.png" 
+            alt="Alpha Vault" 
+            class="logo-image"
+            width="120"
+            height="120"
+            loading="eager"
+            decoding="async">
+          <div class="brand-text">
+            <h1 class="brand-title">Alpha Vault</h1>
+            <p class="brand-subtitle">Secure Financial Management</p>
+          </div>
+        </div>
+      </div>
+      
+      <!-- ================================================================
+           AUTH FORMS CONTAINER
+           ================================================================ -->
+      <div class="auth-forms-container">
+        <router-outlet></router-outlet>
+      </div>
+    </div>
+    
+    <!-- ================================================================
+         FOOTER
+         ================================================================ -->
+    <div class="auth-footer">
+      <div class="footer-links">
+        <a href="#" class="footer-link">Privacy Policy</a>
+        <a href="#" class="footer-link">Terms of Service</a>
+        <a href="#" class="footer-link">Support</a>
+      </div>
+    </div>
+  </div>
+</div>

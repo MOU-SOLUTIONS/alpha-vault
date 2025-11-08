@@ -1,0 +1,595 @@
+/*
+  Alpha Vault Financial System
+  
+  @author Mohamed Dhaoui
+  @component LoginComponent
+  @description Comprehensive styling for secure authentication interface
+*/
+
+/* ================================================================
+   ROOT CONTAINER
+   ================================================================ */
+
+.login-container {
+  /* Layout */
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  max-width: 100%;
+  height: 100%;
+  max-height: 100%;
+  min-height: 100%;
+  
+  /* Spacing */
+  padding: 1.5rem 0.75rem;
+  
+  /* Visual */
+  background: white;
+  border-radius: 12px;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.8);
+  
+  /* Behavior */
+  overflow: hidden;
+  box-sizing: border-box;
+  flex: 1;
+  position: relative;
+}
+
+/* ================================================================
+   HEADER SECTION
+   ================================================================ */
+
+.login-header {
+  /* Layout */
+  text-align: center;
+  flex-shrink: 0;
+  flex: 0 0 auto;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  
+  /* Spacing */
+  margin-bottom: 0.5rem;
+  padding-bottom: 0.375rem;
+  
+  /* Visual */
+  background: white;
+}
+
+.login-title {
+  /* Typography */
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #374151;
+  letter-spacing: -0.02em;
+  line-height: 1.2;
+  
+  /* Spacing */
+  margin: 0 0 0.125rem 0;
+}
+
+.login-subtitle {
+  /* Typography */
+  font-size: 0.7rem;
+  color: #6b7280;
+  font-weight: 400;
+  line-height: 1.2;
+  
+  /* Spacing */
+  margin: 0;
+}
+
+/* ================================================================
+   LOGIN FORM
+   ================================================================ */
+
+.login-form {
+  /* Layout */
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  
+  /* Spacing */
+  gap: 0.5rem;
+  padding: 0.5rem 0 0.75rem 0;
+  
+  /* Behavior */
+  flex: 1;
+  overflow-y: auto;
+  width: 100%;
+  
+  /* Animation */
+  animation: slideIn 0.3s ease-in-out;
+}
+
+@keyframes slideIn {
+  from { 
+    opacity: 0; 
+    transform: translateX(20px); 
+  }
+  to { 
+    opacity: 1; 
+    transform: translateX(0); 
+  }
+}
+
+/* ================================================================
+   FORM GROUPS
+   ================================================================ */
+
+.form-group {
+  /* Layout */
+  display: flex;
+  flex-direction: column;
+  
+  /* Spacing */
+  gap: 0.25rem;
+  width: 100%;
+}
+
+.form-label {
+  /* Typography */
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: #374151;
+  letter-spacing: 0.01em;
+  
+  /* Spacing */
+  margin: 0;
+}
+
+/* ================================================================
+   INPUT WRAPPER & ICONS
+   ================================================================ */
+
+.input-wrapper {
+  /* Layout */
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.input-icon {
+  /* Layout */
+  position: absolute;
+  left: 0.5rem;
+  z-index: 2;
+  
+  /* Typography */
+  color: #9ca3af;
+  font-size: 0.7rem;
+  
+  /* Animation */
+  transition: color 0.2s ease;
+}
+
+/* ================================================================
+   FORM INPUTS
+   ================================================================ */
+
+.form-input {
+  /* Layout */
+  width: 100%;
+  padding: 0.5rem 0.5rem 0.5rem 2rem;
+  
+  /* Typography */
+  font-size: 0.75rem;
+  color: #374151;
+  
+  /* Visual */
+  background: white;
+  border: 1.5px solid #d1d5db;
+  border-radius: 8px;
+  
+  /* Behavior */
+  box-sizing: border-box;
+  transition: all 0.2s ease;
+}
+
+.form-input:focus {
+  /* Visual */
+  outline: none;
+  border-color: #667eea;
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+  
+  /* Animation */
+  transform: translateY(-1px);
+}
+
+/* Fix icon focus selector for better accessibility */
+.input-wrapper:focus-within .input-icon {
+  color: #667eea;
+}
+
+.form-input.error {
+  /* Visual */
+  border-color: #ef4444;
+  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1);
+}
+
+.form-input::placeholder {
+  color: #9ca3af;
+}
+
+/* ================================================================
+   PASSWORD TOGGLE
+   ================================================================ */
+
+.password-toggle {
+  /* Layout */
+  position: absolute;
+  right: 0.625rem;
+  z-index: 2;
+  
+  /* Spacing */
+  padding: 0.25rem;
+  
+  /* Typography */
+  color: #a0aec0;
+  
+  /* Visual */
+  background: none;
+  border: none;
+  border-radius: 4px;
+  
+  /* Behavior */
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.password-toggle:hover {
+  /* Visual */
+  color: #667eea;
+  background: rgba(102, 126, 234, 0.1);
+}
+
+.password-toggle:focus {
+  /* Visual */
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.2);
+}
+
+/* ================================================================
+   FORM OPTIONS
+   ================================================================ */
+
+.form-options {
+  /* Layout */
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  
+  /* Spacing */
+  gap: 1rem;
+  margin: 0.5rem 0;
+  width: 100%;
+}
+
+/* ================================================================
+   CHECKBOX STYLING
+   ================================================================ */
+
+.checkbox-wrapper {
+  /* Layout */
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  
+  /* Behavior */
+  cursor: pointer;
+  user-select: none;
+  position: relative; /* Required for absolute positioning of child */
+}
+
+.checkbox-input {
+  /* Layout */
+  position: absolute;
+  left: 0;
+  top: 0;
+  height: 16px;
+  width: 16px;
+  
+  /* Visual */
+  opacity: 0;
+  
+  /* Spacing */
+  margin: 0; /* align with .checkbox-custom */
+}
+
+.checkbox-custom {
+  /* Layout */
+  height: 16px;
+  width: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  
+  /* Visual */
+  background-color: white;
+  border: 2px solid #d1d5db;
+  border-radius: 4px;
+  
+  /* Animation */
+  transition: all 0.2s ease;
+}
+
+.checkbox-input:checked + .checkbox-custom {
+  /* Visual */
+  background-color: #667eea;
+  border-color: #667eea;
+}
+
+.checkbox-input:checked + .checkbox-custom::after {
+  /* Typography */
+  content: '✓';
+  color: white;
+  font-size: 12px;
+  font-weight: bold;
+}
+
+.checkbox-input:focus + .checkbox-custom {
+  /* Visual */
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+.checkbox-label {
+  /* Typography */
+  font-size: 0.8rem;
+  color: #6b7280;
+  font-weight: 500;
+}
+
+/* ================================================================
+   FORGOT PASSWORD LINK
+   ================================================================ */
+
+.forgot-link {
+  /* Layout */
+  background: none;
+  border: none;
+  
+  /* Typography */
+  color: #667eea;
+  font-size: 0.8rem;
+  font-weight: 500;
+  text-decoration: none;
+  
+  /* Spacing */
+  padding: 0.25rem 0.5rem;
+  
+  /* Visual */
+  border-radius: 6px;
+  
+  /* Behavior */
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: all 0.2s ease;
+}
+
+.forgot-link:hover {
+  /* Visual */
+  color: #5a67d8;
+  background-color: rgba(102, 126, 234, 0.1);
+  text-decoration: none;
+}
+
+.forgot-link:focus {
+  /* Visual */
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+/* ================================================================
+   SUBMIT BUTTON
+   ================================================================ */
+
+.submit-button {
+  /* Layout */
+  width: 100%;
+  padding: 0.625rem;
+  position: relative;
+  overflow: hidden;
+  
+  /* Typography */
+  color: white;
+  font-size: 0.8rem;
+  font-weight: 600;
+  
+  /* Visual */
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border: none;
+  border-radius: 8px;
+  
+  /* Behavior */
+  cursor: pointer;
+  margin-top: 0.75rem;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.submit-button:hover:not(:disabled) {
+  /* Animation */
+  transform: translateY(-1px);
+  box-shadow: 0 8px 20px rgba(102, 126, 234, 0.3);
+}
+
+.submit-button:active:not(:disabled) {
+  /* Animation */
+  transform: translateY(0);
+}
+
+.submit-button:disabled {
+  /* Visual */
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.submit-button.loading {
+  /* Behavior */
+  pointer-events: none;
+}
+
+.button-text {
+  /* Layout */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.25rem;
+}
+
+/* ================================================================
+   SPINNER
+   ================================================================ */
+
+.spinner {
+  /* Layout */
+  width: 14px;
+  height: 14px;
+  margin: 0 auto;
+  
+  /* Visual */
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-top: 2px solid white;
+  border-radius: 50%;
+  
+  /* Animation */
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* ================================================================
+   ERROR MESSAGES
+   ================================================================ */
+
+.error-message {
+  /* Layout */
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  
+  /* Typography */
+  font-size: 0.6rem;
+  color: #e53e3e;
+  
+  /* Spacing */
+  margin: 0;
+}
+
+.error-message::before {
+  /* Typography */
+  content: '⚠';
+  font-size: 0.45rem;
+}
+
+/* ================================================================
+   ERROR BANNER
+   ================================================================ */
+
+.error-banner {
+  /* Layout */
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  
+  /* Typography */
+  font-size: 0.7rem;
+  font-weight: 500;
+  
+  /* Visual */
+  background: #fed7d7;
+  border: 1px solid #feb2b2;
+  color: #c53030;
+  border-radius: 8px;
+  
+  /* Spacing */
+  padding: 0.625rem;
+  margin-top: 0.5rem;
+}
+
+.error-banner i {
+  font-size: 0.75rem;
+}
+
+/* ================================================================
+   SIGNUP SECTION
+   ================================================================ */
+
+.signup-section {
+  /* Layout */
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  text-align: center;
+  
+  /* Spacing */
+  padding: 0.75rem 1rem 0.5rem 1rem;
+  height: 4rem;
+  
+  /* Visual */
+  background: white;
+  border-top: 1px solid #e2e8f0;
+  z-index: 10;
+}
+
+.signup-text {
+  /* Typography */
+  color: #718096;
+  font-size: 0.7rem;
+  
+  /* Spacing */
+  margin: 0 0 0.5rem 0;
+  margin-top: 1rem;
+}
+
+.signup-button {
+  /* Layout */
+  background: none;
+  border: 2px solid #667eea;
+  
+  /* Typography */
+  color: #667eea;
+  font-size: 0.7rem;
+  font-weight: 600;
+  
+  /* Spacing */
+  padding: 0.375rem 0.75rem;
+  
+  /* Visual */
+  border-radius: 8px;
+  
+  /* Behavior */
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.signup-button:hover {
+  /* Visual */
+  background: #667eea;
+  color: white;
+  
+  /* Animation */
+  transform: translateY(-1px);
+}
+
+/* ================================================================
+   SCREEN READER ONLY CONTENT
+   ================================================================ */
+
+.sr-only {
+  /* Layout */
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}

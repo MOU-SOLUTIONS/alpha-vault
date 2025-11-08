@@ -1,0 +1,58 @@
+<!--
+  Alpha Vault Financial System
+  
+  @author Mohamed Dhaoui
+  @component IncomeEvaluationComponent
+  @description Comprehensive tests for income evaluation component
+-->
+
+<div class="income-evaluation-container">
+  <main class="main-content" role="main">
+    <app-income-evaluation-header
+      [totalIncome]="totalIncome()"
+      [growthRate]="growthRate()"
+      [achievementRate]="achievementRate()">
+    </app-income-evaluation-header>
+
+    <div *ngIf="!hasData()" class="no-data-overlay" role="region" aria-labelledby="no-data-title">
+      <div class="no-data-content">
+        <div class="no-data-icon" aria-hidden="true">📊</div>
+        <h3 id="no-data-title">No Income Data Available</h3>
+        <p>Start tracking your income to see detailed evaluation and insights.</p>
+        <div class="no-data-actions">  
+          <button 
+            class="btn-secondary" 
+            type="button"
+            (click)="onAddIncome()"
+            (keydown.enter)="onAddIncome()"
+            (keydown.space)="onAddIncome()"
+            aria-label="Add new income entry">
+            Add Income
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div *ngIf="hasData()" class="content-grid" role="region" aria-label="Income analysis dashboard">
+      <div class="row-split">
+        <app-income-evaluation-trends
+          [trend]="trend()"
+          [monthlyGrowth]="monthlyGrowth()"
+          [consistencyScore]="consistencyScore()"
+          [diversificationScore]="diversificationScore()">
+        </app-income-evaluation-trends>
+
+        <app-income-evaluation-metrics
+          [efficiency]="efficiency()"
+          [growthPotential]="growthPotential()"
+          [goalAlignment]="goalAlignment()"
+          [stabilityIndex]="stabilityIndex()">
+        </app-income-evaluation-metrics>
+      </div>
+
+      <app-income-evaluation-insights
+        [insights]="insightsList()">
+      </app-income-evaluation-insights>
+    </div>
+  </main>
+</div>

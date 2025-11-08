@@ -1,0 +1,619 @@
+<!--
+  Alpha Vault Financial System
+  
+  @author Mohamed Dhaoui
+  @component DebtTableComponent
+  @description Main debt dashboard component template for managing debt table
+-->
+
+<section class="debt-table-section" role="region" aria-labelledby="debtTableTitle">
+  <div class="container">
+    <div class="row justify-content-center g-2">
+      <div class="col-12">
+        
+        <div class="add-debt-section" [class.expanded]="showAddForm">
+          <div 
+            class="form-header" 
+            [class.modify-mode]="isModifyMode" 
+            (click)="toggleAddForm()" 
+            (keydown)="onFormHeaderKeydown($event)" 
+            role="button" 
+            tabindex="0" 
+            [attr.aria-expanded]="showAddForm" 
+            [attr.aria-label]="isModifyMode ? 'Toggle modify debt form' : 'Toggle add debt form'">
+            <div class="form-header-content">
+              <h3 class="form-title">
+                <i class="fas" [ngClass]="isModifyMode ? 'fa-edit' : 'fa-plus-circle'"></i>
+                {{ isModifyMode ? 'Modify Debt' : 'Add New Debt' }}
+              </h3>
+              <p class="form-subtitle">
+                {{ isModifyMode ? 'Edit the selected debt entry' : 'Click to add a new debt entry' }}
+              </p>
+            </div>
+            <div class="form-toggle">
+              <i class="fas fa-chevron-down" [class.rotated]="showAddForm"></i>
+            </div>
+          </div>
+          
+          <div class="form-content" [class.visible]="showAddForm">
+            <div class="form-wrapper">
+              <app-debt-form
+                [formGroup]="debtForm"
+                [mode]="isModifyMode ? 'edit' : 'add'"
+                (formSubmit)="handleFormSubmit()"
+                (cancel)="closeAddForm()"
+              />
+            </div>
+          </div>
+        </div>
+
+        <div class="table-card" role="region" aria-labelledby="debtTableTitle">
+          
+          <header class="table-header">
+            <div class="header-left">
+              <div class="header-icon" aria-label="Debt management icon">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                  <path d="M9 12l2 2 4-4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                  <path d="M21 12c0 4.97-4.03 9-9 9s-9-4.03-9-9 4.03-9 9-9 9 4.03 9 9z" stroke="currentColor" stroke-width="2"/>
+                </svg>
+              </div>
+              <div class="header-text">
+                <h2 id="debtTableTitle" class="table-title">Debt Management</h2>
+              </div>
+            </div>
+            
+            <div class="header-actions">
+              <button 
+                class="add-button" 
+                (click)="onAddFromHeader()" 
+                (keydown.enter)="onAddFromHeader()"
+                (keydown.space)="onAddFromHeader(); $event.preventDefault()"
+                type="button" 
+                aria-label="Add new debt">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                  <line x1="12" y1="5" x2="12" y2="19" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                  <line x1="5" y1="12" x2="19" y2="12" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                <span class="button-text">Add Debt</span>
+              </button>
+            </div>
+          </header>
+  
+          <div class="table-controls">
+            <div class="search-section">
+              <div class="search-input-wrapper">
+                <svg class="search-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                  <circle cx="11" cy="11" r="8" stroke="currentColor" stroke-width="2"/>
+                  <path d="m21 21-4.35-4.35" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                <input 
+                  type="text" 
+                  class="search-input" 
+                  placeholder="Search debts..."
+                  [attr.aria-label]="'Search debts by creditor name or amount'"
+                  (input)="onSearchChange($event)"
+                >
+              </div>
+            </div>
+            
+            <div class="filter-section">
+              <button 
+                class="filter-btn" 
+                [class.active]="filters.showOverdueOnly"
+                [attr.aria-pressed]="filters.showOverdueOnly"
+                [attr.aria-label]="'Filter ' + (filters.showOverdueOnly ? 'showing' : 'to show') + ' overdue debts only'"
+                (click)="onFilterToggle('showOverdueOnly')"
+                (keydown.enter)="onFilterToggle('showOverdueOnly')"
+                (keydown.space)="onFilterToggle('showOverdueOnly'); $event.preventDefault()"
+                type="button"
+              >
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                  <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/>
+                  <polyline points="12,6 12,12 16,14" stroke="currentColor" stroke-width="2"/>
+                </svg>
+                Overdue Only
+              </button>
+              <button 
+                class="filter-btn" 
+                [class.active]="filters.showHighInterestOnly"
+                [attr.aria-pressed]="filters.showHighInterestOnly"
+                [attr.aria-label]="'Filter ' + (filters.showHighInterestOnly ? 'showing' : 'to show') + ' high interest debts only'"
+                (click)="onFilterToggle('showHighInterestOnly')"
+                (keydown.enter)="onFilterToggle('showHighInterestOnly')"
+                (keydown.space)="onFilterToggle('showHighInterestOnly'); $event.preventDefault()"
+                type="button"
+              >
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                  <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" stroke="currentColor" stroke-width="2"/>
+                </svg>
+                High Interest
+              </button>
+            </div>
+          </div>
+          
+          <div class="bulk-actions" *ngIf="showBulkActions" [@slideDown]>
+            <div class="bulk-info">
+              <span class="bulk-count">{{ selectedDebts.size }} selected</span>
+              <span class="bulk-total">Total: ${{ getSelectedDebtsTotal() | number:'1.0-0' }}</span>
+            </div>
+          </div>
+          
+          <div class="empty-state" *ngIf="filteredDebts.length === 0 && !loading">
+            <div class="empty-icon" aria-label="Empty state icon">
+              <svg width="64" height="64" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                <path d="M9 12l2 2 4-4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M21 12c0 4.97-4.03 9-9 9s-9-4.03-9-9 4.03-9 9-9 9 4.03 9 9z" stroke="currentColor" stroke-width="2"/>
+              </svg>
+            </div>
+            <h3>No Debts Found</h3>
+            <p *ngIf="filters.searchTerm || filters.showOverdueOnly || filters.showHighInterestOnly">
+              Try adjusting your search criteria or filters
+            </p>
+            <p *ngIf="!filters.searchTerm && !filters.showOverdueOnly && !filters.showHighInterestOnly">
+              Start by adding your first debt to begin tracking
+            </p>
+          </div>
+
+          <div *ngIf="filteredDebts.length > 0" class="table-content">
+            <div class="table-wrapper desktop-table">
+              <table mat-table [dataSource]="dataSource" class="w-100">
+                
+                <ng-container matColumnDef="checkbox">
+                  <th mat-header-cell *matHeaderCellDef>
+                    <input 
+                      type="checkbox" 
+                      [checked]="selectedDebts.size === paginatedDebts.length && paginatedDebts.length > 0"
+                      [indeterminate]="selectedDebts.size > 0 && selectedDebts.size < paginatedDebts.length"
+                      [attr.aria-label]="'Select all ' + paginatedDebts.length + ' debts on this page'"
+                      (change)="selectAllDebts()"
+                    >
+                  </th>
+                  <td mat-cell *matCellDef="let debt">
+                    <input 
+                      type="checkbox" 
+                      [checked]="selectedDebts.has(debt.id)"
+                      [attr.aria-label]="'Select ' + debt.creditorName + ' debt'"
+                      (change)="toggleDebtSelection(debt.id)"
+                    >
+                  </td>
+                </ng-container>
+
+                <ng-container matColumnDef="creditor">
+                  <th 
+                    mat-header-cell 
+                    *matHeaderCellDef 
+                    class="sortable" 
+                    role="columnheader"
+                    [attr.aria-sort]="filters.sortBy === 'creditorName' ? (filters.sortOrder === 'asc' ? 'ascending' : 'descending') : 'none'"
+                    [attr.aria-label]="'Sort by creditor name, ' + (filters.sortBy === 'creditorName' ? (filters.sortOrder === 'asc' ? 'ascending' : 'descending') : 'not sorted')"
+                    (click)="onSortChange('creditorName')"
+                    (keydown.enter)="onSortChange('creditorName')"
+                    (keydown.space)="onSortChange('creditorName'); $event.preventDefault()"
+                    tabindex="0"
+                  >
+                    <div class="th-content">
+                      <span>Creditor</span>
+                      <mat-icon class="sort-icon" 
+                        [class.asc]="filters.sortBy === 'creditorName' && filters.sortOrder === 'asc'" 
+                        [class.desc]="filters.sortBy === 'creditorName' && filters.sortOrder === 'desc'"
+                        aria-hidden="true">
+                        arrow_drop_down
+                      </mat-icon>
+                    </div>
+                  </th>
+                  <td mat-cell *matCellDef="let debt" class="creditor-name">
+                    <div class="creditor-info">
+                      <span class="creditor-text">{{ debt.creditorName }}</span>
+                      <div class="creditor-badges" role="group" aria-label="Debt status badges">
+                        <span *ngIf="getDebtStatus(debt).isOverdue" class="badge overdue-badge" [attr.aria-label]="'Overdue debt'">Overdue</span>
+                        <span *ngIf="debt.interestRateApr > 15" class="badge high-interest-badge" [attr.aria-label]="'High interest rate debt'">High Interest</span>
+                      </div>
+                    </div>
+                  </td>
+                </ng-container>
+
+                <ng-container matColumnDef="principalAmount">
+                  <th 
+                    mat-header-cell 
+                    *matHeaderCellDef 
+                    class="sortable" 
+                    role="columnheader"
+                    [attr.aria-sort]="filters.sortBy === 'principalAmount' ? (filters.sortOrder === 'asc' ? 'ascending' : 'descending') : 'none'"
+                    [attr.aria-label]="'Sort by principal amount, ' + (filters.sortBy === 'principalAmount' ? (filters.sortOrder === 'asc' ? 'ascending' : 'descending') : 'not sorted')"
+                    (click)="onSortChange('principalAmount')"
+                    (keydown.enter)="onSortChange('principalAmount')"
+                    (keydown.space)="onSortChange('principalAmount'); $event.preventDefault()"
+                    tabindex="0"
+                  >
+                    <div class="th-content">
+                      <span>Principal Amount</span>
+                      <mat-icon class="sort-icon" 
+                        [class.asc]="filters.sortBy === 'principalAmount' && filters.sortOrder === 'asc'" 
+                        [class.desc]="filters.sortBy === 'principalAmount' && filters.sortOrder === 'desc'"
+                        aria-hidden="true">
+                        arrow_drop_down
+                      </mat-icon>
+                    </div>
+                  </th>
+                  <td mat-cell *matCellDef="let debt" class="amount total">
+                    <span class="amount-value">${{ debt.principalAmount | number:'1.0-0' }}</span>
+                  </td>
+                </ng-container>
+
+                <ng-container matColumnDef="remainingAmount">
+                  <th 
+                    mat-header-cell 
+                    *matHeaderCellDef 
+                    class="sortable" 
+                    role="columnheader"
+                    [attr.aria-sort]="filters.sortBy === 'remainingAmount' ? (filters.sortOrder === 'asc' ? 'ascending' : 'descending') : 'none'"
+                    [attr.aria-label]="'Sort by remaining amount, ' + (filters.sortBy === 'remainingAmount' ? (filters.sortOrder === 'asc' ? 'ascending' : 'descending') : 'not sorted')"
+                    (click)="onSortChange('remainingAmount')"
+                    (keydown.enter)="onSortChange('remainingAmount')"
+                    (keydown.space)="onSortChange('remainingAmount'); $event.preventDefault()"
+                    tabindex="0"
+                  >
+                    <div class="th-content">
+                      <span>Remaining</span>
+                      <mat-icon class="sort-icon" 
+                        [class.asc]="filters.sortBy === 'remainingAmount' && filters.sortOrder === 'asc'" 
+                        [class.desc]="filters.sortBy === 'remainingAmount' && filters.sortOrder === 'desc'"
+                        aria-hidden="true">
+                        arrow_drop_down
+                      </mat-icon>
+                    </div>
+                  </th>
+                  <td mat-cell *matCellDef="let debt" class="amount remaining">
+                    <span class="amount-value">${{ debt.remainingAmount | number:'1.0-0' }}</span>
+                  </td>
+                </ng-container>
+
+                <ng-container matColumnDef="interestRateApr">
+                  <th 
+                    mat-header-cell 
+                    *matHeaderCellDef 
+                    class="sortable" 
+                    role="columnheader"
+                    [attr.aria-sort]="filters.sortBy === 'interestRateApr' ? (filters.sortOrder === 'asc' ? 'ascending' : 'descending') : 'none'"
+                    [attr.aria-label]="'Sort by interest rate, ' + (filters.sortBy === 'interestRateApr' ? (filters.sortOrder === 'asc' ? 'ascending' : 'descending') : 'not sorted')"
+                    (click)="onSortChange('interestRateApr')"
+                    (keydown.enter)="onSortChange('interestRateApr')"
+                    (keydown.space)="onSortChange('interestRateApr'); $event.preventDefault()"
+                    tabindex="0"
+                  >
+                    <div class="th-content">
+                      <span>Interest Rate APR</span>
+                      <mat-icon class="sort-icon" 
+                        [class.asc]="filters.sortBy === 'interestRateApr' && filters.sortOrder === 'asc'" 
+                        [class.desc]="filters.sortBy === 'interestRateApr' && filters.sortOrder === 'desc'"
+                        aria-hidden="true">
+                        arrow_drop_down
+                      </mat-icon>
+                    </div>
+                  </th>
+                  <td mat-cell *matCellDef="let debt" class="interest-rate">
+                    <span class="interest-value" [class]="getDebtStatus(debt).interestRateClass" [attr.aria-label]="'Interest rate: ' + (debt.interestRateApr | number:'1.1-1') + ' percent, ' + getDebtStatus(debt).interestRateClass">
+                      {{ debt.interestRateApr | number:'1.1-1' }}%
+                    </span>
+                  </td>
+                </ng-container>
+
+                <ng-container matColumnDef="dueDate">
+                  <th 
+                    mat-header-cell 
+                    *matHeaderCellDef 
+                    class="sortable" 
+                    role="columnheader"
+                    [attr.aria-sort]="filters.sortBy === 'dueDate' ? (filters.sortOrder === 'asc' ? 'ascending' : 'descending') : 'none'"
+                    [attr.aria-label]="'Sort by due date, ' + (filters.sortBy === 'dueDate' ? (filters.sortOrder === 'asc' ? 'ascending' : 'descending') : 'not sorted')"
+                    (click)="onSortChange('dueDate')"
+                    (keydown.enter)="onSortChange('dueDate')"
+                    (keydown.space)="onSortChange('dueDate'); $event.preventDefault()"
+                    tabindex="0"
+                  >
+                    <div class="th-content">
+                      <span>Due Date</span>
+                      <mat-icon class="sort-icon" 
+                        [class.asc]="filters.sortBy === 'dueDate' && filters.sortOrder === 'asc'" 
+                        [class.desc]="filters.sortBy === 'dueDate' && filters.sortOrder === 'desc'"
+                        aria-hidden="true">
+                        arrow_drop_down
+                      </mat-icon>
+                    </div>
+                  </th>
+                  <td mat-cell *matCellDef="let debt" class="due-date" [class]="getDebtStatus(debt).urgencyClass">
+                    <div class="due-date-content">
+                      <span class="date-text">{{ getDebtStatus(debt).formattedDate }}</span>
+                      <span class="days-remaining" *ngIf="!getDebtStatus(debt).isOverdue" [attr.aria-label]="getDebtStatus(debt).daysUntilDue + ' days until due'">
+                        {{ getDebtStatus(debt).daysUntilDue }} days
+                      </span>
+                      <span class="days-overdue" *ngIf="getDebtStatus(debt).isOverdue" [attr.aria-label]="getDebtStatus(debt).overdueDays + ' days overdue'">
+                        {{ getDebtStatus(debt).overdueDays }} days overdue
+                      </span>
+                    </div>
+                  </td>
+                </ng-container>
+
+                <ng-container matColumnDef="minPayment">
+                  <th 
+                    mat-header-cell 
+                    *matHeaderCellDef 
+                    class="sortable" 
+                    role="columnheader"
+                    [attr.aria-sort]="filters.sortBy === 'minPayment' ? (filters.sortOrder === 'asc' ? 'ascending' : 'descending') : 'none'"
+                    [attr.aria-label]="'Sort by minimum payment, ' + (filters.sortBy === 'minPayment' ? (filters.sortOrder === 'asc' ? 'ascending' : 'descending') : 'not sorted')"
+                    (click)="onSortChange('minPayment')"
+                    (keydown.enter)="onSortChange('minPayment')"
+                    (keydown.space)="onSortChange('minPayment'); $event.preventDefault()"
+                    tabindex="0"
+                  >
+                    <div class="th-content">
+                      <span>Min Payment</span>
+                      <mat-icon class="sort-icon" 
+                        [class.asc]="filters.sortBy === 'minPayment' && filters.sortOrder === 'asc'" 
+                        [class.desc]="filters.sortBy === 'minPayment' && filters.sortOrder === 'desc'"
+                        aria-hidden="true">
+                        arrow_drop_down
+                      </mat-icon>
+                    </div>
+                  </th>
+                  <td mat-cell *matCellDef="let debt" class="min-payment">
+                    <span class="payment-value">${{ debt.minPayment | number:'1.0-0' }}</span>
+                  </td>
+                </ng-container>
+
+                <ng-container matColumnDef="progress">
+                  <th mat-header-cell *matHeaderCellDef>
+                    <div class="th-content">Progress</div>
+                  </th>
+                  <td mat-cell *matCellDef="let debt" class="progress-column">
+                    <div class="progress-container">
+                      <div 
+                        class="progress-bar" 
+                        role="progressbar"
+                        [attr.aria-valuenow]="getDebtStatus(debt).progressPercentage"
+                        aria-valuemin="0"
+                        aria-valuemax="100"
+                        [attr.aria-label]="'Payment progress: ' + getDebtStatus(debt).progressPercentage + ' percent'">
+                        <div class="progress-fill" [style.width.%]="getDebtStatus(debt).progressPercentage"></div>
+                      </div>
+                      <span class="progress-text">{{ getDebtStatus(debt).progressPercentage | number:'1.0-0' }}%</span>
+                    </div>
+                  </td>
+                </ng-container>
+
+                <ng-container matColumnDef="actions">
+                  <th mat-header-cell *matHeaderCellDef>
+                    <div class="th-content">Actions</div>
+                  </th>
+                  <td mat-cell *matCellDef="let debt" class="actions">
+                    <div class="actions-wrapper">
+                      <button
+                        class="edit-button"
+                        mat-icon-button
+                        color="primary"
+                        (click)="handleModifyClick(debt)"
+                        (keydown.enter)="handleModifyClick(debt)"
+                        (keydown.space)="handleModifyClick(debt)"
+                        matTooltip="Edit debt"
+                        aria-label="Edit debt">
+                        <mat-icon>edit</mat-icon>
+                      </button>
+                      <button
+                        class="delete-button"
+                        mat-icon-button
+                        color="warn"
+                        (click)="handleDeleteClick(debt.id)"
+                        (keydown.enter)="handleDeleteClick(debt.id)"
+                        (keydown.space)="handleDeleteClick(debt.id)"
+                        matTooltip="Delete debt"
+                        aria-label="Delete debt">
+                        <mat-icon>delete</mat-icon>
+                      </button>
+                    </div>
+                  </td>
+                </ng-container>
+
+                <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+                <tr 
+                  mat-row 
+                  *matRowDef="let row; columns: displayedColumns"
+                  [class.overdue]="getDebtStatus(row).isOverdue"
+                  [class.selected]="selectedDebts.has(row.id)"
+                  [attr.aria-label]="row.creditorName + ' debt, ' + (getDebtStatus(row).isOverdue ? 'overdue' : 'due in ' + getDebtStatus(row).daysUntilDue + ' days')"
+                  [@fadeInUp]
+                ></tr>
+              </table>
+            </div>
+
+   <div class="mobile-cards" *ngIf="filteredDebts.length > 0">
+     <div 
+       *ngFor="let debt of paginatedDebts; trackBy: trackByDebt" 
+       class="debt-card" 
+       [class.overdue]="getDebtStatus(debt).isOverdue"
+       [class.selected]="selectedDebts.has(debt.id)"
+       [attr.aria-label]="debt.creditorName + ' debt card, ' + (getDebtStatus(debt).isOverdue ? 'overdue' : 'due in ' + getDebtStatus(debt).daysUntilDue + ' days')"
+       [@fadeInUp]
+     >
+       <div class="card-header">
+         <div class="checkbox-wrapper">
+           <input 
+             type="checkbox" 
+             class="form-check-input"
+             [checked]="selectedDebts.has(debt.id)"
+             [attr.aria-label]="'Select ' + debt.creditorName + ' debt'"
+             (change)="toggleDebtSelection(debt.id)"
+           >
+           <div class="creditor-info">
+             <h3 class="creditor-name">{{ debt.creditorName }}</h3>
+             <div class="creditor-badges" role="group" aria-label="Debt status indicators">
+               <span *ngIf="getDebtStatus(debt).isOverdue" class="badge overdue" [attr.aria-label]="'Overdue debt'">Overdue</span>
+               <span *ngIf="debt.interestRateApr > 15" class="badge priority-high" [attr.aria-label]="'High interest rate: ' + (debt.interestRateApr | number:'1.1-1') + ' percent'">High Interest</span>
+               <span *ngIf="debt.interestRateApr <= 15 && debt.interestRateApr > 8" class="badge priority-medium" [attr.aria-label]="'Medium interest rate: ' + (debt.interestRateApr | number:'1.1-1') + ' percent'">Medium Interest</span>
+               <span *ngIf="debt.interestRateApr <= 8" class="badge priority-low" [attr.aria-label]="'Low interest rate: ' + (debt.interestRateApr | number:'1.1-1') + ' percent'">Low Interest</span>
+             </div>
+           </div>
+         </div>
+       </div>
+
+       <div class="card-content">
+         <div class="amount-row">
+           <div class="amount-item">
+             <span class="amount-label">Total Amount</span>
+             <span class="amount-value total">${{ debt.principalAmount | number:'1.0-0' }}</span>
+           </div>
+           <div class="amount-item">
+             <span class="amount-label">Remaining</span>
+             <span class="amount-value remaining">${{ debt.remainingAmount | number:'1.0-0' }}</span>
+           </div>
+         </div>
+
+         <div class="details-row">
+           <div class="detail-item">
+             <span class="detail-label">Interest Rate</span>
+             <span class="interest-value" [class]="getDebtStatus(debt).interestRateClass" [attr.aria-label]="'Interest rate: ' + (debt.interestRateApr | number:'1.1-1') + ' percent, ' + getDebtStatus(debt).interestRateClass">
+               {{ debt.interestRateApr | number:'1.1-1' }}%
+             </span>
+           </div>
+           <div class="detail-item">
+             <span class="detail-label">Min Payment</span>
+             <span class="payment-value">${{ debt.minPayment | number:'1.0-0' }}</span>
+           </div>
+         </div>
+
+         <div class="due-date-section" [class]="getDebtStatus(debt).urgencyClass">
+           <span class="due-date-label">Due Date</span>
+           <div class="due-date-content">
+             <span class="date-text">{{ getDebtStatus(debt).formattedDate }}</span>
+             <span class="days-remaining" *ngIf="!getDebtStatus(debt).isOverdue" [attr.aria-label]="getDebtStatus(debt).daysUntilDue + ' days until due'">
+               {{ getDebtStatus(debt).daysUntilDue }} days
+             </span>
+             <span class="days-overdue" *ngIf="getDebtStatus(debt).isOverdue" [attr.aria-label]="getDebtStatus(debt).overdueDays + ' days overdue'">
+               {{ getDebtStatus(debt).overdueDays }} days overdue
+             </span>
+           </div>
+         </div>
+
+         <div class="progress-section">
+           <div class="progress-header">
+             <span class="progress-label">Payment Progress</span>
+             <span class="progress-percentage">{{ getDebtStatus(debt).progressPercentage | number:'1.0-0' }}%</span>
+           </div>
+           <div class="progress-container">
+             <div 
+               class="progress-bar" 
+               role="progressbar"
+               [attr.aria-valuenow]="getDebtStatus(debt).progressPercentage"
+               aria-valuemin="0"
+               aria-valuemax="100"
+               [attr.aria-label]="'Payment progress: ' + getDebtStatus(debt).progressPercentage + ' percent'">
+               <div class="progress-fill" [style.width.%]="getDebtStatus(debt).progressPercentage"></div>
+             </div>
+           </div>
+         </div>
+       </div>
+
+       <div class="card-actions">
+         <button 
+           class="btn-icon btn-primary" 
+           (click)="handleModifyClick(debt)" 
+           (keydown.enter)="handleModifyClick(debt)"
+           (keydown.space)="handleModifyClick(debt); $event.preventDefault()"
+           [attr.aria-label]="'Edit debt for ' + debt.creditorName"
+           type="button">
+           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+             <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+             <path d="m18.5 2.5 3 3L12 15l-4 1 1-4 9.5-9.5z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+           </svg>
+           Edit
+         </button>
+         <button 
+           class="btn-icon btn-danger" 
+           (click)="handleDeleteClick(debt.id)" 
+           (keydown.enter)="handleDeleteClick(debt.id)"
+           (keydown.space)="handleDeleteClick(debt.id); $event.preventDefault()"
+           [attr.aria-label]="'Delete debt for ' + debt.creditorName"
+           type="button">
+           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+             <polyline points="3,6 5,6 21,6" stroke="currentColor" stroke-width="2"/>
+             <path d="m19,6v14a2,2 0 0,1 -2,2H7a2,2 0 0,1 -2,-2V6m3,0V4a2,2 0 0,1 2,-2h4a2,2 0 0,1 2,2v2" stroke="currentColor" stroke-width="2"/>
+           </svg>
+           Delete
+         </button>
+       </div>
+     </div>
+   </div>
+          </div>
+
+          <!-- Paginator -->
+          <app-debt-table-paginator
+            *ngIf="filteredDebts.length > 0"
+            [totalCount]="filteredDebts.length"
+            [pageSize]="pageSize"
+            [pageSizeOptions]="pageSizeOptions"
+            (pageChange)="onPageChange($event)">
+          </app-debt-table-paginator>
+          
+          <div class="loading-state" *ngIf="loading">
+            <div class="loading-spinner"></div>
+            <p>Loading debts...</p>
+          </div>
+
+          <div 
+            *ngIf="isDeleteOverlayVisible" 
+            class="delete-confirmation-overlay"
+            role="dialog"
+            aria-modal="true"
+            [attr.aria-labelledby]="'delete-modal-title'"
+            [attr.aria-describedby]="'delete-modal-description'">
+            <div class="delete-confirmation-modal">
+              <div class="delete-modal-header">
+                <h3 id="delete-modal-title" class="delete-modal-title">
+                  <i class="fas fa-exclamation-triangle" aria-hidden="true"></i>
+                  Confirm Deletion
+                </h3>
+                <button 
+                  class="delete-modal-close" 
+                  (click)="closeDeleteOverlay()"
+                  (keydown.enter)="closeDeleteOverlay()"
+                  (keydown.space)="closeDeleteOverlay()"
+                  aria-label="Close confirmation dialog">
+                  <i class="fas fa-times"></i>
+                </button>
+              </div>
+              
+              <div class="delete-modal-content">
+                <p id="delete-modal-description" class="delete-text">
+                  Are you sure you want to delete this debt record?
+                </p>
+                <p class="delete-warning">
+                  <i class="fas fa-info-circle" aria-hidden="true"></i>
+                  This action cannot be undone.
+                </p>
+              </div>
+              
+              <div class="delete-modal-actions">
+                <button 
+                  class="btn btn-secondary" 
+                  (click)="closeDeleteOverlay()"
+                  (keydown.enter)="closeDeleteOverlay()"
+                  (keydown.space)="closeDeleteOverlay()">
+                  Cancel
+                </button>
+                <button 
+                  class="btn btn-danger" 
+                  (click)="confirmDelete()"
+                  (keydown.enter)="confirmDelete()"
+                  (keydown.space)="confirmDelete()">
+                  <i class="fas fa-trash"></i>
+                  Delete
+                </button>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </div>
+</section>

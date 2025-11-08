@@ -1,0 +1,279 @@
+/*
+  Alpha Vault Financial System
+  
+  @author Mohamed Dhaoui
+  @component ExpenseTop5Component
+  @description Comprehensive styling for expense top 5 component with responsive design
+*/  
+
+:host {
+  display: block;
+  width: 100%;
+  height: 100%;
+
+  --primary-color: #3f51b5;
+  --primary-light: rgba(63, 81, 181, 0.1);
+  --text-dark: #1e293b;
+  --text-light: #64748b;
+  --bg-white: #ffffff;
+
+  --radius: 12px;
+  --transition: all 0.3s ease;
+  --shadow: 0 4px 6px rgba(0, 0, 0, 0.08);
+}
+
+.top5-box {
+  background-color: var(--bg-white);
+  padding: 1.25rem;
+  border-radius: var(--radius);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  transition: var(--transition);
+  animation: fadeIn 0.5s ease-out;
+
+  &:hover {
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12);
+    transform: translateY(-2px);
+  }
+}
+
+.top5-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.25rem;
+}
+
+.top5-title {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--text-dark);
+  margin: 0;
+}
+
+.top5-badge {
+  background-color: var(--primary-light);
+  color: var(--primary-color);
+  font-size: 0.75rem;
+  font-weight: 500;
+  padding: 0.25rem 0.75rem;
+  border-radius: 12px;
+  animation: fadeIn 0.8s ease-out;
+}
+
+.top5-table-wrapper {
+  overflow-x: auto;
+  flex: 1;
+}
+
+.top5-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+
+  thead {
+    position: sticky;
+    top: 0;
+    z-index: 1;
+
+    th {
+      background-color: var(--primary-color);
+      color: #ffffff;
+      font-weight: 600;
+      padding: 0.75rem 1rem;
+      text-align: left;
+      border-bottom: 1px solid #dee2e6;
+
+      &:first-child {
+        border-top-left-radius: 8px;
+      }
+
+      &:last-child {
+        border-top-right-radius: 8px;
+      }
+
+      &.text-end {
+        text-align: right;
+      }
+    }
+  }
+
+  tbody {
+    tr {
+      transition: background-color 0.2s ease, transform 0.2s ease;
+      animation: slideIn 0.5s ease-out forwards;
+      opacity: 0;
+      cursor: pointer;
+
+      @for $i from 1 through 5 {
+        &[data-index="#{$i - 1}"] {
+          animation-delay: #{$i * 0.1}s;
+        }
+      }
+
+      &:hover {
+        background-color: var(--primary-light);
+        transform: translateX(4px);
+      }
+
+      &:focus {
+        outline: 2px solid var(--primary-color);
+        outline-offset: 2px;
+        background-color: var(--primary-light);
+      }
+
+      &:focus-visible {
+        outline: 2px solid var(--primary-color);
+        outline-offset: 2px;
+        background-color: var(--primary-light);
+      }
+
+      td {
+        padding: 0.85rem 1rem;
+        font-size: 0.95rem;
+        color: var(--text-dark);
+        border-bottom: 1px solid #e9ecef;
+
+        &.text-end {
+          text-align: right;
+          font-weight: 500;
+        }
+
+        &.pulse {
+          animation: pulse 1s ease-in-out;
+        }
+      }
+    }
+  }
+}
+
+.category-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.category-indicator {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.no-data-message {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 2rem 1rem;
+  min-height: 200px;
+  color: var(--text-light);
+  animation: fadeIn 0.6s ease-out;
+
+  .no-data-icon {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+    opacity: 0.6;
+    animation: bounce 2s infinite;
+  }
+
+  p {
+    margin: 0.5rem 0;
+    font-size: 1rem;
+    line-height: 1.5;
+
+    &:first-of-type {
+      font-weight: 500;
+      color: var(--text-dark);
+      font-size: 1.1rem;
+    }
+
+    &.no-data-hint {
+      font-size: 0.9rem;
+      opacity: 0.8;
+      max-width: 280px;
+    }
+  }
+}
+
+
+
+@keyframes fadeIn {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+@keyframes slideIn {
+  0% {
+    opacity: 0;
+    transform: translateX(-10px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes pulse {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+    color: var(--primary-color);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+@keyframes bounce {
+  0%, 20%, 50%, 80%, 100% {
+    transform: translateY(0);
+  }
+  40% {
+    transform: translateY(-10px);
+  }
+  60% {
+    transform: translateY(-5px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .top5-box {
+    animation: none;
+    
+    &:hover {
+      transform: none;
+    }
+  }
+  
+  .top5-badge {
+    animation: none;
+  }
+  
+  .top5-table tbody tr {
+    animation: none;
+    opacity: 1;
+    
+    &:hover {
+      transform: none;
+    }
+  }
+  
+  .no-data-message {
+    animation: none;
+    
+    .no-data-icon {
+      animation: none;
+    }
+  }
+  
+  .pulse {
+    animation: none;
+  }
+}

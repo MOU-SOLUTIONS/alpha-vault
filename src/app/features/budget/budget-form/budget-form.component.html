@@ -1,0 +1,121 @@
+<!--
+  Alpha Vault Financial System
+  
+  @author Mohamed Dhaoui
+  @component BudgetFormComponent
+  @description Budget form component template for adding and modifying budget allocations
+-->
+
+<section role="region" aria-label="Budget allocation form">
+  <form
+    [formGroup]="formGroup"
+    (ngSubmit)="onSubmit()"
+    class="budget-form"
+    role="form"
+    aria-labelledby="budgetFormTitle"
+  >
+    <p class="form-text">
+      {{ mode === 'add'
+        ? 'Please add the details of the new budget allocation.'
+        : mode === 'modify'
+        ? 'Please update the details of the budget allocation below.'
+        : 'Are you sure you want to delete this budget allocation?' }}
+    </p>
+
+    <div class="row" *ngIf="mode !== 'delete'">
+      <div class="col-12 col-md-6">
+        <div class="form-group">
+          <label for="budgetCategory-{{ mode }}" class="required-field">Category</label>
+          <div class="input-wrapper select-wrapper">
+            <select
+              id="budgetCategory-{{ mode }}"
+              formControlName="category"
+              class="form-control"
+              aria-required="true"
+            >
+              <option [value]="null" disabled hidden>Select a category</option>
+              <option *ngFor="let cat of filteredCategories; trackBy: trackByCategory" [value]="cat.value">
+                {{ cat.label }}
+              </option>
+            </select>
+            <div class="select-arrow">
+              <i class="fa fa-chevron-down"></i>
+            </div>
+            <div class="input-icon" *ngIf="formGroup.get('category')?.valid">
+              <i class="fa fa-check-circle"></i>
+            </div>
+          </div>
+          <div
+            class="error"
+            *ngIf="formGroup.get('category')?.touched && formGroup.get('category')?.invalid"
+            role="alert"
+          >
+            Please select a category.
+          </div>
+        </div>
+      </div>
+      <div class="col-12 col-md-6">
+        <div class="form-group">
+          <label for="budgetAmount-{{ mode }}" class="required-field">Allocated Amount</label>
+          <div class="input-wrapper amount-wrapper">
+            <span class="currency-symbol">$</span>
+            <input
+              id="budgetAmount-{{ mode }}"
+              type="number"
+              formControlName="allocated"
+              placeholder="1000"
+              aria-required="true"
+              step="0.01"
+              min="0.01"
+            />
+            <div class="input-icon" *ngIf="formGroup.get('allocated')?.valid">
+              <i class="fa fa-check-circle"></i>
+            </div>
+          </div>
+          <div
+            class="error"
+            *ngIf="formGroup.get('allocated')?.touched && formGroup.get('allocated')?.invalid"
+            role="alert"
+          >
+            Please enter a valid amount.
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="d-flex justify-content-end gap-3 mt-4">
+      <button 
+        class="btn btn-secondary" 
+        type="button" 
+        (click)="cancel.emit()"
+        (keydown)="onCancelKeydown($event)"
+        aria-label="Cancel budget form"
+        role="button"
+        tabindex="0">
+        <i class="fa fa-times me-2" aria-hidden="true"></i>Cancel
+      </button>
+      <button
+        class="btn"
+        [ngClass]="'btn-' + computedSubmitButtonColor"
+        type="submit"
+        [disabled]="mode !== 'delete' && formGroup.invalid"
+        (keydown)="onSubmitKeydown($event)"
+        [attr.aria-label]="'Submit budget form - ' + computedSubmitButtonText"
+        role="button"
+        tabindex="0">
+        <i class="fa" [ngClass]="computedButtonIcon" aria-hidden="true"></i>
+        <span class="ms-2">{{ computedSubmitButtonText }}</span>
+      </button>
+    </div>
+  </form>
+
+  <div aria-live="polite" aria-atomic="true" class="visually-hidden">
+    <span *ngIf="formGroup.get('category')?.touched && formGroup.get('category')?.invalid">
+      Category selection is required
+    </span>
+    <span *ngIf="formGroup.get('allocated')?.touched && formGroup.get('allocated')?.invalid">
+      Valid amount is required
+    </span>
+  </div>
+</section>
+

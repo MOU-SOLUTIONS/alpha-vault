@@ -1,0 +1,64 @@
+<!--
+  Alpha Vault Financial System
+  
+  @author Mohamed Dhaoui
+  @component IncomeTop5Component
+  @description Income top 5 component for displaying income data
+-->
+
+<section class="row justify-content-center g-2 h-100" role="region" aria-labelledby="top5Title">
+  <div class="col-12 h-100">
+    <div class="top5-box d-flex flex-column h-100">
+      <header class="top5-header">
+        <h3 id="top5Title" class="top5-title">Top 5 Income Categories</h3>
+        <div class="top5-badge">Monthly</div>
+      </header>
+
+      <ng-container *ngIf="sortedIncomes().length > 0; else noData">
+        <div class="top5-table-wrapper flex-grow-1">
+          <table class="top5-table" role="table" aria-describedby="top5Title">
+            <thead>
+              <tr>
+                <th scope="col" class="top5-th" aria-sort="none">Category</th>
+                <th scope="col" class="top5-th text-end" aria-sort="descending">Amount</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr
+                class="top5-tr"
+                *ngFor="let income of sortedIncomes(); let i = index; trackBy: trackByCategory"
+                [attr.data-index]="i"
+                [attr.aria-rowindex]="i + 2"
+                role="row"
+                tabindex="0"
+                (keydown)="onRowKeydown($event, income)"
+              >
+                <td class="top5-td" role="gridcell">
+                  <div class="category-wrapper">
+                    <div
+                      class="category-indicator"
+                      [style.background-color]="getCategoryColor(income.category)"
+                      [attr.aria-label]="'Color indicator for ' + income.category"
+                    ></div>
+                    <span>{{ income.category }}</span>
+                  </div>
+                </td>
+                <td class="top5-td text-end" [class.pulse]="shouldPulse()" role="gridcell">
+                  {{ income.amount | currency }}
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </ng-container>
+
+      <ng-template #noData>
+        <div class="no-data-message flex-grow-1" role="status" aria-live="polite">
+          <div class="no-data-icon" aria-hidden="true">📈</div>
+          <p>No income data available for this month</p>
+          <p class="no-data-hint">Add some income sources to see your top categories here</p>
+        </div>
+      </ng-template>
+    </div>
+  </div>
+</section>

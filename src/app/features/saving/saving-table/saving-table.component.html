@@ -1,0 +1,326 @@
+<!--
+  Alpha Vault Financial System
+  
+  @author Mohamed Dhaoui
+  @component SavingTableComponent
+  @description Saving table component template for displaying and managing saving goals
+-->
+
+<section class="saving-table-section" role="main" aria-label="Saving goals management">
+  <div class="container">
+    <div class="justify-content-center g-2">
+      <div>
+        <div class="table-card" role="region" aria-labelledby="savingBreakdownTitle">
+          
+          <header class="table-header">
+            <h2 id="savingBreakdownTitle" class="table-title">
+              <mat-icon aria-hidden="true">savings</mat-icon>
+              Saving Breakdown
+            </h2>
+            <div class="header-actions">
+              <button 
+                class="add-button" 
+                mat-flat-button 
+                type="button" 
+                (click)="addGoal()"
+                (keydown)="onAddKeydown($event)"
+                matTooltip="Add new saving goal"
+                aria-label="Add new saving goal"
+                [attr.aria-describedby]="'add-saving-description'"
+                role="button"
+                tabindex="0">
+                <mat-icon aria-hidden="true">add</mat-icon>
+                <span class="button-text">Add Saving</span>
+              </button>
+              <span id="add-saving-description" class="sr-only">Click to add a new saving goal</span>
+            </div>
+          </header>
+
+          <div class="summary-section" *ngIf="filteredGoals().length > 0">
+            <div class="summary-stats">
+              <div class="stat-item">
+                <div class="stat-value">{{ completedCount() }}</div>
+                <div class="stat-label">Completed</div>
+              </div>
+              <div class="stat-item">
+                <div class="stat-value">{{ activeCount() }}</div>
+                <div class="stat-label">Active</div>
+              </div>
+              <div class="stat-item">
+                <div class="stat-value">{{ overdueCount() }}</div>
+                <div class="stat-label">Overdue</div>
+              </div>
+              <div class="stat-item">
+                <div class="stat-value">{{ totalSaved() | currency }}</div>
+                <div class="stat-label">Total Saved</div>
+              </div>
+            </div>
+          </div>
+
+          <app-saving-table-empty *ngIf="showEmptyState()" (createGoal)="addGoal()"></app-saving-table-empty>
+
+          <div *ngIf="filteredGoals().length > 0" class="table-content">
+            <div class="table-wrapper">
+              <table mat-table [dataSource]="dataSource" class="w-100" [trackBy]="trackByGoalId" role="table" aria-label="Saving goals data table">
+                <ng-container matColumnDef="name">
+                  <th mat-header-cell *matHeaderCellDef role="columnheader">Goal Name</th>
+                  <td mat-cell *matCellDef="let element" role="gridcell">
+                    <div class="goal-elite">
+                      <div class="goal-icon">
+                        <mat-icon aria-hidden="true">savings</mat-icon>
+                      </div>
+                      <div class="goal-content">
+                        <div class="goal-name">{{ element.name }}</div>
+                        <div class="goal-category">{{ getCategoryLabel(element.category) }}</div>
+                      </div>
+                    </div>
+                  </td>
+                </ng-container>
+                <ng-container matColumnDef="target">
+                  <th mat-header-cell *matHeaderCellDef role="columnheader">Target</th>
+                  <td mat-cell *matCellDef="let element" role="gridcell">
+                    <div class="amount-display" [ngClass]="getAmountClassForElement(element, 'target')">
+                      <div class="amount-value">{{ element.targetAmount | currency }}</div>
+                    </div>
+                  </td>
+                </ng-container>
+                <ng-container matColumnDef="current">
+                  <th mat-header-cell *matHeaderCellDef role="columnheader">Current</th>
+                  <td mat-cell *matCellDef="let element" role="gridcell">
+                    <div class="amount-display" [ngClass]="getAmountClassForElement(element, 'current')">
+                      <div class="amount-value">{{ element.currentAmount | currency }}</div>
+                    </div>
+                  </td>
+                </ng-container>
+                <ng-container matColumnDef="priority">
+                  <th mat-header-cell *matHeaderCellDef role="columnheader">Priority</th>
+                  <td mat-cell *matCellDef="let element" role="gridcell">
+                    <div class="priority-badge" [ngClass]="getPriorityClassForElement(element)">
+                      {{ getPriorityLabelForElement(element) }}
+                    </div>
+                  </td>
+                </ng-container>
+                <ng-container matColumnDef="status">
+                  <th mat-header-cell *matHeaderCellDef role="columnheader">Status</th>
+                  <td mat-cell *matCellDef="let element" role="gridcell">
+                    <div class="status-badge" [ngClass]="getStatusClassForElement(element)">
+                      {{ getStatusLabelForElement(element) }}
+                    </div>
+                  </td>
+                </ng-container>
+                <ng-container matColumnDef="deadline">
+                  <th mat-header-cell *matHeaderCellDef role="columnheader">Deadline</th>
+                  <td mat-cell *matCellDef="let element" role="gridcell">
+                    <div class="deadline-display" [ngClass]="getDeadlineClassForElement(element)">
+                      {{ getFormattedDateForElement(element) }}
+                    </div>
+                  </td>
+                </ng-container>
+                <ng-container matColumnDef="actions">
+                  <th mat-header-cell *matHeaderCellDef role="columnheader">Actions</th>
+                  <td mat-cell *matCellDef="let element" role="gridcell">
+                    <div class="actions-wrapper">
+                      <button
+                        class="add-money-button"
+                        type="button"
+                        (click)="onAddMoney(element)"
+                        (keydown.enter)="onAddMoney(element)"
+                        (keydown.space)="onAddMoney(element)"
+                        [disabled]="isGoalCompleted(element)"
+                        title="Add money to goal"
+                        [attr.aria-label]="'Add money to goal ' + element.name"
+                        matTooltip="Add money to this goal"
+                        role="button"
+                        tabindex="0">
+                        <mat-icon aria-hidden="true">attach_money</mat-icon>
+                      </button>
+                      <button
+                        class="edit-button"
+                        type="button"
+                        (click)="onModify(element)"
+                        (keydown.enter)="onModify(element)"
+                        (keydown.space)="onModify(element)"
+                        [disabled]="isGoalCompleted(element)"
+                        title="Edit saving goal"
+                        [attr.aria-label]="'Edit saving goal ' + element.name"
+                        matTooltip="Edit this goal"
+                        role="button"
+                        tabindex="0">
+                        <mat-icon aria-hidden="true">edit</mat-icon>
+                      </button>
+                      <button
+                        class="delete-button"
+                        type="button"
+                        (click)="onDeleteWithOverlay(element)"
+                        (keydown.enter)="onDeleteWithOverlay(element)"
+                        (keydown.space)="onDeleteWithOverlay(element)"
+                        [disabled]="isGoalCompleted(element)"
+                        title="Delete saving goal"
+                        [attr.aria-label]="'Delete saving goal ' + element.name"
+                        matTooltip="Delete this goal"
+                        role="button"
+                        tabindex="0">
+                        <mat-icon aria-hidden="true">delete</mat-icon>
+                      </button>
+                    </div>
+                  </td>
+                </ng-container>
+                <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+                <tr 
+                  mat-row 
+                  *matRowDef="let row; columns: displayedColumns"
+                ></tr>
+              </table>
+            </div>
+
+            <div class="paginator-wrapper">
+              <mat-paginator
+                [length]="filteredGoals().length"
+                [pageSize]="pageSize()"
+                [pageSizeOptions]="[5, 10, 25, 50]"
+                [pageIndex]="currentPage()"
+                (page)="onPageChange($event)"
+                aria-label="Select page of saving goals">
+              </mat-paginator>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- Add Money Overlay -->
+      <div class="add-money-overlay" *ngIf="showAddMoneyOverlay && selectedGoalForAddMoney">
+        <div class="add-money-modal">
+          <div class="add-money-modal-header">
+            <h3 class="add-money-modal-title">
+              <i class="fas fa-dollar-sign"></i>
+              Add Money to Goal
+            </h3>
+            <button 
+              class="add-money-modal-close" 
+              (click)="closeAddMoneyOverlay()"
+              (keydown.enter)="closeAddMoneyOverlay()"
+              (keydown.space)="closeAddMoneyOverlay()"
+              aria-label="Close add money dialog">
+              <i class="fas fa-times"></i>
+            </button>
+          </div>
+          <div class="add-money-modal-body">
+            <div class="goal-summary">
+              <div class="summary-item">
+                <span class="summary-label">Goal:</span>
+                <span class="summary-value">{{ selectedGoalForAddMoney.name }}</span>
+              </div>
+              <div class="summary-item">
+                <span class="summary-label">Current Amount:</span>
+                <span class="summary-value">{{ selectedGoalForAddMoney.currentAmount | currency }}</span>
+              </div>
+              <div class="summary-item">
+                <span class="summary-label">Target Amount:</span>
+                <span class="summary-value">{{ selectedGoalForAddMoney.targetAmount | currency }}</span>
+              </div>
+              <div class="summary-item">
+                <span class="summary-label">Remaining:</span>
+                <span class="summary-value remaining">{{ getRemainingAmount(selectedGoalForAddMoney) | currency }}</span>
+              </div>
+            </div>
+            <div class="amount-input-section">
+              <label for="amount">Amount to Add</label>
+              <div class="input-wrapper">
+                <span class="currency-symbol">$</span>
+                <input 
+                  id="amount"
+                  type="number" 
+                  [(ngModel)]="addMoneyAmount"
+                  placeholder="0.00"
+                  min="0.01"
+                  step="0.01"
+                  class="amount-input-field"
+                />
+              </div>
+            </div>
+          </div>
+          <div class="add-money-modal-footer">
+            <button 
+              class="btn btn-secondary" 
+              (click)="closeAddMoneyOverlay()"
+              (keydown.enter)="closeAddMoneyOverlay()"
+              (keydown.space)="closeAddMoneyOverlay()">
+              Cancel
+            </button>
+            <button 
+              class="btn btn-primary blue" 
+              (click)="confirmAddMoney()" 
+              [disabled]="!addMoneyAmount || addMoneyAmount <= 0"
+              (keydown.enter)="confirmAddMoney()"
+              (keydown.space)="confirmAddMoney()">
+              <i class="fas fa-plus"></i>
+              Add Money
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Delete Confirmation Overlay -->
+      <div *ngIf="showDeleteOverlay && selectedGoalForDelete" class="delete-confirmation-overlay">
+        <div class="delete-confirmation-modal">
+          <div class="delete-modal-header">
+            <h3 class="delete-modal-title">
+              <i class="fas fa-exclamation-triangle"></i>
+              Confirm Deletion
+            </h3>
+            <button 
+              class="delete-modal-close" 
+              (click)="closeDeleteOverlay()"
+              (keydown.enter)="closeDeleteOverlay()"
+              (keydown.space)="closeDeleteOverlay()"
+              aria-label="Close confirmation dialog">
+              <i class="fas fa-times"></i>
+            </button>
+          </div>
+          <div class="delete-modal-body">
+            <p class="delete-warning-text">
+              Are you sure you want to delete this saving goal? This action cannot be undone.
+            </p>
+            <div class="delete-goal-details" *ngIf="selectedGoalForDelete">
+              <div class="delete-detail-item">
+                <span class="delete-detail-label">Goal:</span>
+                <span class="delete-detail-value">{{ selectedGoalForDelete.name }}</span>
+              </div>
+              <div class="delete-detail-item">
+                <span class="delete-detail-label">Target:</span>
+                <span class="delete-detail-value">{{ selectedGoalForDelete.targetAmount | currency }}</span>
+              </div>
+              <div class="delete-detail-item">
+                <span class="delete-detail-label">Current:</span>
+                <span class="delete-detail-value">{{ selectedGoalForDelete.currentAmount | currency }}</span>
+              </div>
+              <div class="delete-detail-item">
+                <span class="delete-detail-label">Progress:</span>
+                <span class="delete-detail-value">{{ ((selectedGoalForDelete.currentAmount / selectedGoalForDelete.targetAmount) * 100).toFixed(0) }}%</span>
+              </div>
+            </div>
+          </div>
+          <div class="delete-modal-footer">
+            <button 
+              class="btn btn-secondary" 
+              (click)="closeDeleteOverlay()"
+              (keydown.enter)="closeDeleteOverlay()"
+              (keydown.space)="closeDeleteOverlay()">
+              Cancel
+            </button>
+            <button 
+              class="btn btn-danger" 
+              (click)="confirmDeleteGoal()"
+              (keydown.enter)="confirmDeleteGoal()"
+              (keydown.space)="confirmDeleteGoal()">
+              <i class="fas fa-trash"></i>
+              Delete Goal
+            </button>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>

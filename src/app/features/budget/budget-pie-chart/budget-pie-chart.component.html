@@ -1,0 +1,109 @@
+<!--
+  Alpha Vault Financial System
+  
+  @author Mohamed Dhaoui
+  @component BudgetPieChartComponent
+  @description Budget pie chart component template for displaying budget data visualization
+-->
+
+<section 
+  class="premium-pie-chart"
+  [class.has-data]="hasData"
+  [class.no-data]="!hasData"
+  role="region"
+  aria-label="Budget Allocation Chart"
+  aria-live="polite"
+>
+  <header class="chart-header">
+    <div class="header-content">
+      <div class="title-section">
+        <div class="title-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                  d="M11 3.055A9.001 9.001 0 1020.945 13H11V3.055z"/>
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                  d="M20.488 9H15V3.512A9.025 9.025 0 0120.488 9z"/>
+          </svg>
+        </div>
+        <div class="title-text">
+          <h3 class="chart-title">{{ title }}</h3>
+          <p class="chart-subtitle">Budget allocation breakdown</p>
+        </div>
+      </div>
+      
+      <div class="chart-stats" *ngIf="hasData">
+        <div class="total-budget">
+          <div class="stat-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                    d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1"/>
+            </svg>
+          </div>
+          <div class="stat-content">
+            <span class="stat-label">Total Budget</span>
+            <span class="stat-value">{{ getTotalFormatted() }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <div class="chart-container">
+    <div class="chart-content" *ngIf="hasData">
+      <div class="pie-chart-section">
+        <div class="pie-chart-wrapper">
+          <div class="chart-background">
+            <div class="background-pattern"></div>
+          </div>
+          <canvas
+            baseChart
+            [data]="pieChartData"
+            [labels]="pieChartLabels"
+            [type]="'pie'"
+            [options]="pieChartOptions"
+            class="chart-canvas"
+            role="img"
+            aria-label="Pie chart showing budget allocation by category"
+          ></canvas>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="empty-state" *ngIf="!hasData">
+      <div class="empty-visual">
+        <div class="empty-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" 
+                  d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+          </svg>
+        </div>
+        <div class="empty-particles">
+          <div class="particle" *ngFor="let i of [1,2,3,4,5]"></div>
+        </div>
+      </div>
+      
+      <div class="empty-content">
+        <h4 class="empty-title">No Budget Data Available</h4>
+        <p class="empty-description">
+          Start by adding budget allocations to see your spending breakdown visualized in this beautiful pie chart.
+        </p>
+        <div class="empty-action">
+          <button 
+            class="action-button" 
+            role="button" 
+            tabindex="0"
+            (click)="onActionButtonClick()"
+            (keydown.enter)="onActionButtonKeydown($event)"
+            (keydown.space)="onActionButtonKeydown($event)"
+          >
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
+            </svg>
+            Add Budget Data
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
