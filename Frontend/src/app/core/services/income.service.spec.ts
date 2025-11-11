@@ -14,7 +14,7 @@ describe('IncomeService', () => {
 
   const mockUserId = 123;
   const mockToken = 'test-token';
-  const baseUrl = 'http://localhost:8080/api/incomes';
+  const baseUrl = 'https://alphavault-prod.us-east-2.elasticbeanstalk.com/api/incomes';
 
   beforeEach(() => {
     const authSpy = jasmine.createSpyObj('AuthService', ['getToken', 'getUserId']);

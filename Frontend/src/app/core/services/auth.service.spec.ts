@@ -136,7 +136,7 @@ describe('AuthService', () => {
   });
 
   describe('HTTP Operations', () => {
-    const baseUrl = 'http://localhost:8080/api/auth';
+    const baseUrl = 'https://alphavault-prod.us-east-2.elasticbeanstalk.com/api/auth';
 
     describe('Login', () => {
       it('should make POST request to login endpoint', () => {
