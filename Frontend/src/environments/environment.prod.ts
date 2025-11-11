@@ -8,7 +8,7 @@
 
 export const environment = {
   production: true,
-  apiUrl: 'https://api.alphavault.com/api', // Replace with your production API URL
+  apiUrl: 'https://alphavault-prod.us-east-2.elasticbeanstalk.com/api',
   appName: 'Alpha Vault',
   version: '1.0.0'
 };
