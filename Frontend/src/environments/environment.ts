@@ -8,7 +8,7 @@
 
 export const environment = {
   production: false,
-  apiUrl: 'https://alphavault-prod.us-east-2.elasticbeanstalk.com/api',
+  apiUrl: 'https://alpha-vault.onrender.com/api',
   appName: 'Alpha Vault',
   version: '1.0.0'
 };
