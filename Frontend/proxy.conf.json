@@ -1,6 +1,6 @@
 {
   "/api": {
-    "target": "https://alphavault-prod.us-east-2.elasticbeanstalk.com",
+    "target": "https://alpha-vault.onrender.com",
     "secure": true,
     "changeOrigin": true,
     "logLevel": "debug"
