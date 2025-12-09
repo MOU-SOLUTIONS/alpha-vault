@@ -25,7 +25,7 @@ public class SecurityConfig {
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
     private final Environment environment;
 
-    @Value("${cors.allowed-origins:http://localhost:*,https://localhost:*}")
+    @Value("${ALLOWED_ORIGINS:http://localhost:*,https://*.vercel.app}")
     private String allowedOrigins;
 
     public SecurityConfig(JwtAuthenticationFilter jwtAuthenticationFilter, Environment environment) {
