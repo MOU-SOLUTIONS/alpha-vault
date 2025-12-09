@@ -14,7 +14,7 @@ describe('IncomeService', () => {
 
   const mockUserId = 123;
   const mockToken = 'test-token';
-  const baseUrl = 'https://alphavault-prod.us-east-2.elasticbeanstalk.com/api/incomes';
+  const baseUrl = 'https://alpha-vault.onrender.com/api/incomes';
 
   beforeEach(() => {
     const authSpy = jasmine.createSpyObj('AuthService', ['getToken', 'getUserId']);
